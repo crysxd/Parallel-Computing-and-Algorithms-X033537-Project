@@ -10,11 +10,24 @@ First of all the packages for the dependencies need to be installed as:
 ```bash
 sudo apt-get install cmake pkg-config python ocl-icd-dev ocl-icd-opencl-dev libdrm-dev libxfixes-dev libxext-dev llvm-3.5-dev clang-3.5 libclang-3.5-dev libtinfo-dev libedit-dev zlib1g-dev
 ```
+On Ubuntu 14.04 pleaase run
+```bash
+sudo apt-get install build-essential g++ cmake 
+sudo apt-get install clang libclang-3.5-dev libclang-dev libclang1
+```
+and 
+
+```bash
+sudo update-alternatives --install /usr/bin/llvm-link llvm-link /usr/bin/llvm-link-3.4 34
+sudo update-alternatives --install /usr/bin/llvm-as llvm-as /usr/bin/llvm-as-3.4 34
+```
+
 Even though there exist a package in apt, this didnt work at all for my machine, so better build it by yourself, running:
 
 ```bash
 git clone git://anongit.freedesktop.org/beignet
 cd beignet
+git checkout Release_v1.0.0
 mkdir build
 cd build
 cmake ../
