@@ -1,0 +1,6 @@
+To build the Project do:
+
+mkdir build
+cd build
+cmake ../
+make && ./opencl
