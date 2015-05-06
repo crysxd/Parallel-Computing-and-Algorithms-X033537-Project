@@ -58,6 +58,7 @@ Cl_Interface<I,O>::~Cl_Interface() {
 
 /*
 Reads the given path in for further processing.
+Keep in mind that path is pointing at the cl_prog directory
 After loadProgram, u like usually to call runkernel()
  */
 template <typename I,typename O>
@@ -68,6 +69,39 @@ void Cl_Interface<I,O>::loadProgram(const char* path){
 }
 
 
+/*
+Runs the given kernel with the input parameters and the output parameters.
+Input needs to be an ordered std::vector of arguments, for the given kernel.
+e.g if the kernel is __kernel void something (float *a, float *b)
+then input needs to be a list with 2 elements, each of them representing one float
+array.
+
+output is only indicating the amount of output parameters. So it only needs to be initialized
+with the size of the output parameters, not an actual value. Values will be nonetheless
+overwritten.
+
+and example call with two arrays (a and c), where in a the subarrays will be processed
+and c is the resulting array:
+
+std::vector<std::vector<float>> a;
+std::vector<float> b;
+b.push_back(1);
+b.push_back(20);
+b.push_back(30);
+a.push_back(b);
+std::vector<float> bb;
+bb.push_back(20);
+bb.push_back(10);
+bb.push_back(4);
+a.push_back(bb);
+
+std::vector<std::vector<float>> c;
+std::vector<float> d(3);
+c.push_back(d);
+
+Cl_Interface<float,float> clinterface("vectoradd.cl");
+clinterface.runKernel("vector_add_gpu",a,&c);
+ */
 template <typename I,typename O>
 void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output){
 
@@ -81,13 +115,10 @@ void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::
         exit(1);
     }
 
-    // typename std::vector<std::vector<I>>::const_iterator row;
-    // typename std::vector<I>::const_iterator col;
-    // typename std::vector<std::vector<I>>::size_type i;
-
-    // std::vector <cl::Buffer> buffers;
-    // Generate all the buffers :
-
+    ////////////////////////////////////////////////////
+    // Initalize the transfer and executeable objects //
+    ////////////////////////////////////////////////////
+    // Queue is reponsible for transferring data and the kernel_operator executes the code
     // The quene pushes and returns the buffer objects between host and device
     cl::CommandQueue queue(*(this->context),this->device);
     cl::Kernel kernel_operator(program,kernelname);
@@ -97,7 +128,9 @@ void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::
         std::cerr << " Error, either input or output vectors have zero length " << std::endl;
         exit(1);
     }
-
+    ////////////////////////////////////////////////////////
+    // Write the input arrays from the host to the device //
+    ////////////////////////////////////////////////////////
 
     for (int i = 0; i != n_inputargs; i++)
     {
@@ -105,74 +138,62 @@ void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::
         //The enqueueWriteBuffer method takes an array not an std::vector, so we need to
         //cast it to an array
         const I* arr_inp = &(input[i][0]);
-        std::cout <<" Input array " << i << " : " <<arr_inp[0] <<std::endl;
+        std::cout <<" Input array " << i << " : Value  " <<arr_inp[0] << " size : " << sizeof(I)*input[i].size() <<std::endl;
         //Copy the memory from host to device
         queue.enqueueWriteBuffer(buffer,CL_TRUE,0,sizeof(I)*input[i].size(),arr_inp);
         kernel_operator.setArg(i,buffer);
     }
-    //Store the current output buffers on the device
+    //Store the current output buffers on the device, need them later to receive the data
     std::vector<cl::Buffer> outputbuffers;
 
+    //store the amount of elements in one of the vectors
+    int n_gpu_range = (*output)[0].size();
     for (int i = 0; i != output->size(); i++)
     {
-        cl::Buffer buffer(*(this->context),CL_MEM_READ_WRITE,output[i].size()*sizeof(O));
+        cl::Buffer buffer(*(this->context),CL_MEM_READ_WRITE,(*output)[i].size()*sizeof(O));
         //The enqueueWriteBuffer method takes an array not an std::vector, so we need to
         //cast it to an array
-        O* arr_out = &((*output)[i][0]);
         // Append the outputargs after the input ones
         kernel_operator.setArg(n_inputargs + i, buffer );
         outputbuffers.push_back(buffer);
-        // queue.enqueueWriteBuffer(buffer,CL_TRUE,0,sizeof(O)*output[i].size(),arr_out);
-    }
-    queue.finish();
-    // cl::Buffer buffer_A(*(this->context),CL_MEM_READ_WRITE,sizeof(float)*10);
-    // cl::Buffer buffer_B(*(this->context),CL_MEM_READ_WRITE,sizeof(float)*10);
-    // cl::Buffer buffer_C(*(this->context),CL_MEM_READ_WRITE,sizeof(float)*10);
 
-    // float A[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    // float B[] = {0, 1, 2, 0, 1, 2, 0, 1, 2, 0};
+    }
+    // Wait for the quene to tansfer the data
+    queue.finish();
 
 
     std::cout << "Running Kernel : " << kernelname << std::endl;
-    // kernel_operator.setArg(0,buffer_A);
-    // kernel_operator.setArg(1,buffer_B);
-    // kernel_operator.setArg(2,buffer_C);
 
     cl::Event event;
+    ///////////////////////////////////
+    // Calculation is being executed //
+    ///////////////////////////////////
     //The first range is the offset for the arrays, second is the global range, third the local one
-    //Calculates the kernel
-    queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(output->size()),cl::NullRange,NULL,&event);
+    queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(n_gpu_range),cl::NullRange,NULL,&event);
     event.wait();
 
-    O* out;
+    ////////////////////////
+    // Read in the result //
+    ////////////////////////
     for (int i = 0; i != output->size(); i++)
     {
         //The enqueueWriteBuffer method takes an array not an std::vector, so we need to
         //cast it to an array
         O* arr_out = &((*output)[i][0]);
-
-        O out[10];
-        // Append the outputargs after the input ones
-        // Outputbuffers are the buffers which were initialized to transfer
-        // data from host to device
-        queue.enqueueReadBuffer(outputbuffers[i],CL_TRUE,0,sizeof(O)*output[i].size(),out);
-        // out = arr_out;
-        std::cout << out[0] << std::endl;
-        // for (int i = 0; i < output[i].size(); i++)
-        // {
-        //     std::cout << arr_out[i] << " " << i << " "<<output[i].size() << std::endl;
-        // }
+        //Read out the results
+        std::cout << sizeof(O)*(*output)[i].size() << std::endl;
+        queue.enqueueReadBuffer(outputbuffers[i],CL_TRUE,0,sizeof(O)*(*output)[i].size(),arr_out);
     }
-    // float C[10];
-    //read result C from the device to array C
-    // queue.enqueueReadBuffer(buffer_C,CL_TRUE,0,sizeof(float)*10,C);
+    // Wait for the reading buffer to complete
     queue.finish();
 
-    std::cout<<" result: \n";
-    // std::cout << out[0] << std::endl;
-    // for(int i=0;i<10;i++){
-    //     std::cout<<C[i]<<" = "<<A[i]<< " + " << B[i] << std::endl;
-    // }
+    std::cout<<" result: \n" ;
+    for(unsigned i = 0; i < output->size(); ++i) {
+        std::cout <<(*output)[i].size() << std::endl;
+        for(unsigned j = 0; j < (*output)[i].size() ; ++j) {
+            std::cout << (*output)[i][j] << std::endl;
+        }
+    }
 
 
 }

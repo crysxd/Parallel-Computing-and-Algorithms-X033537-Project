@@ -1,3 +1,4 @@
+#pragma OPENCL EXTENSION cl_intel_printf : enable
 __kernel void vector_add_gpu (__global const float* src_a,
                      __global const float* src_b,
                      __global float* res)
@@ -6,10 +7,9 @@ __kernel void vector_add_gpu (__global const float* src_a,
    As many threads are launched at the same time, executing the same kernel,
    each one will receive a different ID, and consequently perform a different computation.*/
    const int idx = get_global_id(0);
-   #pragma OPENCL EXTENSION cl_intel_printf : enable
-   printf("Input: %.2f , %.2f",src_a[idx],src_b[idx]);
    /* Now each work-item asks itself: "is my ID inside the vector's range?"
    If the answer is YES, the work-item performs the corresponding computation*/
    // if (idx < num)
    res[idx] = src_a[idx] + src_b[idx];
+   printf("IN the GPU: %f %f %f\n",src_a[idx], src_b[idx],res[idx]);
 }
