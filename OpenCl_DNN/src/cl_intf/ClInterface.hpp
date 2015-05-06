@@ -20,12 +20,13 @@ public:
 	virtual ~Cl_Interface();
 	void loadProgram(const char* path);
 
-	void runKernel(const char* kernelname);
+	void runKernel(const char* kernelname,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output);
 
 
 private:
 	//handles for creating an opencl context
 	cl::Platform platform;
+
 	//buildExecutable is called by loadProgram
 	//build runtime executable from a program
 	void buildExecutable();
@@ -36,6 +37,6 @@ private:
 };
 // Template inclusion needs to be done after the header
 // Otherwise it will result in an error.
-#include "ClInterface.cpp"
+#include "ClInterface.inl"
 
 #endif /* SRC_CL_INTF_CLINTERFACE_HPP_ */

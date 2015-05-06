@@ -124,4 +124,6 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}/src")
 add_subdirectory(src)
 
-add_executable(opencl src/main.cpp)
+
+# add_executable(opencl src/main.cpp)
+# target_link_libraries (opencl OpenCL)
