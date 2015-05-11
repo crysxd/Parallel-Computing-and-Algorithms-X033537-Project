@@ -46,18 +46,17 @@ Gather and scatter have the same complexity
 \section{Chapter 5}
 
 Here we try to split the data into roughly equal parts.
-
 The first, last and process controlling element $j$ are given as:
 \begin{gather*}
-i \floor*{\frac{n}{p}} + \min( i,r)\\
-(i+1) \floor*{\frac{n}{p}} + \min( i+1,r)-1\\
-\min\left( \floor*{\frac{j}{\floor{\frac{n}{p}+1}} }, \floor*{ \frac{j-r}{\floor{\frac{n}{p}}}} \right)
+\text{Beginindex} = i \floor*{\frac{n}{p}} + \min( i,r)\\
+\text{Endindex} = (i+1) \floor*{\frac{n}{p}} + \min( i+1,r)-1\\
+\text{Amount of elements for process }j = \min\left( \floor*{\frac{j}{\floor{\frac{n}{p}+1}} }, \floor*{ \frac{j-r}{\floor{\frac{n}{p}}}} \right)
 \end{gather*}
 And the second method as:
 \begin{gather*}
-\floor*{\frac{in }{p}}\\
-\floor*{\frac{(i+1)n}{p}} -1\\
-\floor*{\frac{p(j+1)-1}{n}}
+\text{Beginindex} = \floor*{\frac{in }{p}}\\
+\text{Endindex} = \floor*{\frac{(i+1)n}{p}} -1\\
+\text{Amount of elements for process }j = \floor*{\frac{p(j+1)-1}{n}}
 \end{gather*}
 Obviously the second method is easier and more efficient.
 
