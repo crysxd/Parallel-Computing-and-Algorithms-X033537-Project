@@ -1,13 +1,47 @@
 \section{Chapter 1}
 
+Extend Compilers :
+\begin{itemize}
+\item[+]Saves time and labour, no retraining of programmers, easy to do
+\item[-]Performance depends on application, people can still write sequential
+\end{itemize}
 
+
+Extend Lang:
+\begin{itemize}
+\item[+]Easy, quick, not expensive
+\item[-]Debugging is hard, lack of compiler support to catch errors (old?), programmers hate
+\end{itemize}
 \section{Chapter 2}
 
+\paragraph{Diameter}
+Maximum distance between any two processors
+
+\paragraph{Bisection width}
+Minimum number of communication links that can be removed to break it into two equal sized disconnected networks
+
+\paragraph{Maximum edges}
+Just count the maximum edges of a node
+
+\paragraph{Constant length}
+As the number of nodes increase, the amount of edges on each node ( only 2D mesh). 2D mesh is the only network which has consistent length, and the others vary for the bisection and diameter variables.
+
+\paragraph{Caches}
+
+Large caches reduce the load on the memory bus, enabling the system to utilize more processors efficiently. Even with large instruction and data caches, every processor still needs to access the memory bus occasionally.
 
 \section{Chapter 3}
+If two processors to increase their utilization, their communication also increases, since it comes to racial conditions on the data itself.
 
+\paragraph{Bionominal tree}
+Create one node. This node has rank 0. Append one node to the tree and call that structure tree t. Append the last created t to the root node. The amount of nodes now doubles, and u just append on the root the new sub tree.
 
-\section{Chapter 4}
+\paragraph{Fosters Methodlogy}
+Partitioning $\Rightarrow$ Communication $\Rightarrow$ Aggolomeration $\Rightarrow$ Mapping.
+ Dividing   $\Rightarrow$   Determine values passes   $\Rightarrow$  Group tasks  $\Rightarrow$  Task to processor
+
+\paragraph{Allgather and scatter}
+Gather and scatter have the same complexity
 
 \section{Chapter 5}
 
@@ -22,7 +56,14 @@ i \floor*{\frac{n}{p}} + \min( i,r)\\
 And the second method as:
 \begin{gather*}
 \floor*{\frac{in }{p}}\\
-\floor*{\frac{(i+1)n}{p} -1}\\
+\floor*{\frac{(i+1)n}{p}} -1\\
 \floor*{\frac{p(j+1)-1}{n}}
 \end{gather*}
 Obviously the second method is easier and more efficient.
+
+\section{Chapter 6}
+
+Execution time formula:
+\begin{gather*}
+\text{iterations } + \text{ Messages per broadcast } \times \left( \lambda  + \frac{\text{data}}{\beta} \right)
+\end{gather*}
