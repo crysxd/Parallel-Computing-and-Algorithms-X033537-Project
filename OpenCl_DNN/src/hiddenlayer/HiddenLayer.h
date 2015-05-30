@@ -13,12 +13,11 @@
 
 class HiddenLayer {
 public:
-	HiddenLayer(Cost *cost, Activation *activation);
+	HiddenLayer(Activation *activation);
 	virtual ~HiddenLayer();
 
 private:
 	Activation *activation;
-	Cost *cost;
 
 };
 

@@ -4,7 +4,6 @@
 
 
 TEST(Activation,Positive){
-
     EXPECT_EQ(1,1);
 }
 

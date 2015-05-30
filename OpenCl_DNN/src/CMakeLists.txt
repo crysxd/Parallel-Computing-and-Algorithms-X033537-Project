@@ -1,5 +1,5 @@
 ## Define Project####
-project (Main)
+project (DNN)
 message(STATUS "Processing ${PROJECT_NAME}")
 
 

@@ -20,7 +20,7 @@ public:
 	virtual ~Cl_Interface();
 	void loadProgram(const char* path);
 
-	void runKernel(const char* kernelname,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output);
+	void runKernel(const char* kernelname,const int blocksize,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output);
 
 
 private:

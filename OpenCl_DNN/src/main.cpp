@@ -28,7 +28,7 @@ int main() {
     std::vector<std::vector<float>> c;
     std::vector<float> d(3);
     c.push_back(d);
-    clinterface.runKernel("vector_add_gpu",a,&c);
+    clinterface.runKernel("vector_add_gpu",1,a,&c);
 	return 0;
 }
 

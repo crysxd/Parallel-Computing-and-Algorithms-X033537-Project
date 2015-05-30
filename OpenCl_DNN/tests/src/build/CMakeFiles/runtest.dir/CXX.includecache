@@ -6,3 +6,11 @@
 
 #IncludeRegexTransform: 
 
+../../../src/activations/Activation.h
+
+/annarborfs/Code/git/Parallel-Computing-and-Algorithms-X033537-Project/OpenCl_DNN/tests/src/testall.cpp
+gtest/gtest.h
+/annarborfs/Code/git/Parallel-Computing-and-Algorithms-X033537-Project/OpenCl_DNN/tests/src/gtest/gtest.h
+Activation.h
+/annarborfs/Code/git/Parallel-Computing-and-Algorithms-X033537-Project/OpenCl_DNN/tests/src/Activation.h
+

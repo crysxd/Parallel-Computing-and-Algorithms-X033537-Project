@@ -103,7 +103,7 @@ Cl_Interface<float,float> clinterface("vectoradd.cl");
 clinterface.runKernel("vector_add_gpu",a,&c);
  */
 template <typename I,typename O>
-void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output){
+void Cl_Interface<I,O>::runKernel(const char* kernelname,const int blocksize,const std::vector<std::vector<I>> &input,std::vector<std::vector<O>> *output){
 
     cl::Program::Sources sources;
     //Include the read out contents from the vector file into the sources to parse
@@ -169,7 +169,7 @@ void Cl_Interface<I,O>::runKernel(const char* kernelname,const std::vector<std::
     // Calculation is being executed //
     ///////////////////////////////////
     //The first range is the offset for the arrays, second is the global range, third the local one
-    queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(n_gpu_range),cl::NullRange,NULL,&event);
+    queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(n_gpu_range),cl::NDRange(blocksize),NULL,&event);
     event.wait();
 
     ////////////////////////

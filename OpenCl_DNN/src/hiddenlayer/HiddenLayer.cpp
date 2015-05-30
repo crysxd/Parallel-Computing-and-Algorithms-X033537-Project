@@ -7,8 +7,8 @@
 
 #include "HiddenLayer.h"
 
-HiddenLayer::HiddenLayer(Cost* cost, Activation* activation) :
-		cost(cost), activation(activation) {
+HiddenLayer::HiddenLayer(Activation* activation) :
+		 activation(activation) {
 
 }
 
