@@ -12,9 +12,7 @@ class Cost {
 public:
 	Cost();
 	virtual ~Cost();
-	virtual float cost(float f) = 0;
-
-	virtual float grad(float f) = 0;
+	virtual float grad(float  f) = 0;
 };
 
 #endif /* COST_COST_H_ */

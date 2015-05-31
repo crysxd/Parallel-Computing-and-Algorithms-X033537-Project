@@ -16,3 +16,7 @@ Sigmoid::~Sigmoid() {
 	// TODO Auto-generated destructor stub
 }
 
+double Sigmoid::activate() {
+	return 0;
+}
+

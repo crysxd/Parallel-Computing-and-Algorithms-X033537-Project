@@ -14,6 +14,8 @@ class Sigmoid: public Activation {
 public:
 	Sigmoid();
 	virtual ~Sigmoid();
+
+	double activate();
 };
 
 #endif /* ACTIVATIONS_SIGMOID_H_ */

@@ -17,7 +17,6 @@ MSE::~MSE() {
 }
 
 float MSE::cost(float f) {
-
 	return 0;
 }
 

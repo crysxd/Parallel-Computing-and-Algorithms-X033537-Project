@@ -10,13 +10,16 @@
 
 #include <string>
 #include <vector>
+#include "../hiddenlayer/HiddenLayer.h"
 
 typedef std::vector<double> doubvec;
 
 class FeedForwardNN {
 public:
-	FeedForwardNN(int hid);
+	FeedForwardNN();
 	virtual ~FeedForwardNN();
+
+	void addHiddenLayer(HiddenLayer &layer);
 
 	void feedforward(doubvec &in, doubvec *out);
 	void backpropagate(doubvec *out_diff, doubvec *in_diff);
@@ -39,6 +42,8 @@ private:
 	int _out_dim;
 // Array indicating which activations for each layer we have
 	const std::vector<double (*)(double)> *activations;
+
+	const std::vector<HiddenLayer> *hiddenlayers;
 
 };
 
