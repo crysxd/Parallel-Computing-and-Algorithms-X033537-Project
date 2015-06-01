@@ -13,11 +13,34 @@
 
 class HiddenLayer {
 public:
-	HiddenLayer(Activation *activation);
+	HiddenLayer(Activation *activation,int in_dim,int out_dim);
 	virtual ~HiddenLayer();
+
+//	Getters and setters
+
+
+
+
+	int getInDim() const {
+		return in_dim;
+	}
+
+	void setInDim(int inDim) {
+		in_dim = inDim;
+	}
+
+	int getOutDim() const {
+		return out_dim;
+	}
+
+	void setOutDim(int outDim) {
+		out_dim = outDim;
+	}
 
 private:
 	Activation *activation;
+	int in_dim;
+	int out_dim;
 
 };
 

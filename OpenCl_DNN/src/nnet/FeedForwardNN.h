@@ -15,8 +15,10 @@ typedef std::vector<double> doubvec;
 
 class FeedForwardNN {
 public:
-	FeedForwardNN(int hid);
+	FeedForwardNN();
 	virtual ~FeedForwardNN();
+
+	void addHiddenlayer(HiddenLayer& layer);
 
 	void feedforward(doubvec &in, doubvec *out);
 	void backpropagate(doubvec *out_diff, doubvec *in_diff);
