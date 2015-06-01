@@ -8,7 +8,7 @@
 #include "FeedForwardNN.h"
 #include <functional>
 
-FeedForwardNN::FeedForwardNN(int hid):_hid_dim(hid) {
+FeedForwardNN::FeedForwardNN(){
 }
 
 FeedForwardNN::~FeedForwardNN() {
@@ -16,6 +16,14 @@ FeedForwardNN::~FeedForwardNN() {
 }
 
 void FeedForwardNN::feedforward(doubvec& in, doubvec* out) {
+	for(int i = 0; i < this->hiddenlayers->size();i++ ){
+		this->hiddenlayers[i].propagate()
+	}
+}
+
+void FeedForwardNN::addHiddenLayer(HiddenLayer& layer) {
+	this->hiddenlayers->push_back(layer);
+
 }
 
 void FeedForwardNN::backpropagate(doubvec* out_diff, doubvec* in_diff) {

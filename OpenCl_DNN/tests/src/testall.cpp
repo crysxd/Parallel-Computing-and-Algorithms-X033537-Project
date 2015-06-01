@@ -1,10 +1,19 @@
 #include "gtest/gtest.h"
 #include "Activation.h"
+#include "HiddenLayer.h"
+#include "Sigmoid.h"
+#include "TanH.h"
 
 
-
-TEST(Activation,Positive){
+TEST(Activation,Sigmoid){
+	Sigmoid s();
+	HiddenLayer h(Sigmoid);
     EXPECT_EQ(1,1);
+}
+
+TEST(Activation,TanH){
+	EXPECT_EQ(1,1)
+
 }
 
 

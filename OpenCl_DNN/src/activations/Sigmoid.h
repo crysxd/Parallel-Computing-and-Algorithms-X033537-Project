@@ -15,7 +15,6 @@ public:
 	Sigmoid();
 	virtual ~Sigmoid();
 	virtual double activate();
-
 };
 
 #endif /* ACTIVATIONS_SIGMOID_H_ */
