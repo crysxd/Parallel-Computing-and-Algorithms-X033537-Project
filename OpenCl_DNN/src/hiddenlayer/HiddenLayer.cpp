@@ -7,12 +7,14 @@
 
 #include "HiddenLayer.h"
 
-HiddenLayer::HiddenLayer(Activation* activation) :
-		 activation(activation) {
-
-}
 
 HiddenLayer::~HiddenLayer() {
 	// TODO Auto-generated destructor stub
 }
 
+HiddenLayer::HiddenLayer(Activation* activation, int in_dim, int out_dim) {
+
+}
+
+void HiddenLayer::propagate(doubvec& vec) {
+}

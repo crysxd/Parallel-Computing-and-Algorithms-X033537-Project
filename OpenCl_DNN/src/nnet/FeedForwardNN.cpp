@@ -16,13 +16,13 @@ FeedForwardNN::~FeedForwardNN() {
 }
 
 void FeedForwardNN::feedforward(doubvec& in, doubvec* out) {
-	for(int i = 0; i < this->hiddenlayers->size();i++ ){
-		this->hiddenlayers[i].propagate()
+	for(int i = 0; i < this->hiddenlayers.size();i++ ){
+//		this->hiddenlayers[i].propagate(in);
 	}
 }
 
-void FeedForwardNN::addHiddenLayer(HiddenLayer& layer) {
-	this->hiddenlayers->push_back(layer);
+void FeedForwardNN::addHiddenLayer(const HiddenLayer& layer) {
+//	this->hiddenlayers.push_back(layer);
 
 }
 

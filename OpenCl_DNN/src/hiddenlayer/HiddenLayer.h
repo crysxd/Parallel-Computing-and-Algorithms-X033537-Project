@@ -10,17 +10,18 @@
 
 #include "../activations/Activation.h"
 #include "../cost/Cost.h"
+#include <vector>
+
+typedef std::vector<double> doubvec;
 
 class HiddenLayer {
 public:
 	HiddenLayer(Activation *activation,int in_dim,int out_dim);
 	virtual ~HiddenLayer();
 
+	void propagate(doubvec &vec);
+
 //	Getters and setters
-
-
-
-
 	int getInDim() const {
 		return in_dim;
 	}

@@ -14,6 +14,12 @@
 
 #include <CL/cl.hpp>
 
+
+enum{
+	BUFFER,
+	VARIABLE
+}rettype;
+
 template<typename I, typename O> class Cl_Interface {
 public:
 	Cl_Interface(const char* path);

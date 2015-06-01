@@ -9,12 +9,16 @@
 #define ACTIVATIONS_SIGMOID_H_
 
 #include "Activation.h"
+#include "../cl_intf/ClInterface.hpp"
 
 class Sigmoid: public Activation {
 public:
 	Sigmoid();
 	virtual ~Sigmoid();
 	virtual double activate();
+
+private:
+	Cl_Interface<double,double> _cl_intf;
 };
 
 #endif /* ACTIVATIONS_SIGMOID_H_ */

@@ -19,9 +19,8 @@ public:
 	FeedForwardNN();
 	virtual ~FeedForwardNN();
 
-	void addHiddenLayer(HiddenLayer &layer);
+	void addHiddenLayer(const HiddenLayer &layer);
 
-	void addHiddenlayer(HiddenLayer& layer);
 
 	void feedforward(doubvec &in, doubvec *out);
 	void backpropagate(doubvec *out_diff, doubvec *in_diff);
@@ -45,7 +44,7 @@ private:
 // Array indicating which activations for each layer we have
 	const std::vector<double (*)(double)> *activations;
 
-	const std::vector<HiddenLayer> *hiddenlayers;
+	const std::vector<HiddenLayer> hiddenlayers;
 
 };
 

@@ -1,129 +1,221 @@
-#####################################################################
-# Root SDK level
-#####################################################################
-project(SDK)
 cmake_minimum_required(VERSION 2.6)
-set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
-message(STATUS "Processing ${PROJECT_NAME}")
 
 
-#####################################################################
-# Util functions to make our lives easier
-#####################################################################
-
-# Function to list all header files in the current directory, recursing into sub-directories
-# HEADER_FILES - To be filled with the found header files
-function(sdk_list_header_files HEADER_FILES)
-    file(GLOB_RECURSE HEADER_FILES_TMP "*.h" "*.hpp" "*.inl" "*.pch")
-    set(HEADER_FILES ${HEADER_FILES_TMP} PARENT_SCOPE)
-endfunction()
-
-# Function to list all source files in the current directory, recursing into sub-directories
-# SOURCE_FILES - To be filled with the found source files
-function(sdk_list_source_files HEADER_FILES)
-    file(GLOB_RECURSE SOURCE_FILES_TMP "*.c" "*.cpp")
-    set(SOURCE_FILES ${SOURCE_FILES_TMP} PARENT_SCOPE)
-endfunction()
-
-# Function to setup some standard project items
-# PROJECTNAME - The name of the project being setup
-# TARGETDIR - The target directory for output files (relative to CMAKE_SOURCE_DIR)
-function(sdk_setup_project_common PROJECTNAME TARGETDIR)
-    # Set the Debug and Release names
-    set_target_properties(${PROJECTNAME} PROPERTIES DEBUG_OUTPUT_NAME ${PROJECTNAME}_d RELEASE_OUTPUT_NAME ${PROJECTNAME})
-
-    # Add a post-build step for MSVC to copy the output to the target directory
-    if(MSVC)
-        add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND copy \"$(TargetPath)\" \"${CMAKE_SOURCE_DIR}/${TARGETDIR}\")
-    endif()
-
-    # Setup install to copy the built output to the target directory (for compilers that don't have post build steps)
-    install(
-        TARGETS ${PROJECTNAME}
-        LIBRARY DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-        ARCHIVE DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-        RUNTIME DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-        )
-endfunction()
-
-# Function to setup some project items for an executable or DLL
-# PROJECTNAME - The name of the project being setup
-function(sdk_setup_project_bin PROJECTNAME)
-    sdk_setup_project_common(${PROJECTNAME} Bin)
-endfunction()
-
-# Function to setup some project items for static library
-# PROJECTNAME - The name of the project being setup
-function(sdk_setup_project_lib PROJECTNAME)
-    sdk_setup_project_common(${PROJECTNAME} Lib)
-endfunction()
 
 
-#####################################################################
-# Set up the basic build environment
-#####################################################################
-if(CMAKE_BUILD_TYPE STREQUAL "")
-    # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up differentiation between debug and release builds.
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+################################################################################
+#                            GLOBAL CONFIGURATION                              #
+################################################################################
+
+# Project name
+project(OpenCLDNN)
+
+# Static library name
+set(DNN_STATIC_LIB opcldnn)
+
+# Executable name
+set(EXECUTEABLE run)
+
+# Path to the executeable
+set(EXECUTEABLE_PATH ${PROJECT_SOURCE_DIR}/src/main.cpp)
+
+#Test executeable name
+set(EXECUTEABLE_TEST test)
+
+#Path to Main test
+set(EXECUTEABLE_TEST_PATH ${PROJECT_SOURCE_DIR}/tests/testall.cpp)
+
+# TestName
+set(EXECUTEABLE_TEST test)
+
+# Binary directory
+set(BINARY_DIR ${CMAKE_SOURCE_DIR}/bin/)
+
+
+
+################################################################################
+#                             COMPILATION FLAGS                                #
+################################################################################
+
+# Common flags
+set(CXX_DEFINES "-DDEBUG=0 ${CXX_DEFINES}")
+set(CXX_DEFINES "-DPROGRESSION_INFO=1 ${CXX_DEFINES}")
+set(CXX_DEFINES "-DNO_OUTPUT=1 ${CXX_DEFINES}")
+set(CXX_DEFINES "-DMATRIX=0 ${CXX_DEFINES}")
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    message("GCC detected ...")
+
+    # C++11 flags
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
+
+    # Base compiler flags
+    # https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    # https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Dialect-Options.html
+    # http://stackoverflow.com/a/9862800
+    set(CXX_BASE_FLAGS
+        "-W -Wall -Wextra -Weffc++ -pedantic"
+        "-Wold-style-cast -Wparentheses -Wlogical-op -Woverloaded-virtual"
+        "-Wfloat-equal -Wpointer-arith -Wcast-align -Wcast-qual"
+        "-Winit-self -Wwrite-strings -Wstrict-null-sentinel"
+        "-Wredundant-decls -Wswitch-default -Wundef -Wunused-parameter"
+        "-Wmissing-include-dirs"
+        "-Wdisabled-optimization"
+        "-Wnoexcept"
+
+        #"-Wshadow"
+        #"-Wsign-conversion"
+        #"-Wconversion"
+        #"-Wstrict-overflow=5"
+        #"-Winline"
+        #"-Wpadded"
+    )
+    string(REGEX REPLACE ";" " " CXX_BASE_FLAGS "${CXX_BASE_FLAGS}")
+
+    # Release mode
+    set(CXX_FLAGS_RELEASE "-Werror ${CXX_BASE_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CXX_DEFINES} ${CXX_FLAGS_RELEASE}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_RELEASE}")
+
+    # Debug mode
+    set(CXX_FLAGS_DEBUG ${CXX_BASE_FLAGS})
+    set(CMAKE_CXX_FLAGS_DEBUG "${CXX_DEFINES} ${CXX_FLAGS_DEBUG}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_DEBUG}")
+
+    # Release with debug symbols
+    set(CXX_FLAGS_RELWITHDEBINFO "${CXX_BASE_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CXX_FLAGS_RELWITHDEBINFO}"
+    )
+
+    # Release with stripping of extra symbols
+    set(CXX_FLAGS_MINSIZEREL "${CXX_BASE_FLAGS}")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL
+        "${CMAKE_CXX_FLAGS_MINSIZEREL} ${CXX_FLAGS_MINSIZEREL}"
+    )
+
+elseif(${MSYS})
+
+    # Base compiler flags
+    set(CXX_BASE_FLAGS
+        "/MP4"
+        "/W0"
+        #"/Wall"
+    )
+    string(REGEX REPLACE ";" " " CXX_BASE_FLAGS "${CXX_BASE_FLAGS}")
+
+    # Release mode
+    set(CXX_FLAGS_RELEASE ${CXX_BASE_FLAGS})
+    set(CXX_FLAGS_RELEASE ${CXX_FLAGS_RELEASE} "/O2")
+    string(REGEX REPLACE ";" " " CXX_FLAGS_RELEASE "${CXX_FLAGS_RELEASE}")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_RELEASE}")
+
+    # Debug mode
+    set(CXX_FLAGS_DEBUG ${CXX_BASE_FLAGS})
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_DEBUG}")
+
+    # Release with debug symbols
+    set(CXX_FLAGS_RELWITHDEBINFO "${CXX_BASE_FLAGS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${CXX_FLAGS_RELWITHDEBINFO}"
+    )
+
+    # Release with stripping of extra symbols
+    set(CXX_FLAGS_MINSIZEREL "${CXX_BASE_FLAGS}")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL
+        "${CMAKE_CXX_FLAGS_MINSIZEREL} ${CXX_FLAGS_MINSIZEREL}"
+    )
+
+
+    # Remove SL security warnings with Visual C++
+    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+
+else()
+
+    message(FATAL_ERROR "Unsupported compiler")
+    return()
+
 endif()
 
-# Set compiler specific build flags
-if(CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-msse)
-endif()
 
-if(MSVC)
-    if(CMAKE_BUILD_TOOL STREQUAL "nmake")
-        # Set variable to state that we are using nmake makefiles
-        set(NMAKE TRUE)
-    endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
-    # Enable intrinsics on MSVC in debug mode
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Oi")
-    if(CMAKE_CL_64)
-        # Visual Studio bails out on debug builds in 64bit mode unless this flag is set
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
-    endif()
-endif()
+################################################################################
+#                                 CUSTOM COMMANDS                              #
+################################################################################
 
-if(MINGW)
-    add_definitions(-D_WIN32_WINNT=0x0500)
-endif()
+if(OS_LINUX)
 
-if(CMAKE_COMPILER_IS_GNUCXX AND NOT MINGW)
-    # Test for GCC visibility
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag(-fvisibility=hidden SDK_GCC_VISIBILITY)
-    if(SDK_GCC_VISIBILITY)
-        # Determine gcc version
-        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE SDK_GCC_VERSION)
-        message(STATUS "Detected g++ ${SDK_GCC_VERSION}")
-        message(STATUS "Enabling GCC visibility flags")
-        set(SDK_GCC_VISIBILITY_FLAGS "-DSDK_GCC_VISIBILITY -fvisibility=hidden")
+    # Clean up all generated files
+    add_custom_target(
+        trash
+        COMMAND rm -r ${CMAKE_SOURCE_DIR}/bin/* ${CMAKE_SOURCE_DIR}/build/*
+        COMMENT "Deleting generated files"
+    )
 
-        # Check if we can safely add -fvisibility-inlines-hidden
-        string(TOLOWER "${CMAKE_BUILD_TYPE}" SDK_BUILD_TYPE)
-        if(SDK_BUILD_TYPE STREQUAL "debug" AND SDK_GCC_VERSION VERSION_LESS "4.2")
-            message(STATUS "Skipping -fvisibility-inlines-hidden due to possible bug in g++ < 4.2")
-        else()
-            set(SDK_GCC_VISIBILITY_FLAGS "${SDK_GCC_VISIBILITY_FLAGS} -fvisibility-inlines-hidden")
-        endif()
-    endif()
+    # Delete generated files and reset project settings
+    add_custom_target(
+        reset
+        COMMAND make trash\; cmake ..
+        COMMENT "Resetting project settings"
+    )
 
-    # Fix x64 issues on Linux
-    if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" AND NOT APPLE)
-        add_definitions(-fPIC)
-    endif()
 endif()
 
 
-#####################################################################
-# Add the SDK projects
-#####################################################################
-include_directories("${PROJECT_SOURCE_DIR}/src")
-add_subdirectory(src)
+################################################################################
+#                                   EXECUTABLE                                 #
+################################################################################
+
+set(ACTIVATIONS_DIR src/activations)
+set(CL_INTERFACE_DIR src/cl_intf)
+set(COST_DIR src/cost)
+set(HIDDENLAYER_DIR src/hiddenlayer)
+set(NNET_DIR src/nnet)
+
+# Include directories
+include_directories(${ACTIVATIONS_DIR} ${CL_INTERFACE_DIR} ${COST_DIR} ${HIDDENLAYER_DIR} ${NNET_DIR})
+
+# Find necessary packages
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
 
 
-# add_executable(opencl src/main.cpp)
-# target_link_libraries (opencl OpenCL)
+# Source files
+set(HEADERS
+    ${ACTIVATIONS_DIR}/Activation.h
+    ${ACTIVATIONS_DIR}/Sigmoid.h
+    ${ACTIVATIONS_DIR}/TanH.h
+    ${CL_INTERFACE_DIR}/ClInterface.hpp
+    ${CL_INTERFACE_DIR}/util.hpp
+    ${COST_DIR}/Cost.h
+    ${COST_DIR}/MSE.h
+    ${HIDDENLAYER_DIR}/HiddenLayer.h
+    ${NNET_DIR}/FeedForwardNN.h
+)
+
+# Source files
+set(SOURCES
+    ${ACTIVATIONS_DIR}/Activation.cpp
+    ${ACTIVATIONS_DIR}/Sigmoid.cpp
+    ${ACTIVATIONS_DIR}/TanH.cpp
+    ${CL_INTERFACE_DIR}/util.cpp
+    ${COST_DIR}/Cost.cpp
+    ${COST_DIR}/MSE.cpp
+    ${HIDDENLAYER_DIR}/HiddenLayer.cpp
+    ${NNET_DIR}/FeedForwardNN.cpp
+)
+
+# Static library
+set(LIBRARY_OUTPUT_PATH ${BINARY_DIR})
+add_library(${DNN_STATIC_LIB}
+    STATIC ${HEADERS} ${SOURCES}
+)
+
+# Executable for the application
+set(EXECUTABLE_OUTPUT_PATH ${BINARY_DIR})
+add_executable(${EXECUTEABLE} ${EXECUTEABLE_PATH})
+target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} OpenCL pthread)
+#Executeable for the tests
+
+add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
+target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} OpenCL pthread)
