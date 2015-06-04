@@ -8,40 +8,29 @@
 #ifndef HIDDENLAYER_HIDDENLAYER_H_
 #define HIDDENLAYER_HIDDENLAYER_H_
 
-#include "../activations/Activation.h"
-#include "../cost/Cost.h"
+#include "Activation.h"
+#include "Cost.h"
 #include <vector>
 
 typedef std::vector<double> doubvec;
+typedef std::vector<std::vector<double>> doubmat;
 
 class HiddenLayer {
 public:
-	HiddenLayer(Activation *activation,int in_dim,int out_dim);
+	HiddenLayer(Activation *activation,u_int32_t dim);
 	virtual ~HiddenLayer();
 
-	void propagate(doubvec &vec);
+	void propagate(doubvec &vec,doubvec weight, doubvec);
 
 //	Getters and setters
-	int getInDim() const {
-		return in_dim;
+	u_int32_t getDim() const {
+		return dim;
 	}
 
-	void setInDim(int inDim) {
-		in_dim = inDim;
-	}
-
-	int getOutDim() const {
-		return out_dim;
-	}
-
-	void setOutDim(int outDim) {
-		out_dim = outDim;
-	}
 
 private:
 	Activation *activation;
-	int in_dim;
-	int out_dim;
+	u_int32_t dim;
 
 };
 

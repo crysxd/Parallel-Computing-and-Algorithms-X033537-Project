@@ -38,14 +38,12 @@ set(BINARY_DIR ${CMAKE_SOURCE_DIR}/bin/)
 ################################################################################
 
 # Common flags
-set(CXX_DEFINES "-DDEBUG=0 ${CXX_DEFINES}")
-set(CXX_DEFINES "-DPROGRESSION_INFO=1 ${CXX_DEFINES}")
-set(CXX_DEFINES "-DNO_OUTPUT=1 ${CXX_DEFINES}")
-set(CXX_DEFINES "-DMATRIX=0 ${CXX_DEFINES}")
+
+add_definitions(-DDEBUG=1)
+add_definitions(-DNO_OUTPUT=0)
+add_definitions(-DCL_SOURCE_DIR="${CMAKE_SOURCE_DIR}/src/")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    message("GCC detected ...")
-
     # C++11 flags
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
 
@@ -73,7 +71,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     string(REGEX REPLACE ";" " " CXX_BASE_FLAGS "${CXX_BASE_FLAGS}")
 
     # Release mode
-    set(CXX_FLAGS_RELEASE "-Werror ${CXX_BASE_FLAGS}")
+    # set(CXX_FLAGS_RELEASE "-Werror ${CXX_BASE_FLAGS}")
     set(CMAKE_CXX_FLAGS_RELEASE "${CXX_DEFINES} ${CXX_FLAGS_RELEASE}")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_RELEASE}")
 
@@ -171,13 +169,14 @@ set(CL_INTERFACE_DIR src/cl_intf)
 set(COST_DIR src/cost)
 set(HIDDENLAYER_DIR src/hiddenlayer)
 set(NNET_DIR src/nnet)
-
-# Include directories
-include_directories(${ACTIVATIONS_DIR} ${CL_INTERFACE_DIR} ${COST_DIR} ${HIDDENLAYER_DIR} ${NNET_DIR})
-
+set(MATH_DIR src/math)
 # Find necessary packages
 find_package(GTest REQUIRED)
+
+# Include directories
 include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${ACTIVATIONS_DIR} ${CL_INTERFACE_DIR} ${COST_DIR} ${HIDDENLAYER_DIR} ${NNET_DIR} ${MATH_DIR})
+
 
 
 # Source files
@@ -186,11 +185,13 @@ set(HEADERS
     ${ACTIVATIONS_DIR}/Sigmoid.h
     ${ACTIVATIONS_DIR}/TanH.h
     ${CL_INTERFACE_DIR}/ClInterface.hpp
+    ${CL_INTERFACE_DIR}/OpenCL.hpp
     ${CL_INTERFACE_DIR}/util.hpp
     ${COST_DIR}/Cost.h
     ${COST_DIR}/MSE.h
     ${HIDDENLAYER_DIR}/HiddenLayer.h
     ${NNET_DIR}/FeedForwardNN.h
+    ${MATH_DIR}/CLMatrix.hpp
 )
 
 # Source files

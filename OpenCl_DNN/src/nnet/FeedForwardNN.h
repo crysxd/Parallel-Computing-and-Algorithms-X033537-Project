@@ -10,22 +10,30 @@
 
 #include <string>
 #include <vector>
-#include "../hiddenlayer/HiddenLayer.h"
+#include "HiddenLayer.h"
+#include <algorithm>
+#include <random>
+#include <iostream>
+#include <cassert>
 
 typedef std::vector<double> doubvec;
+typedef std::vector<std::vector<double>> doubmat;
 
 class FeedForwardNN {
 public:
-	FeedForwardNN();
+	FeedForwardNN(u_int32_t indim, u_int32_t outdim);
 	virtual ~FeedForwardNN();
 
-	void addHiddenLayer(const HiddenLayer &layer);
+	void addHiddenLayer(const HiddenLayer layer);
 
 
 	void feedforward(doubvec &in, doubvec *out);
 	void backpropagate(doubvec *out_diff, doubvec *in_diff);
 
 private:
+
+	void init();
+
 // Learning rate of the N
 //	It is used for the update, where it is defined as:
 
@@ -36,15 +44,28 @@ private:
 //	Initialize velocity as 0 and then store the last gradient in it
 	double _momentum;
 //	Hidden layer dimension
-	int _hid_dim;
+	u_int32_t _hid_dim;
 // Number of hidden layers
-	int _hid_num;
+	u_int32_t _hid_num;
 // Number of output dimension
-	int _out_dim;
+	u_int32_t _out_dim;
+//Number of input neurons
+	u_int32_t _in_dim;
 // Array indicating which activations for each layer we have
 	const std::vector<double (*)(double)> *activations;
 
-	const std::vector<HiddenLayer> hiddenlayers;
+	std::vector<HiddenLayer> hiddenlayers;
+
+	std::vector<doubmat> weights;
+
+	std::vector<float> biases;
+
+	unsigned int _seed;
+
+//	Range of the weights for random init
+	int min_weight = -1;
+//	Max weight when init randomly
+	int max_weight = 1;
 
 };
 

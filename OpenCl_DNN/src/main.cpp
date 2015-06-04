@@ -10,7 +10,7 @@
 using namespace std;
 
 #include <vector>
-#include "cl_intf/ClInterface.hpp"
+#include "ClInterface.hpp"
 
 int main() {
     std::vector<std::vector<float>> a;

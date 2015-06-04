@@ -12,9 +12,6 @@ HiddenLayer::~HiddenLayer() {
 	// TODO Auto-generated destructor stub
 }
 
-HiddenLayer::HiddenLayer(Activation* activation, int in_dim, int out_dim) {
-
+HiddenLayer::HiddenLayer(Activation* activation, u_int32_t dim):dim(dim),activation(activation) {
 }
 
-void HiddenLayer::propagate(doubvec& vec) {
-}

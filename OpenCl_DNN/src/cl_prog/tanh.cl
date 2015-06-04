@@ -7,7 +7,7 @@
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 #endif
 
-__kernel void sigmoid(__global const float* src, __global float* output)
+__kernel void tanh(__global const float* src, __global float* output)
 {
    /* get_global_id(0) returns the ID of the thread in execution.
    As many threads are launched at the same time, executing the same kernel,
@@ -17,5 +17,5 @@ __kernel void sigmoid(__global const float* src, __global float* output)
    /* Now each work-item asks itself: "is my ID inside the vector's range?"
    If the answer is YES, the work-item performs the corresponding computation*/
    // if (idx < num)
-   output[idx] = 1.f/ (1.f + exp(-src[idx]));
+   output[idx] = tanh(src[idx]);
 }

@@ -1,9 +1,9 @@
 #pragma OPENCL EXTENSION cl_intel_printf : enable
 __kernel void mat_mul (__global const float* A,
                      __global const float* B,
-                     __global float* res,
                      const int wA,
                      const int wB
+                     __global float* res,
                      )
 {
    /* get_global_id(0) returns the ID of the thread in execution.
