@@ -62,7 +62,7 @@ OpenCL::OpenCL(const char * programpath){
 OpenCL::OpenCL(OpenCL &other){
     this->platform = other.platform;
     this->device = other.device;
-    this-> context = other.context;
+    this->context = other.context;
     this->contents = new char[strlen(other.contents)];
     strcpy(this->contents,other.contents);
 }
@@ -71,60 +71,114 @@ OpenCL::~OpenCL() {
     delete [] contents;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+// Kernel adders for sclars, vectors and arrays. These do not add the kernel on any list //
+///////////////////////////////////////////////////////////////////////////////////////////
 
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel)
+void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue)
 {
-    std::cout << "Arg n°" << i << ": " << arg << std::endl;
 
-    // Your code to add your arg to the kernel
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T),arg);
+	kernel.setArg(i,buffer);
+
 }
 
 template <typename T, std::size_t N>
-void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel)
+void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue)
 {
-    std::cout << "Arg n°" << i << ": raw array of size " << N << std::endl;
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
+	kernel.setArg(i,buffer);
 
-    // Your code to add your arg to the kernel
 }
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel)
+void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue)
+{
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+	kernel.setArg(i,buffer);
+
+}
+
+//////////////////////////////////////////////////////////////////////
+// Pushes data on device and adds kernel into the outputbuffer list //
+//////////////////////////////////////////////////////////////////////
+
+template <typename T>
+void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
 {
 
-    std::cout << "Arg n°" << i << ": std::vector of size: " << arg.size() << std::endl;
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T),arg);
+	kernel.setArg(i,buffer);
+	outputbuffer.push_back(buffer);
 
-    // Your code to add your arg to the kernel
 }
+
+template <typename T, std::size_t N>
+void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
+{
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
+	kernel.setArg(i,buffer);
+	outputbuffer.push_back(buffer);
+
+}
+
+template <typename T>
+void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
+{
+	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
+	outputbuffer.push_back(buffer);
+	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+	kernel.setArg(i,buffer);
+
+}
+
+
+/////////////////////////////////////////////////
+// The iteration methods for the variaric args //
+/////////////////////////////////////////////////
 
 //Hook Class, dont do anything here, since it is called at the top P==size(Tp) arg
 template<std::size_t P , typename... Tp>
 inline typename std::enable_if<P == sizeof...(Tp), void>::type
-OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel)
+OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers)
 {
 }
 
     //Iteration for Class
 template<std::size_t P, typename... Tp>
 inline typename std::enable_if<P < sizeof...(Tp), void>::type
-OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel)
+OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers)
     {
         // Type
         typedef typename std::tuple_element<P, std::tuple<Tp...>>::type type;
 
         // Add the value of the current item from std::get<P> to the args in kernel
         // This function decides which type the kernel arg is
-        addkernelarg(P, std::get<P>(t), kernel);
+        addkernelarg(P, std::get<P>(t), kernel,queue,outputbuffers);
 
         // Recurse to get the remaining args
-        addkernelargs<P + 1, Tp...>(std::forward<std::tuple<Tp...>>(t), kernel);
+        addkernelargs<P + 1, Tp...>(std::forward<std::tuple<Tp...>>(t), kernel,queue,outputbuffers);
 
     }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Runs the kernel, given as kernelname. Outputarg is an integer indicating which one the outputargument is. //
+// globalsize is usuallty the size of the array and blocksize is the local size for one work group           //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 template<typename ... Tp>
-void OpenCL::runKernel(const char* kernelname,const int blocksize,Tp && ... args){
+void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, const u_int32_t globalsize,const u_int32_t blocksize,Tp && ... args){
+
+//	Outputargs needs to be smaller than the amount of parameters we have.
+	assert(outputargs.size() <= sizeof...(Tp));
 
     cl::Program::Sources sources;
     //Include the read out contents from the vector file into the sources to parse
@@ -144,10 +198,74 @@ void OpenCL::runKernel(const char* kernelname,const int blocksize,Tp && ... args
     cl::CommandQueue queue(this->context,this->device);
     cl::Kernel kernel_operator(program,kernelname);
 
+//    Stores the all the buffers of this execution in the vector
+    std::vector<cl::Buffer> outputbuffers;
+    addkernelargs(std::forward_as_tuple(args...),kernel_operator,queue,outputbuffers);
 
-    addkernelargs<0>(std::forward_as_tuple(args...),kernel_operator);
+//    Wait for the transfers to finish
+    queue.finish();
+
+	#if !DEBUG
+    std::cout << "Running Kernel : " << kernelname << std::endl;
+    #endif
+
+    cl::Event event;
+    ///////////////////////////////////
+    // Calculation is being executed //
+    ///////////////////////////////////
+    //The first range is the offset for the arrays, second is the global range, third the local one
+    cl_int ret = queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(globalsize),cl::NDRange(blocksize),NULL,&event);
+    if (ret != 0) {
+        cerr<< " Error when Executing the kernel. Code: " << ret << endl;
+    }
+    event.wait();
+//    Reading the results
+    for(auto outputarg : outputargs)
+	{
+    	readargs<0>(std::forward_as_tuple(args...), outputarg,queue,outputbuffers.at(outputarg));
+	}
+//    Finish
+    queue.finish();
 
 
+}
+
+//Finished the iteration
+template<std::size_t P,typename... Tp>
+typename std::enable_if< P == sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp ...>&& t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf){
+//	std::cout << E << std::endl;
+}
+
+//  Start of the iteration
+template<std::size_t P, typename... Tp>
+typename std::enable_if< P < sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp...> && t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf){
+	if(P == outputarg)
+	    {
+		readarg(std::get<P>(t), queue,outbuf);
+	    }
+	else{
+		readargs<P + 1, Tp...>(std::forward<std::tuple<Tp...>>(t), outputarg,queue,outbuf);
+
+	}
+}
+
+
+//std::vector is given
+template<typename T>
+void OpenCL::readarg( std::vector<T> & arg, cl::CommandQueue &quene,cl::Buffer &buf){
+	quene.enqueueReadBuffer(buf,CL_FALSE,0,arg.size()*sizeof(T),&(arg[0]));
+}
+
+//Array is given
+template <typename T, std::size_t N>
+void OpenCL::readarg(T (&arg)[N], cl::CommandQueue &quene,cl::Buffer &buf){
+	quene.enqueueReadBuffer(buf,CL_FALSE,0,N*sizeof(T),arg);
+}
+
+//Constant scalar
+template <typename T>
+void OpenCL::readarg(T &arg, cl::CommandQueue &quene,cl::Buffer &buf){
+	quene.enqueueReadBuffer(buf,CL_FALSE,0,sizeof(T),arg);
 }
 
 

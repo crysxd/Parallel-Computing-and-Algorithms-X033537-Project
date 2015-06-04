@@ -7,13 +7,29 @@
 
 
 template<typename T>
-inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):_n_cols(c),_n_rows(r),_cl_intf("matmul.cl"),mat(r*c) {
+inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
+	_n_cols(c),_n_rows(r),mat(r*c),_cl("matmul.cl"){
 
 }
 
 template<typename T>
 inline CL_Matrix<T>::~CL_Matrix() {
 }
+
+template<typename T>
+inline CL_Matrix<T>::CL_Matrix(CL_Matrix<T> &other){
+//	this->_cl = other._cl;
+	this->_n_cols = other._n_cols;
+	this->_n_rows = other._n_rows;
+	this->mat = other.mat;
+}
+
+template<typename T>
+CL_Matrix<T>& CL_Matrix<T>::operator=(const CL_Matrix<T> &other){
+	std::swap(*this,other);
+	return *this;
+}
+
 
 template<typename T>
 inline void CL_Matrix<T>::zeros() {
@@ -32,7 +48,6 @@ template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
 	CL_Matrix<T> trans(this->_n_cols,this->_n_rows);
     for(unsigned i = 0; i < this->_n_rows; ++i) {
-
         for(unsigned j = 0; j < this->_n_cols; ++j) {
             trans(j,i) = (*this)(i,j);
         }
@@ -42,17 +57,10 @@ inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
 
 template<typename T>
 CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const {
-	checkdot(*this,other);
+//	checkdot(*this,other);
 
-    std::vector<std::vector<T>> inp;
-    // inp.push_back(this->mat);
-    // inp.push_back(other.mat);
-    // inp.push_back(this->_n_cols);
-    // inp.push_back(other._n_rows);
-    std::vector<std::vector<T>> out;
-    std::vector<T> outarg(this->_n_cols * other._n_rows);
 //    this->_cl_intf.runKernel("matmul.cl",1,inp,out);
-	return (*this);
+//	return (*this);
 
 }
 

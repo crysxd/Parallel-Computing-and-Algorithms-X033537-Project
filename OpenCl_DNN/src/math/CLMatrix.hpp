@@ -10,21 +10,20 @@
 
 
 #include <stdexcept>
-#include "ClInterface.hpp"
 #include <vector>
 #include <algorithm>
 #include <random>
 #include <iostream>
 #include <cassert>
+#include "OpenCL.hpp"
 
-//Fwd declaration
-template <typename T>
-class CL_Matrix;
 
 template <typename T>
 class CL_Matrix {
 public:
 	CL_Matrix(u_int32_t r, u_int32_t c);
+
+	CL_Matrix(CL_Matrix<T> &other);
 	virtual ~CL_Matrix();
 
 	void zeros();
@@ -54,6 +53,10 @@ public:
 // Multiply by constant
 	CL_Matrix<T>& operator*=(T var);
 
+
+	CL_Matrix<T>& operator=(const CL_Matrix<T>  &mat);
+
+
 	template<typename V>
 	friend bool checkalign(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
@@ -71,7 +74,9 @@ private:
 //	Number of rows
 	u_int32_t _n_rows;
 
-	Cl_Interface<T,T> _cl_intf;
+//	Cl_Interface<T,T> _cl_intf;
+
+	OpenCL _cl;
 
 };
 
