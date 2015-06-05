@@ -212,11 +212,14 @@ add_library(${DNN_STATIC_LIB}
     STATIC ${HEADERS} ${SOURCES}
 )
 
+
+FIND_LIBRARY(OPENCL_LIBRARY cl /usr/lib64/beignet)
+
 # Executable for the application
 set(EXECUTABLE_OUTPUT_PATH ${BINARY_DIR})
 add_executable(${EXECUTEABLE} ${EXECUTEABLE_PATH})
-target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} OpenCL pthread)
+target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} ${OPENCL_LIBRARY} pthread)
 #Executeable for the tests
 
 add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
-target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} OpenCL pthread)
+target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL_LIBRARY} pthread)
