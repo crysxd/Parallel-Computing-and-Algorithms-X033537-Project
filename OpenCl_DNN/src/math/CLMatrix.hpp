@@ -22,8 +22,9 @@ template <typename T>
 class CL_Matrix {
 public:
 	CL_Matrix(u_int32_t r, u_int32_t c);
+	CL_Matrix(CL_Matrix && other) noexcept;
+	CL_Matrix(const CL_Matrix<T> &other);
 
-	CL_Matrix(CL_Matrix<T> &other);
 	virtual ~CL_Matrix();
 
 	void zeros();
@@ -54,7 +55,8 @@ public:
 	CL_Matrix<T>& operator*=(T var);
 
 
-	CL_Matrix<T>& operator=(const CL_Matrix<T>  &mat);
+	CL_Matrix<T>& operator=(const CL_Matrix  &mat);
+	CL_Matrix<T>& operator=(CL_Matrix  mat);
 
 
 	template<typename V>
@@ -63,7 +65,11 @@ public:
 	template<typename V>
 	friend bool checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
+	friend void swap<>(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs);
+
 private:
+
+
 
 //	The acutal matrix behind it, we use std vector because the OpenCL
 //	Interface is using it too, so we dont want to copy arrays around.
@@ -74,20 +80,14 @@ private:
 //	Number of rows
 	u_int32_t _n_rows;
 
-//	Cl_Interface<T,T> _cl_intf;
-
 	OpenCL _cl;
 
 };
 
-template<typename T>
-bool checkalign(CL_Matrix<T>const &lhs,CL_Matrix<T> const &rhs);
-
-template<typename T>
-bool checkdot(CL_Matrix<T>const &lhs,CL_Matrix<T> const &rhs);
 
 template <typename T>
 CL_Matrix<T> operator+(CL_Matrix<T> lhs, CL_Matrix<T> const & rhs);
+
 
 #include "CLMatrix.cpp"
 

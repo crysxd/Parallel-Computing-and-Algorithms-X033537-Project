@@ -21,7 +21,10 @@ class OpenCL {
 public:
 	OpenCL(const char *);
 
-	OpenCL(OpenCL &other);
+	OpenCL(const OpenCL &other);
+
+	OpenCL& operator=(OpenCL other);
+
 	virtual ~OpenCL();
 
 //	Runs a given kernel. Not that u need to allocate at least the space required for any array
@@ -30,6 +33,8 @@ public:
 	void runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs,const u_int32_t globalsize,const u_int32_t blocksize,Tp && ...args);
 
 	void loadProgram(const char *path);
+
+	friend void swap(OpenCL &,OpenCL &);
 private:
 	//handles for creating an opencl context
 	cl::Platform platform;

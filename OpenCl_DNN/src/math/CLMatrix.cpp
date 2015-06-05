@@ -9,7 +9,6 @@
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
 	_n_cols(c),_n_rows(r),mat(r*c),_cl("matmul.cl"){
-
 }
 
 template<typename T>
@@ -17,17 +16,34 @@ inline CL_Matrix<T>::~CL_Matrix() {
 }
 
 template<typename T>
-inline CL_Matrix<T>::CL_Matrix(CL_Matrix<T> &other){
-//	this->_cl = other._cl;
-	this->_n_cols = other._n_cols;
-	this->_n_rows = other._n_rows;
-	this->mat = other.mat;
+inline CL_Matrix<T>::CL_Matrix(const CL_Matrix<T> &other):_cl(other._cl),_n_cols(other._n_cols),_n_rows(other._n_rows),mat(other.mat){
+}
+
+template <typename T>
+CL_Matrix<T>::CL_Matrix(CL_Matrix && other) noexcept :_cl(other._cl),_n_cols(other._n_cols),
+	_n_rows(other._n_rows),mat(other.mat)
+{
+}
+
+template<typename T>
+void swap(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs){
+	using std::swap;
+	swap(lhs.mat,rhs.mat);
+	swap(lhs._n_rows,rhs._n_rows);
+	swap(lhs._n_cols,rhs._n_cols);
+	swap(lhs._cl,rhs._cl);
 }
 
 template<typename T>
 CL_Matrix<T>& CL_Matrix<T>::operator=(const CL_Matrix<T> &other){
-	std::swap(*this,other);
+	swap(*this,other);
 	return *this;
+}
+
+template<typename T>
+CL_Matrix<T>& CL_Matrix<T>::operator=(CL_Matrix<T> other){
+	swap(*this,other);
+	return (*this);
 }
 
 
@@ -41,7 +57,7 @@ inline void CL_Matrix<T>::random(T min,T max) {
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	std::uniform_real_distribution<T> dist(min,max);
-	std::generate(this->mat.begin(), this->mat.end(),[&dist,&rd]{ return dist(rd); });
+	std::generate(this->mat.begin(), this->mat.end(),[&]{ return dist(rd); });
 }
 
 template<typename T>
@@ -61,7 +77,7 @@ CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const {
 
 //    this->_cl_intf.runKernel("matmul.cl",1,inp,out);
 //	return (*this);
-
+	return (*this);
 }
 
 template<typename T>
@@ -130,6 +146,7 @@ inline CL_Matrix<T> operator +(CL_Matrix<T> lhs, const CL_Matrix<T>& rhs) {
 
 template<typename T>
 bool checkalign(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
+	std::cout << " CHECK " << lhs._n_cols <<" " << rhs._n_cols <<std::endl;
 	assert(lhs._n_cols == rhs._n_cols);
 	assert(lhs._n_rows == rhs._n_rows);
 }

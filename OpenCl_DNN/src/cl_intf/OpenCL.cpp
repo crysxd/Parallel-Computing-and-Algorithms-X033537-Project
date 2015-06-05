@@ -59,12 +59,23 @@ OpenCL::OpenCL(const char * programpath){
 
 }
 
-OpenCL::OpenCL(OpenCL &other){
-    this->platform = other.platform;
-    this->device = other.device;
-    this->context = other.context;
-    this->contents = new char[strlen(other.contents)];
-    strcpy(this->contents,other.contents);
+
+OpenCL::OpenCL(const OpenCL &other):platform(other.platform),context(other.context),device(other.device){
+	this->contents = new char[strlen(other.contents)];
+	strcpy(this->contents,other.contents);
+
+}
+
+OpenCL& OpenCL::operator=(OpenCL other){
+	swap(*this,other);
+	return *this;
+}
+
+void swap(OpenCL &lhs,OpenCL &rhs){
+	std::swap(lhs.contents,rhs.contents);
+	std::swap(lhs.context,rhs.context);
+	std::swap(lhs.platform,rhs.platform);
+	std::swap(lhs.device,rhs.device);
 }
 
 OpenCL::~OpenCL() {

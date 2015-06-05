@@ -52,8 +52,8 @@ TEST(Matrix,transpose){
 TEST(Matrix,nonaligned){
     int r=10;
     int c=5;
-    CL_Matrix<float> mat1(10,5);
-    CL_Matrix<float> mat2(8,5);
+    CL_Matrix<float> mat1(r,c);
+    CL_Matrix<float> mat2(c,r);
 
     EXPECT_DEATH(mat1 += mat2,".*Assertion.*failed.*");
 
@@ -102,22 +102,26 @@ TEST(Matrix,addsubmul){
     }
 }
 
-TEST(TEST,CL){
+TEST(OpenCL,Datatypes){
     OpenCL a("sigmoid.cl") ;
-    std::vector<float> b(100);
 
-    int i =4;
+    const int size = 100;
+    float b[size] = {0};
+    float c[size] = {0};
 
-    a.runKernel("sigmoid",12,b,i);
-    // float a[1000];
-    // for (int i = 0; i < 1000; ++i)
-    // {
-    //     a[i] = (float)i;
-    // }
-    // cl_intf.runKernel("sigmoid",15,23,b);
-    // Tuple a;
-    // a.iter(1.0,2);
-    // TestCl<float,float> a(1.0,1.0);
+    std::vector<std::size_t> outputargs = {1};
+
+    a.runKernel("sigmoid",outputargs,size,1,b,c);
+
+    std::vector<float> d(size);
+    std::vector<float> e(size);
+    a.runKernel("sigmoid",outputargs,size,1,d,e);
+
+    for (int i = 0; i < size; ++i)
+    {
+        EXPECT_EQ(c[i],0.5);
+        EXPECT_EQ(e[i],0.5);
+    }
 }
 
 TEST(Matrix,dot){
