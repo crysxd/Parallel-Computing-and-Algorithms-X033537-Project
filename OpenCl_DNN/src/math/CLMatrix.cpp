@@ -73,7 +73,7 @@ inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
 
 template<typename T>
 CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const {
-//	checkdot(*this,other);
+	checkdot(*this,other);
 
 //    this->_cl_intf.runKernel("matmul.cl",1,inp,out);
 //	return (*this);
@@ -146,7 +146,6 @@ inline CL_Matrix<T> operator +(CL_Matrix<T> lhs, const CL_Matrix<T>& rhs) {
 
 template<typename T>
 bool checkalign(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
-	std::cout << " CHECK " << lhs._n_cols <<" " << rhs._n_cols <<std::endl;
 	assert(lhs._n_cols == rhs._n_cols);
 	assert(lhs._n_rows == rhs._n_rows);
 }

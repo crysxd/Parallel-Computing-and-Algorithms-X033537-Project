@@ -31,7 +31,8 @@ set(EXECUTEABLE_TEST test)
 # Binary directory
 set(BINARY_DIR ${CMAKE_SOURCE_DIR}/bin/)
 
-
+#Add for OpenCL the cmake module
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 ################################################################################
 #                             COMPILATION FLAGS                                #
@@ -170,8 +171,13 @@ set(COST_DIR src/cost)
 set(HIDDENLAYER_DIR src/hiddenlayer)
 set(NNET_DIR src/nnet)
 set(MATH_DIR src/math)
+
 # Find necessary packages
 find_package(GTest REQUIRED)
+
+find_package(OpenCL REQUIRED)
+include_directories(${OpenCL_INCLUDE_DIRS})
+# set(LIBS ${LIBS} ${OpenCL_LIBRARIES})
 
 # Include directories
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -213,13 +219,13 @@ add_library(${DNN_STATIC_LIB}
 )
 
 
-FIND_LIBRARY(OPENCL_LIBRARY cl /usr/lib64/beignet)
+# FIND_LIBRARY(OPENCL_LIBRARY cl /usr/lib64/beignet)
 
 # Executable for the application
 set(EXECUTABLE_OUTPUT_PATH ${BINARY_DIR})
 add_executable(${EXECUTEABLE} ${EXECUTEABLE_PATH})
-target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} ${OPENCL_LIBRARY} pthread)
+target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} OpenCL pthread)
 #Executeable for the tests
 
 add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
-target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL_LIBRARY} pthread)
+target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} OpenCL pthread)
