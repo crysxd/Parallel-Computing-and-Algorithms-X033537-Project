@@ -48,14 +48,9 @@ OpenCL::OpenCL(const char * programpath){
     std::cout << "Using device: " << devicename << std::endl;
     #endif
 
-    std::string newpath(CL_SOURCE_DIR);
-    newpath += "/cl_prog";
-    newpath += "/" + std::string(programpath);
-#if !DEBUG
-    std::cout << "Reading Kernel from " <<newpath <<std::endl;
-#endif
+
     this->context = cl::Context(this->device);
-    this->loadProgram(newpath.c_str());
+    this->loadProgram(programpath);
 
 }
 
@@ -88,7 +83,7 @@ OpenCL::~OpenCL() {
 
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue)
+void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
@@ -98,7 +93,7 @@ void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::
 }
 
 template <typename T, std::size_t N>
-void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue)
+void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
 	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
@@ -107,7 +102,7 @@ void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel
 }
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue)
+void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
@@ -120,32 +115,37 @@ void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel 
 //////////////////////////////////////////////////////////////////////
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
+void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
 {
 
-	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
-	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T),arg);
-	kernel.setArg(i,buffer);
-	outputbuffer.push_back(buffer);
+	kernel.setArg(i,arg);
+//	Push back a dummy since we actually dont need to allocate anything for a scalar
+	outputbuffer.push_back(cl::Buffer());
 
 }
 
 template <typename T, std::size_t N>
-void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
+void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
-	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
+	cl_int err = queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
+	if (err){
+			std::cerr << "Error while pushing Array. Errorcode: " << err << std::endl;
+	}
 	kernel.setArg(i,buffer);
 	outputbuffer.push_back(buffer);
 
 }
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)
+void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer)const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 	outputbuffer.push_back(buffer);
-	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+	cl_int err = queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+	if (err){
+		std::cerr << "Error while pushing Vector. Errorcode: " << err << std::endl;
+	}
 	kernel.setArg(i,buffer);
 
 }
@@ -158,14 +158,13 @@ void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel 
 //Hook Class, dont do anything here, since it is called at the top P==size(Tp) arg
 template<std::size_t P , typename... Tp>
 inline typename std::enable_if<P == sizeof...(Tp), void>::type
-OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers)
-{
+OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers) const{
 }
 
     //Iteration for Class
 template<std::size_t P, typename... Tp>
 inline typename std::enable_if<P < sizeof...(Tp), void>::type
-OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers)
+OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffers) const
     {
         // Type
         typedef typename std::tuple_element<P, std::tuple<Tp...>>::type type;
@@ -186,7 +185,7 @@ OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue
 
 
 template<typename ... Tp>
-void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, const u_int32_t globalsize,const u_int32_t blocksize,Tp && ... args){
+void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
 
 //	Outputargs needs to be smaller than the amount of parameters we have.
 	assert(outputargs.size() <= sizeof...(Tp));
@@ -220,14 +219,42 @@ void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & o
     std::cout << "Running Kernel : " << kernelname << std::endl;
     #endif
 
+    cl::NDRange *globalrange;
+    switch(globalsize.size()){
+    case 1:
+    	globalrange=new cl::NDRange(globalsize[0]);
+    	break;
+    case 2:
+    	globalrange=new cl::NDRange(globalsize[0],globalsize[1]);
+    	break;
+    case 3:
+    	globalrange=new cl::NDRange(globalsize[0],globalsize[1],globalsize[2]);
+    	break;
+    }
+
+    cl::NDRange *localrange;
+    switch(blocksize.size()){
+    case 1:
+    	localrange=new cl::NDRange(blocksize[0]);
+    	break;
+    case 2:
+    	localrange=new cl::NDRange(blocksize[0],blocksize[1]);
+    	break;
+    case 3:
+    	localrange=new cl::NDRange(blocksize[0],blocksize[1],blocksize[2]);
+    	break;
+
+    }
+
     cl::Event event;
     ///////////////////////////////////
     // Calculation is being executed //
     ///////////////////////////////////
     //The first range is the offset for the arrays, second is the global range, third the local one
-    cl_int ret = queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(globalsize),cl::NDRange(blocksize),NULL,&event);
+    cl_int ret = queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,*globalrange,*localrange,NULL,&event);
     if (ret != 0) {
-        cerr<< " Error when Executing the kernel. Code: " << ret << endl;
+        cerr<< " Error when Executing the kernel \"" << kernelname << "\" Code: " << ret << endl;
+        cerr<< " Reason : " << geterrorstring(ret) << endl;
     }
     event.wait();
 //    Reading the results
@@ -243,13 +270,13 @@ void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & o
 
 //Finished the iteration
 template<std::size_t P,typename... Tp>
-typename std::enable_if< P == sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp ...>&& t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf){
+typename std::enable_if< P == sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp ...>&& t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf) const{
 //	std::cout << E << std::endl;
 }
 
 //  Start of the iteration
 template<std::size_t P, typename... Tp>
-typename std::enable_if< P < sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp...> && t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf){
+typename std::enable_if< P < sizeof...(Tp), void>::type OpenCL::readargs(std::tuple<Tp...> && t,std::size_t outputarg,cl::CommandQueue &queue,cl::Buffer &outbuf) const{
 	if(P == outputarg)
 	    {
 		readarg(std::get<P>(t), queue,outbuf);
@@ -263,26 +290,34 @@ typename std::enable_if< P < sizeof...(Tp), void>::type OpenCL::readargs(std::tu
 
 //std::vector is given
 template<typename T>
-void OpenCL::readarg( std::vector<T> & arg, cl::CommandQueue &quene,cl::Buffer &buf){
+void OpenCL::readarg(std::vector<T> & arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
 	quene.enqueueReadBuffer(buf,CL_FALSE,0,arg.size()*sizeof(T),&(arg[0]));
 }
 
 //Array is given
 template <typename T, std::size_t N>
-void OpenCL::readarg(T (&arg)[N], cl::CommandQueue &quene,cl::Buffer &buf){
+void OpenCL::readarg(T (&arg)[N], cl::CommandQueue &quene,cl::Buffer &buf) const{
 	quene.enqueueReadBuffer(buf,CL_FALSE,0,N*sizeof(T),arg);
 }
 
 //Constant scalar
 template <typename T>
-void OpenCL::readarg(T &arg, cl::CommandQueue &quene,cl::Buffer &buf){
-	quene.enqueueReadBuffer(buf,CL_FALSE,0,sizeof(T),arg);
+void OpenCL::readarg(T &arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
+//	Opencl scalars are passed by value, therefore they cant be retrieved by the kernel function
+//	quene.enqueueReadBuffer(buf,CL_FALSE,0,sizeof(T),&arg);
 }
 
 
 void OpenCL::loadProgram(const char *path){
-    this->contents = util::file_contents(path);
+	std::string newpath(CL_SOURCE_DIR);
+	    newpath += "/cl_prog";
+	    newpath += "/" + std::string(path);
+	#if !DEBUG
+	    std::cout << "Reading Kernel from " <<newpath <<std::endl;
+	#endif
+    this->contents = util::file_contents(newpath.c_str());
 }
+
 
 
 

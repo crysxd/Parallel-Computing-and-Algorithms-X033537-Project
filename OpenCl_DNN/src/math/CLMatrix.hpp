@@ -80,7 +80,7 @@ private:
 //	Number of rows
 	u_int32_t _n_rows;
 
-	OpenCL _cl;
+	const OpenCL _cl;
 
 };
 

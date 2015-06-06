@@ -50,14 +50,18 @@ TEST(Matrix,transpose){
 }
 
 TEST(Matrix,nonaligned){
-    int r=10;
-    int c=5;
-    CL_Matrix<float> mat1(r,c);
-    CL_Matrix<float> mat2(c,r);
+    int r1=5;
+    int c1=1;
+
+    int r2 = 2;
+    int c2 = 3;
+    CL_Matrix<float> mat1(r1,c1);
+    CL_Matrix<float> mat2(r2,c2);
 
     EXPECT_DEATH(mat1 += mat2,".*Assertion.*failed.*");
 
     EXPECT_DEATH(mat1 -= mat2,".*Assertion.*failed.*");
+
 
     EXPECT_DEATH(mat1.dot(mat2),".*Assertion.*failed.*");
 
@@ -106,41 +110,44 @@ TEST(OpenCL,Datatypes){
     OpenCL a("sigmoid.cl") ;
 
     const int size = 100;
+    std::vector<std::size_t> globsize = {size};
+    std::vector<std::size_t> localsize = {1};
     float b[size] = {0};
     float c[size] = {0};
 
     std::vector<std::size_t> outputargs = {1};
 
-    a.runKernel("sigmoid",outputargs,size,1,b,c);
+    a.runKernel("sigmoid",outputargs,globsize,localsize,b,c);
 
     std::vector<float> d(size);
     std::vector<float> e(size);
-    a.runKernel("sigmoid",outputargs,size,1,d,e);
+    a.runKernel("sigmoid",outputargs,globsize,localsize,d,e);
 
     for (int i = 0; i < size; ++i)
     {
         EXPECT_EQ(c[i],0.5);
         EXPECT_EQ(e[i],0.5);
     }
+
 }
 
 TEST(Matrix,dot){
 
-    int r=10;
-    int c=30;
+    int r=910;
+    int c=910;
 
     CL_Matrix<float> mat(r,c);
     CL_Matrix<float> other(c,r);
     mat.fill(5.);
 
     other.fill(2.);
-    mat.dot(other);
+    CL_Matrix<float> out = mat.dot(other);
 
-    // for(unsigned i = 0; i < r; ++i) {
-    //     for(unsigned j = 0; j < c; ++j) {
-    //         EXPECT_EQ()
-    //     }
-    // }
+    for(unsigned i = 0; i < r; ++i) {
+        for(unsigned j = 0; j < r; ++j) {
+            EXPECT_EQ(out(i,j),c*10);
+        }
+    }
 
 }
 
