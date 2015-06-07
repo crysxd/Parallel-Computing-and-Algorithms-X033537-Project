@@ -77,6 +77,11 @@ OpenCL::~OpenCL() {
     delete [] contents;
 }
 
+
+std::vector<std::size_t> OpenCL::getMaxWorkItemSize() const{
+	return this->device.template getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Kernel adders for sclars, vectors and arrays. These do not add the kernel on any list //
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -186,6 +191,7 @@ OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue
 
 template<typename ... Tp>
 void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
+//	Note we currently disabled to pass local worksize
 
 //	Outputargs needs to be smaller than the amount of parameters we have.
 	assert(outputargs.size() <= sizeof...(Tp));
@@ -251,7 +257,7 @@ void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & o
     // Calculation is being executed //
     ///////////////////////////////////
     //The first range is the offset for the arrays, second is the global range, third the local one
-    cl_int ret = queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,*globalrange,*localrange,NULL,&event);
+    cl_int ret = queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,*globalrange,cl::NullRange,NULL,&event);
     if (ret != 0) {
         cerr<< " Error when Executing the kernel \"" << kernelname << "\" Code: " << ret << endl;
         cerr<< " Reason : " << geterrorstring(ret) << endl;

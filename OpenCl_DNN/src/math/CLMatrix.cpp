@@ -71,16 +71,27 @@ inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
     return trans;
 }
 
+int gcd(int a, int b) {
+    return b == 0 ? a : gcd(b, a % b);
+}
+
 template<typename T>
 CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
 	checkdot(*this,other);
 
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
-
 //	Last argument is the output argument
+
+//	std::vector<std::size_t> workitemsize= this->_cl.getMaxWorkItemSize();
+//    for (std::vector<std::size_t>::iterator i = workitemsize.begin(); i != workitemsize.end(); ++i)
+//    {
+//        std::cout << *i << std::endl;
+//    }
+	std::size_t localrows = ceil(float(this->_n_rows)/100);
+	std::size_t localcols = ceil(float(this->_n_cols)/100);
 	std::vector<std::size_t> outputargs = {4};
-	std::vector<std::size_t> localWorkSize = {1,1};
+	std::vector<std::size_t> localWorkSize = {localrows,localcols};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
 
     this->_cl.runKernel("mat_mul",outputargs,globalWorkSize,localWorkSize,this->mat,other.mat,this->_n_cols,other._n_cols,res.mat);

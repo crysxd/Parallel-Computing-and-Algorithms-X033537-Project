@@ -21,5 +21,8 @@ __kernel void mat_mul( __global const float* A,
        */
       res += A[ty*wA + i] * B[i*wB+tx];
    }
+   // if(res < 9000){
+   // printf(" Result of tx %i ty %i is %.1f",tx,ty,res);
+   // }
    C[ty*(wB) + tx] = res;
 }

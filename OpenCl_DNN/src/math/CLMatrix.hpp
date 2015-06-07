@@ -33,6 +33,7 @@ public:
 
 	void fill(T fill);
 
+
 	CL_Matrix<T> transpose() const;
 
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
@@ -66,6 +67,14 @@ public:
 	friend bool checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
 	friend void swap<>(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs);
+
+	u_int32_t getCols() const {
+		return _n_cols;
+	}
+
+	u_int32_t getRows() const {
+		return _n_rows;
+	}
 
 private:
 

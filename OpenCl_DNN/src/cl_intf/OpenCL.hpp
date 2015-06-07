@@ -34,6 +34,8 @@ public:
 
 	void loadProgram(const char *path);
 
+	std::vector<std::size_t> getMaxWorkItemSize() const;
+
 	friend void swap(OpenCL &,OpenCL &);
 private:
 	//handles for creating an opencl context

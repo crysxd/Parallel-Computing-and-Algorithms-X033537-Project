@@ -133,8 +133,8 @@ TEST(OpenCL,Datatypes){
 
 TEST(Matrix,dot){
 
-    int r=910;
-    int c=910;
+    int r=1024;
+    int c=1024;
 
     CL_Matrix<float> mat(r,c);
     CL_Matrix<float> other(c,r);
@@ -143,11 +143,16 @@ TEST(Matrix,dot){
     other.fill(2.);
     CL_Matrix<float> out = mat.dot(other);
 
+    long count = 0;
     for(unsigned i = 0; i < r; ++i) {
         for(unsigned j = 0; j < r; ++j) {
-            EXPECT_EQ(out(i,j),c*10);
+            if (out(i,j)!= c*10){
+                count ++ ;
+            }
         }
     }
+
+    EXPECT_EQ(count,0);
 
 }
 
