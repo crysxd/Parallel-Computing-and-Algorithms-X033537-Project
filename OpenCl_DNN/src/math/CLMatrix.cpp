@@ -71,7 +71,7 @@ inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
     return trans;
 }
 
-int gcd(int a, int b) {
+inline int gcd(int a, int b) {
     return b == 0 ? a : gcd(b, a % b);
 }
 
@@ -156,6 +156,15 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
         this->mat.at(i) *= var;
     }
     return (*this);
+}
+
+
+template<typename T>
+inline void CL_Matrix<T>::sigmoid(CL_Matrix<T>& src) {
+}
+
+template<typename T>
+inline void CL_Matrix<T>::tanh(CL_Matrix<T>& src) {
 }
 
 template<typename T>

@@ -17,7 +17,6 @@
 #include <cassert>
 #include "OpenCL.hpp"
 
-
 template <typename T>
 class CL_Matrix {
 public:
@@ -59,7 +58,6 @@ public:
 	CL_Matrix<T>& operator=(const CL_Matrix  &mat);
 	CL_Matrix<T>& operator=(CL_Matrix  mat);
 
-
 	template<typename V>
 	friend bool checkalign(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
@@ -67,6 +65,11 @@ public:
 	friend bool checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
 	friend void swap<>(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs);
+
+//	Computes sigmoid function and stores it in this object
+	void sigmoid(CL_Matrix<T> &src);
+
+	void tanh(CL_Matrix<T> &src);
 
 	u_int32_t getCols() const {
 		return _n_cols;
@@ -96,6 +99,7 @@ private:
 
 template <typename T>
 CL_Matrix<T> operator+(CL_Matrix<T> lhs, CL_Matrix<T> const & rhs);
+
 
 
 #include "CLMatrix.cpp"

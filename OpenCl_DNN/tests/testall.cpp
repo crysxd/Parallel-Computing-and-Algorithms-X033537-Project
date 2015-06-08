@@ -131,9 +131,57 @@ TEST(OpenCL,Datatypes){
 
 }
 
-TEST(Matrix,dot){
+TEST(Matrix,dotsq){
 
-    int r=1024;
+    int r=512;
+    int c=512;
+
+    CL_Matrix<float> mat(r,c);
+    CL_Matrix<float> other(c,r);
+    mat.fill(5.);
+
+    other.fill(2.);
+    CL_Matrix<float> out = mat.dot(other);
+
+    long count = 0;
+    for(unsigned i = 0; i < r; ++i) {
+        for(unsigned j = 0; j < r; ++j) {
+            if (out(i,j)!= c*10){
+                count ++ ;
+            }
+        }
+    }
+    EXPECT_EQ(count,0);
+
+}
+
+TEST(Matrix,dotuneven){
+
+    int r=256;
+    int c=512;
+
+    CL_Matrix<float> mat(r,c);
+    CL_Matrix<float> other(c,r);
+    mat.fill(5.);
+
+    other.fill(2.);
+    CL_Matrix<float> out = mat.dot(other);
+
+    long count = 0;
+    for(unsigned i = 0; i < r; ++i) {
+        for(unsigned j = 0; j < r; ++j) {
+            if (out(i,j)!= c*10){
+                count ++ ;
+            }
+        }
+    }
+    EXPECT_EQ(count,0);
+
+}
+
+TEST(Matrix,dotvector){
+
+    int r=1;
     int c=1024;
 
     CL_Matrix<float> mat(r,c);
@@ -151,10 +199,11 @@ TEST(Matrix,dot){
             }
         }
     }
-
     EXPECT_EQ(count,0);
 
 }
+
+
 
 
 TEST(Activation,Sigmoid){

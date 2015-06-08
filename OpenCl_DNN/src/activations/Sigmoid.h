@@ -11,6 +11,8 @@
 #include "Activation.h"
 #include "ClInterface.hpp"
 #include "util.hpp"
+//#include "OpenCL.hpp"
+#include "CLMatrix.hpp"
 
 class Sigmoid: public Activation {
 public:
@@ -18,6 +20,9 @@ public:
 	virtual ~Sigmoid();
 
 	Sigmoid(const Sigmoid&);
+
+//	template <typename T>
+//	void activateMat(CL_Matrix<T> &src,CL_Matrix<T> *out);
     // activates the sigmoid function. Used the GPU. Puts the vector f onto the GPU
     // and returns the result from the device copied to the host
 	virtual std::vector<float> activate(std::vector<float>& f);
@@ -33,7 +38,9 @@ public:
 
 private:
 	Cl_Interface<float,float> _cl_intf;
+//	OpenCL _newintf;
 	const char *_kernelname = "sigmoid";
 };
+
 
 #endif /* ACTIVATIONS_SIGMOID_H_ */

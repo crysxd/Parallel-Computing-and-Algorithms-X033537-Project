@@ -8,7 +8,7 @@
 #include "FeedForwardNN.h"
 
 
-void FeedForwardNN::feedforward(doubvec& in, doubvec* out) {
+void FeedForwardNN::feedforward(Matrix& in, Matrix* out) {
 //	Init weights and biases
 	this->init();
 
@@ -23,7 +23,7 @@ void FeedForwardNN::addHiddenLayer(const HiddenLayer layer) {
 	this->hiddenlayers.push_back(layer);
 }
 
-void FeedForwardNN::backpropagate(doubvec* out_diff, doubvec* in_diff) {
+void FeedForwardNN::backpropagate(Matrix* out_diff, Matrix* in_diff) {
 }
 
 

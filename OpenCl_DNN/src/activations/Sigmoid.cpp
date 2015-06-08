@@ -7,7 +7,7 @@
 
 #include "Sigmoid.h"
 
-Sigmoid::Sigmoid():_cl_intf("sigmoid.cl") {
+Sigmoid::Sigmoid():_cl_intf("sigmoid.cl"){
 
 
 }
@@ -15,6 +15,12 @@ Sigmoid::Sigmoid():_cl_intf("sigmoid.cl") {
 Sigmoid::~Sigmoid() {
 	// TODO Auto-generated destructor stub
 }
+
+//template<typename T>
+//inline void Sigmoid::activateMat(CL_Matrix<T>& src, CL_Matrix<T>* out) {
+//	out->sigmoid(src);
+//}
+
 
 std::vector<float> Sigmoid::activate(std::vector<float>& f) {
 	std::vector<std::vector<float>> input;

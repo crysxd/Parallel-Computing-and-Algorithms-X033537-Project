@@ -17,7 +17,7 @@
     #define DEBUG 1
 #endif
 
-OpenCL::OpenCL(const char * programpath){
+inline OpenCL::OpenCL(const char * programpath){
         // Get all platforms from the API
     std::vector<cl::Platform> all_platforms;
     cl::Platform::get(&all_platforms);
@@ -32,13 +32,14 @@ OpenCL::OpenCL(const char * programpath){
     std::cout << "Using Platform : "
             << defaultplatform.getInfo<CL_PLATFORM_NAME>() << std::endl;
     #endif
-    std::vector<cl::Device> all_devices;
-    defaultplatform.getDevices(CL_DEVICE_TYPE_GPU, &all_devices);
-    if (all_devices.size() == 0) {
+    std::vector<cl::Device> all_gpu_devices;
+    defaultplatform.getDevices(CL_DEVICE_TYPE_GPU, &all_gpu_devices);
+
+    if (all_gpu_devices.size() == 0) {
         std::cout << " No devices found. Check OpenCL installation!\n";
         exit(1);
     }
-    this->device = all_devices.front();
+    this->device = all_gpu_devices.front();
     // Problem is since the class is a template class, the call to Cl_intf<I,O>::device
     // is ambigious. It could mean syntatically that I want to do:
     // (this->device < CL_DEVICE_NAME) > ()
@@ -55,30 +56,30 @@ OpenCL::OpenCL(const char * programpath){
 }
 
 
-OpenCL::OpenCL(const OpenCL &other):platform(other.platform),context(other.context),device(other.device){
+inline OpenCL::OpenCL(const OpenCL &other):platform(other.platform),context(other.context),device(other.device){
 	this->contents = new char[strlen(other.contents)];
 	strcpy(this->contents,other.contents);
 
 }
 
-OpenCL& OpenCL::operator=(OpenCL other){
+inline OpenCL& OpenCL::operator=(OpenCL other){
 	swap(*this,other);
 	return *this;
 }
 
-void swap(OpenCL &lhs,OpenCL &rhs){
+inline void swap(OpenCL &lhs,OpenCL &rhs){
 	std::swap(lhs.contents,rhs.contents);
 	std::swap(lhs.context,rhs.context);
 	std::swap(lhs.platform,rhs.platform);
 	std::swap(lhs.device,rhs.device);
 }
 
-OpenCL::~OpenCL() {
+inline OpenCL::~OpenCL() {
     delete [] contents;
 }
 
 
-std::vector<std::size_t> OpenCL::getMaxWorkItemSize() const{
+inline std::vector<std::size_t> OpenCL::getMaxWorkItemSize() const{
 	return this->device.template getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>();
 }
 
@@ -88,7 +89,7 @@ std::vector<std::size_t> OpenCL::getMaxWorkItemSize() const{
 
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
+inline void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
@@ -98,7 +99,7 @@ void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::
 }
 
 template <typename T, std::size_t N>
-void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue) const
+inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
 	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
@@ -107,7 +108,7 @@ void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel
 }
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
+inline void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &queue) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 	queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
@@ -120,7 +121,7 @@ void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel 
 //////////////////////////////////////////////////////////////////////
 
 template <typename T>
-void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
+inline void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
 {
 
 	kernel.setArg(i,arg);
@@ -130,7 +131,7 @@ void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::
 }
 
 template <typename T, std::size_t N>
-void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
+inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &queue,std::vector<cl::Buffer> &outputbuffer) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
 	cl_int err = queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
@@ -190,7 +191,7 @@ OpenCL::addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue
 
 
 template<typename ... Tp>
-void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
+inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
 //	Note we currently disabled to pass local worksize
 
 //	Outputargs needs to be smaller than the amount of parameters we have.
@@ -296,25 +297,25 @@ typename std::enable_if< P < sizeof...(Tp), void>::type OpenCL::readargs(std::tu
 
 //std::vector is given
 template<typename T>
-void OpenCL::readarg(std::vector<T> & arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
+inline void OpenCL::readarg(std::vector<T> & arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
 	quene.enqueueReadBuffer(buf,CL_FALSE,0,arg.size()*sizeof(T),&(arg[0]));
 }
 
 //Array is given
 template <typename T, std::size_t N>
-void OpenCL::readarg(T (&arg)[N], cl::CommandQueue &quene,cl::Buffer &buf) const{
+inline void OpenCL::readarg(T (&arg)[N], cl::CommandQueue &quene,cl::Buffer &buf) const{
 	quene.enqueueReadBuffer(buf,CL_FALSE,0,N*sizeof(T),arg);
 }
 
 //Constant scalar
 template <typename T>
-void OpenCL::readarg(T &arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
+inline void OpenCL::readarg(T &arg, cl::CommandQueue &quene,cl::Buffer &buf) const{
 //	Opencl scalars are passed by value, therefore they cant be retrieved by the kernel function
 //	quene.enqueueReadBuffer(buf,CL_FALSE,0,sizeof(T),&arg);
 }
 
 
-void OpenCL::loadProgram(const char *path){
+inline void OpenCL::loadProgram(const char *path){
 	std::string newpath(CL_SOURCE_DIR);
 	    newpath += "/cl_prog";
 	    newpath += "/" + std::string(path);

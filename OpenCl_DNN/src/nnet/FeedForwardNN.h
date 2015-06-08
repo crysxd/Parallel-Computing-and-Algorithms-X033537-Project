@@ -13,11 +13,14 @@
 #include "HiddenLayer.h"
 #include <algorithm>
 #include <random>
+#include "CLMatrix.hpp"
 #include <iostream>
 #include <cassert>
 
 typedef std::vector<double> doubvec;
 typedef std::vector<std::vector<double>> doubmat;
+
+typedef CL_Matrix<float> Matrix;
 
 class FeedForwardNN {
 public:
@@ -26,9 +29,8 @@ public:
 
 	void addHiddenLayer(const HiddenLayer layer);
 
-
-	void feedforward(doubvec &in, doubvec *out);
-	void backpropagate(doubvec *out_diff, doubvec *in_diff);
+	void feedforward(Matrix &in, Matrix *out);
+	void backpropagate(Matrix *out_diff, Matrix *in_diff);
 
 private:
 
