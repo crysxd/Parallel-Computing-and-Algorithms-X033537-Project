@@ -11,16 +11,16 @@
 #include "Activation.h"
 #include "Cost.h"
 #include <vector>
+#include "CLMatrix.hpp"
 
-typedef std::vector<double> doubvec;
-typedef std::vector<std::vector<double>> doubmat;
+typedef CL_Matrix<float> Matrix;
 
 class HiddenLayer {
 public:
-	HiddenLayer(Activation *activation,u_int32_t dim);
+	HiddenLayer(Activation &activation,u_int32_t dim);
 	virtual ~HiddenLayer();
 
-	void propagate(doubvec &vec,doubvec weight, doubvec);
+	void propagate(Matrix *input,Matrix &weight, Matrix &bias);
 
 //	Getters and setters
 	u_int32_t getDim() const {

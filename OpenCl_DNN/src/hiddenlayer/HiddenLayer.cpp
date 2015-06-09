@@ -12,6 +12,10 @@ HiddenLayer::~HiddenLayer() {
 	// TODO Auto-generated destructor stub
 }
 
-HiddenLayer::HiddenLayer(Activation* activation, u_int32_t dim):dim(dim),activation(activation) {
+HiddenLayer::HiddenLayer(Activation& activation, u_int32_t dim):dim(dim),activation(&activation) {
 }
 
+
+void HiddenLayer::propagate(Matrix *input,Matrix &weight, Matrix &bias){
+
+}

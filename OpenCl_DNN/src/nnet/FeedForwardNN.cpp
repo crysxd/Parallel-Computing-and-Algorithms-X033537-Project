@@ -10,11 +10,15 @@
 
 void FeedForwardNN::feedforward(Matrix& in, Matrix* out) {
 //	Init weights and biases
-	this->init();
 
+	this->init(in);
+	Matrix tmpin = in;
 
 	for(int i = 0; i < this->hiddenlayers.size();i++ ){
-//		this->hiddenlayers[i].propagate(in);
+		this->hiddenlayers[i].propagate(
+				&tmpin,
+				this->_weight_biases[i].first,
+				this->_weight_biases[i].second);
 	}
 
 }
@@ -27,23 +31,25 @@ void FeedForwardNN::backpropagate(Matrix* out_diff, Matrix* in_diff) {
 }
 
 
-FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim) {
+FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, double lrate):_in_dim(indim),_out_dim(outdim),_l_rate(lrate) {
 }
 
-void FeedForwardNN::init() {
+void FeedForwardNN::init(Matrix &inputdata) {
 
 	assert(this->hiddenlayers.size() > 0);
-	int i = 1;
 
-	double bias = util::randfloat(this->min_weight,this->max_weight);
-//	util::randinit(this->min_weight,this->max_weight,v);
-	this->biases.push_back(bias);
-//	this->weights.push_back(v);
-//	for(; i < this->hiddenlayers.size();i++ ){
-//		std::vector<float> v(this->hiddenlayers[i-1].getDim()*this->hiddenlayers[i].getDim());
-//		this->weights.push_back(v);
-//
-//	}
-//	std::vector<float> v(this->hiddenlayers[i].getDim() * this->_out_dim);
-//	this->weights.push_back(v);
+//	First layer is initialized independently
+//	Matrix firstlayer(this->hiddenlayers[0].getDim(),this->_in_dim);
+//	Matrix firstbias(this->hiddenlayers[0].getDim(),1);
+//	Using rvalue references
+	this->_weight_biases.push_back(std::make_pair(Matrix(this->hiddenlayers[0].getDim(),this->_in_dim),
+			Matrix(this->hiddenlayers[0].getDim(),1)));
+	for(auto i=0u; i < this->hiddenlayers.size();i++){
+		this->_weight_biases.push_back(std::make_pair(
+			Matrix(this->hiddenlayers[i+1].getDim(),this->hiddenlayers[i].getDim())
+			,
+			Matrix(this->hiddenlayers[i+1].getDim(),1)
+		));
+	}
+
 }

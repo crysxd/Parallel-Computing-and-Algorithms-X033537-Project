@@ -204,7 +204,6 @@ TEST(Matrix,dotvector){
 
 }
 
-
 TEST(Activation,Sigmoid){
     int length = 10;
     CL_Matrix<float> mat(length,1);
@@ -217,72 +216,23 @@ TEST(Activation,Sigmoid){
     }
 }
 TEST(Activation,Tanh){
-    int length = 10;
+    int length = 100;
     CL_Matrix<float> mat(length,1);
-    mat.fill(0.);
-	Sigmoid s;
-	CL_Matrix<float> out = s.activate(mat);
+    mat.fill(1.);
+	TanH tan;
+	CL_Matrix<float> out = tan.activate(mat);
     for (int i = 0; i < length; ++i)
     {
-        EXPECT_EQ(out(i,0),0.5);
+        EXPECT_NEAR(out(i,0),0.76,0.02);
     }
 }
 
-//TEST(Activation,Sigmoid){
-//    int length = 10;
-//    std::vector<float> v;
-//    for (int i = 0; i < length; ++i)
-//    {
-//        v.push_back(0);
-//    }
-//	Sigmoid s;
-//    std::vector<float> ret= s.activate(v);
-//    for (int i = 0; i < ret.size(); ++i)
-//    {
-//        EXPECT_EQ(ret[i],0.5);
-//    }
-//}
-//
-//TEST(Activation,SigmoidDouble){
-//    int testlength =10;
-//    std::vector<float> v;
-//    for (int i = 0; i < testlength; ++i)
-//    {
-//        v.push_back(0);
-//    }
-//    Sigmoid s;
-//    std::vector<float> ret= s.activate(v);
-//    EXPECT_EQ(ret.size(), testlength);
-//    for (int i = 0; i < ret.size(); ++i)
-//    {
-//        EXPECT_EQ(ret[i],0.5);
-//    }
-//    ret = s.activate(ret);
-//    EXPECT_EQ(ret.size() , testlength);
-//    for(unsigned i = 0; i < ret.size(); ++i) {
-//        EXPECT_NEAR(ret[i],0.62,0.01);
-//    }
-//}
-//
-//TEST(Activation,SigmoidGPUChain){
-//    int length = 100000;
-//    std::vector<float> v;
-//    for (int i = 0; i < length; ++i)
-//    {
-//        v.push_back(0);
-//    }
-//    Sigmoid s;
-//    std::vector<util::GPU_Buffer> gpu_res= s.activateKeep(v);
-//    std::vector<float> res = s.activate(gpu_res);
-//
-//    // Activate one more
-//    EXPECT_EQ(res.size() , length);
-//    for (int i = 0; i < res.size(); ++i)
-//    {
-//        EXPECT_NEAR(res[i],0.62,0.01);
-//    }
-//
-//}
+TEST(Nnet,feedforward){
+	CL_Matrix<float> input(20,1);
+	Sigmoid s;
+	HiddenLayer h(s,10);
+}
+
 
 
 
