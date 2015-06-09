@@ -107,7 +107,8 @@ TEST(Matrix,addsubmul){
 }
 
 TEST(OpenCL,Datatypes){
-    OpenCL a("sigmoid.cl") ;
+//	Testing all the different datatypes
+    OpenCL a("kernels.cl") ;
 
     const int size = 100;
     std::vector<std::size_t> globsize = {size};
@@ -204,79 +205,84 @@ TEST(Matrix,dotvector){
 }
 
 
-
-
 TEST(Activation,Sigmoid){
     int length = 10;
-    std::vector<float> v;
-    for (int i = 0; i < length; ++i)
-    {
-        v.push_back(0);
-    }
+    CL_Matrix<float> mat(length,1);
+    mat.fill(0.);
 	Sigmoid s;
-    std::vector<float> ret= s.activate(v);
-    for (int i = 0; i < ret.size(); ++i)
-    {
-        EXPECT_EQ(ret[i],0.5);
-    }
-}
-
-TEST(Activation,SigmoidDouble){
-    int testlength =10;
-    std::vector<float> v;
-    for (int i = 0; i < testlength; ++i)
-    {
-        v.push_back(0);
-    }
-    Sigmoid s;
-    std::vector<float> ret= s.activate(v);
-    EXPECT_EQ(ret.size(), testlength);
-    for (int i = 0; i < ret.size(); ++i)
-    {
-        EXPECT_EQ(ret[i],0.5);
-    }
-    ret = s.activate(ret);
-    EXPECT_EQ(ret.size() , testlength);
-    for(unsigned i = 0; i < ret.size(); ++i) {
-        EXPECT_NEAR(ret[i],0.62,0.01);
-    }
-}
-
-TEST(Activation,SigmoidGPUChain){
-    int length = 100000;
-    std::vector<float> v;
+	CL_Matrix<float> out = s.activate(mat);
     for (int i = 0; i < length; ++i)
     {
-        v.push_back(0);
+        EXPECT_EQ(out(i,0),0.5);
     }
-    Sigmoid s;
-    std::vector<util::GPU_Buffer> gpu_res= s.activateKeep(v);
-    std::vector<float> res = s.activate(gpu_res);
-
-    // Activate one more
-    EXPECT_EQ(res.size() , length);
-    for (int i = 0; i < res.size(); ++i)
+}
+TEST(Activation,Tanh){
+    int length = 10;
+    CL_Matrix<float> mat(length,1);
+    mat.fill(0.);
+	Sigmoid s;
+	CL_Matrix<float> out = s.activate(mat);
+    for (int i = 0; i < length; ++i)
     {
-        EXPECT_NEAR(res[i],0.62,0.01);
-    }
-
-}
-
-
-TEST(HiddenLayer,Activate){
-    Sigmoid s;
-    HiddenLayer h(&s,100);
-
-}
-
-TEST(Activation,TanH){
-
-	std::vector<float> v;
-    for (int i = 0; i < 10000; ++i)
-    {
-        v.push_back(0);
+        EXPECT_EQ(out(i,0),0.5);
     }
 }
+
+//TEST(Activation,Sigmoid){
+//    int length = 10;
+//    std::vector<float> v;
+//    for (int i = 0; i < length; ++i)
+//    {
+//        v.push_back(0);
+//    }
+//	Sigmoid s;
+//    std::vector<float> ret= s.activate(v);
+//    for (int i = 0; i < ret.size(); ++i)
+//    {
+//        EXPECT_EQ(ret[i],0.5);
+//    }
+//}
+//
+//TEST(Activation,SigmoidDouble){
+//    int testlength =10;
+//    std::vector<float> v;
+//    for (int i = 0; i < testlength; ++i)
+//    {
+//        v.push_back(0);
+//    }
+//    Sigmoid s;
+//    std::vector<float> ret= s.activate(v);
+//    EXPECT_EQ(ret.size(), testlength);
+//    for (int i = 0; i < ret.size(); ++i)
+//    {
+//        EXPECT_EQ(ret[i],0.5);
+//    }
+//    ret = s.activate(ret);
+//    EXPECT_EQ(ret.size() , testlength);
+//    for(unsigned i = 0; i < ret.size(); ++i) {
+//        EXPECT_NEAR(ret[i],0.62,0.01);
+//    }
+//}
+//
+//TEST(Activation,SigmoidGPUChain){
+//    int length = 100000;
+//    std::vector<float> v;
+//    for (int i = 0; i < length; ++i)
+//    {
+//        v.push_back(0);
+//    }
+//    Sigmoid s;
+//    std::vector<util::GPU_Buffer> gpu_res= s.activateKeep(v);
+//    std::vector<float> res = s.activate(gpu_res);
+//
+//    // Activate one more
+//    EXPECT_EQ(res.size() , length);
+//    for (int i = 0; i < res.size(); ++i)
+//    {
+//        EXPECT_NEAR(res[i],0.62,0.01);
+//    }
+//
+//}
 
 
 

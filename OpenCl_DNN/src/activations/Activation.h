@@ -9,14 +9,14 @@
 #define ACTIVATIONS_ACTIVATION_H_
 
 #include <vector>
-#include "ClInterface.hpp"
+#include "CLMatrix.hpp"
 
 class Activation {
 public:
 	Activation();
 	virtual ~Activation();
-//	Activates the function and return
-	virtual std::vector<float> activate(std::vector<float>& f) = 0;
+// Uses activation function of the input arguments src and returns the result
+	virtual CL_Matrix<float> activate(CL_Matrix<float>& src) = 0;
 //	virtual cl::Buffer activate(cl::Buffer& buf) = 0;
 };
 

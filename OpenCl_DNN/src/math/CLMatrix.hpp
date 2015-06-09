@@ -66,10 +66,11 @@ public:
 
 	friend void swap<>(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs);
 
-//	Computes sigmoid function and stores it in this object
-	void sigmoid(CL_Matrix<T> &src);
+//	Computes sigmoid function from this object and returns the result
+	CL_Matrix<T> sigmoid();
 
-	void tanh(CL_Matrix<T> &src);
+//	Computes tanh function and returns the result
+	CL_Matrix<T> tanh();
 
 	u_int32_t getCols() const {
 		return _n_cols;
@@ -78,6 +79,9 @@ public:
 	u_int32_t getRows() const {
 		return _n_rows;
 	}
+
+	template< typename V>
+	friend std::ostream &operator<<(std::ostream &output, const CL_Matrix<V> &mat);
 
 private:
 
@@ -92,10 +96,14 @@ private:
 //	Number of rows
 	u_int32_t _n_rows;
 
-	const OpenCL _cl;
+	OpenCL _cl;
 
 };
 
+//tempalte
+//ostream &operator<<(ostream &output, const CL_Matrix<T> &mat){
+//
+//}
 
 template <typename T>
 CL_Matrix<T> operator+(CL_Matrix<T> lhs, CL_Matrix<T> const & rhs);

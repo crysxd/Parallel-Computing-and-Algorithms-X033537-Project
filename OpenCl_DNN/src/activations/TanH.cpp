@@ -16,9 +16,7 @@ TanH::~TanH() {
 	// TODO Auto-generated destructor stub
 }
 
-std::vector<float> TanH::activate(std::vector<float>& f) {
-
+CL_Matrix<float> TanH::activate(CL_Matrix<float>& src) {
+	return src.tanh();
 }
 
-cl::Buffer TanH::activate(cl::Buffer& buf) {
-}

@@ -14,8 +14,7 @@ class TanH: public Activation {
 public:
 	TanH();
 	virtual ~TanH();
-	virtual std::vector<float> activate(std::vector<float>& f);
-	virtual cl::Buffer activate(cl::Buffer& buf);
+	virtual CL_Matrix<float> activate(CL_Matrix<float>& f);
 };
 
 #endif /* ACTIVATIONS_TANH_H_ */

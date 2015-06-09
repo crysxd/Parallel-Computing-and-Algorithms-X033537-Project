@@ -8,7 +8,7 @@
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
-	_n_cols(c),_n_rows(r),mat(r*c),_cl("matmul.cl"){
+	_n_cols(c),_n_rows(r),mat(r*c),_cl("kernels.cl"){
 }
 
 template<typename T>
@@ -78,19 +78,14 @@ inline int gcd(int a, int b) {
 template<typename T>
 CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
 	checkdot(*this,other);
-
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
 //	Last argument is the output argument
 
-//	std::vector<std::size_t> workitemsize= this->_cl.getMaxWorkItemSize();
-//    for (std::vector<std::size_t>::iterator i = workitemsize.begin(); i != workitemsize.end(); ++i)
-//    {
-//        std::cout << *i << std::endl;
-//    }
 	std::size_t localrows = ceil(float(this->_n_rows)/100);
 	std::size_t localcols = ceil(float(this->_n_cols)/100);
 	std::vector<std::size_t> outputargs = {4};
+//	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
 	std::vector<std::size_t> localWorkSize = {localrows,localcols};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
 
@@ -160,15 +155,38 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
 
 
 template<typename T>
-inline void CL_Matrix<T>::sigmoid(CL_Matrix<T>& src) {
+inline CL_Matrix<T> CL_Matrix<T>::sigmoid() {
+	CL_Matrix res(this->_n_rows, this->_n_cols);
+	std::vector<std::size_t> outputargs = {1};
+	std::vector<std::size_t> localWorkSize = {1,1};
+	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+	this->_cl.runKernel("sigmoid",outputargs,globalWorkSize,localWorkSize,this->mat,res.mat);
+	return res;
+
 }
 
 template<typename T>
-inline void CL_Matrix<T>::tanh(CL_Matrix<T>& src) {
+inline CL_Matrix<T> CL_Matrix<T>::tanh() {
+	CL_Matrix res(this->_n_rows, this->_n_cols);
+	std::vector<std::size_t> outputargs = {1};
+	std::vector<std::size_t> localWorkSize = {1,1};
+	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+	this->_cl.runKernel("cl_tanh",outputargs,globalWorkSize,localWorkSize,this->mat,res.mat);
+	return res;
 }
 
 template<typename T>
 inline CL_Matrix<T> operator +(CL_Matrix<T> lhs, const CL_Matrix<T>& rhs) {
+}
+
+template<typename T>
+std::ostream &operator<<(std::ostream &output, const CL_Matrix<T> &mat){
+	for(auto i = 0u; i <mat._n_rows;i++ ){
+		for(auto j = 0u; j <mat._n_cols;j++ ){
+			output << mat(i,j) << " ";
+		}
+		output << "\n";
+	}
 }
 
 template<typename T>
