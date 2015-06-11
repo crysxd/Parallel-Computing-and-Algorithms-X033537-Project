@@ -12,6 +12,21 @@ inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
 }
 
 template<typename T>
+inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, T value):
+	CL_Matrix<T>(r,c){
+	this->fill(value);
+}
+
+template<typename T>
+inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, bool random):
+	CL_Matrix<T>(r,c){
+	if (random){
+		this->random(0,1);
+	}
+}
+
+
+template<typename T>
 inline CL_Matrix<T>::~CL_Matrix() {
 }
 
@@ -20,25 +35,11 @@ inline CL_Matrix<T>::CL_Matrix(const CL_Matrix<T> &other):_cl(other._cl),_n_cols
 }
 
 template <typename T>
-CL_Matrix<T>::CL_Matrix(CL_Matrix && other) noexcept :_cl(other._cl),_n_cols(other._n_cols),
-	_n_rows(other._n_rows),mat(other.mat)
+CL_Matrix<T>::CL_Matrix(CL_Matrix && other) noexcept :CL_Matrix(other._n_rows,other._n_cols)
 {
-}
-
-template<typename T>
-void swap(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs){
-	using std::swap;
-	swap(lhs.mat,rhs.mat);
-	swap(lhs._n_rows,rhs._n_rows);
-	swap(lhs._n_cols,rhs._n_cols);
-	swap(lhs._cl,rhs._cl);
-}
-
-template<typename T>
-CL_Matrix<T>& CL_Matrix<T>::operator=(const CL_Matrix<T> &other){
 	swap(*this,other);
-	return *this;
 }
+
 
 template<typename T>
 CL_Matrix<T>& CL_Matrix<T>::operator=(CL_Matrix<T> other){
@@ -155,28 +156,83 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
 
 
 template<typename T>
-inline CL_Matrix<T> CL_Matrix<T>::sigmoid() {
+inline CL_Matrix<T> CL_Matrix<T>::sigmoid() const{
 	CL_Matrix res(this->_n_rows, this->_n_cols);
-	std::vector<std::size_t> outputargs = {1};
+	std::vector<std::size_t> outputargs = {2};
 	std::vector<std::size_t> localWorkSize = {1,1};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
-	this->_cl.runKernel("sigmoid",outputargs,globalWorkSize,localWorkSize,this->mat,res.mat);
+	this->_cl.runKernel("sigmoid",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
+	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::sigmoidgrad() const {
+	CL_Matrix res(this->_n_rows, this->_n_cols);
+	std::vector<std::size_t> outputargs = {2};
+	std::vector<std::size_t> localWorkSize = {1,1};
+	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+	this->_cl.runKernel("sigmoidgrad",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
+	return res;
+}
+
+template<typename T>
+inline void CL_Matrix<T>::printDimension()const {
+	std::cout << "Rows : " << this->_n_rows << " Cols : " << this->_n_cols << std::endl;
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::operator *(const CL_Matrix<T>& other) {
+//	CHeck if size is the same
+	checkalign(*this,other);
+	CL_Matrix<T> res(other._n_rows,other._n_cols);
+	for(unsigned i = 0; i < res.mat.size(); ++i) {
+		res.mat.at(i) = this->mat.at(i) * other.mat.at(i);
+	}
+	return res;
+}
+
+template<typename T>
+inline std::pair<int, int> CL_Matrix<T>::getDimensions() {
+	return std::make_pair(this->_n_rows,this->_n_cols);
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::tanh() const{
+	CL_Matrix res(this->_n_rows, this->_n_cols);
+	std::vector<std::size_t> outputargs = {2};
+	std::vector<std::size_t> localWorkSize = {1,1};
+	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+	this->_cl.runKernel("cl_tanh",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
+	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T> operator +(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
+	checkalign(lhs,rhs);
+	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
+	for(unsigned i = 0; i < res.mat.size(); ++i) {
+		res.mat.at(i) = lhs.mat.at(i) + rhs.mat.at(i);
+	}
+	return res;
+}
+template<typename T>
+inline CL_Matrix<T> operator -(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
+	checkalign(lhs,rhs);
+	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
+	for(unsigned i = 0; i < res.mat.size(); ++i) {
+		res.mat.at(i) = lhs.mat.at(i) - rhs.mat.at(i);
+	}
 	return res;
 
 }
 
 template<typename T>
-inline CL_Matrix<T> CL_Matrix<T>::tanh() {
-	CL_Matrix res(this->_n_rows, this->_n_cols);
-	std::vector<std::size_t> outputargs = {1};
-	std::vector<std::size_t> localWorkSize = {1,1};
-	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
-	this->_cl.runKernel("cl_tanh",outputargs,globalWorkSize,localWorkSize,this->mat,res.mat);
+inline CL_Matrix<T> operator*(T val, CL_Matrix<T> const &rhs) {
+	CL_Matrix<T> res(rhs._n_rows,rhs._n_cols);
+	for(unsigned i = 0; i < res.mat.size(); ++i) {
+		res.mat.at(i) = val*rhs.mat.at(i);
+	}
 	return res;
-}
-
-template<typename T>
-inline CL_Matrix<T> operator +(CL_Matrix<T> lhs, const CL_Matrix<T>& rhs) {
 }
 
 template<typename T>
@@ -187,16 +243,17 @@ std::ostream &operator<<(std::ostream &output, const CL_Matrix<T> &mat){
 		}
 		output << "\n";
 	}
+	return output;
 }
 
 template<typename T>
-bool checkalign(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
+void checkalign(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
 	assert(lhs._n_cols == rhs._n_cols);
 	assert(lhs._n_rows == rhs._n_rows);
 }
 
 template<typename T>
-bool checkdot(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
+void checkdot(const CL_Matrix<T>& lhs, const CL_Matrix<T>& rhs) {
 	assert(lhs._n_cols == rhs._n_rows);
 }
 

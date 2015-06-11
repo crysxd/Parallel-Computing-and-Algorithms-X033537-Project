@@ -19,8 +19,12 @@ Sigmoid::~Sigmoid() {
 
 
 
-CL_Matrix<float> Sigmoid::activate(CL_Matrix<float>& src) {
+CL_Matrix<float> Sigmoid::propagate(const CL_Matrix<float>& src) {
 	return src.sigmoid();
+}
+
+CL_Matrix<float> Sigmoid::grad(const CL_Matrix<float>& src) {
+	return src.sigmoidgrad();
 }
 
 //std::vector<util::GPU_Buffer> Sigmoid::activateKeep(std::vector<float>& f) {

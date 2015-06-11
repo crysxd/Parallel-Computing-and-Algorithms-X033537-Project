@@ -16,11 +16,11 @@ MSE::~MSE() {
 	// TODO Auto-generated destructor stub
 }
 
-float MSE::cost(float f) {
-	return 0;
+Matrix MSE::cost(Matrix& f) {
+	Matrix res(f.getRows(),f.getCols());
+//	for(auto i=0u; i < f.getRows();i++){
+//		for(auto j=0u ; j < f.getCols();j++){
+//		}
+//	}
 }
 
-float MSE::grad(float f) {
-
-	return 0;
-}

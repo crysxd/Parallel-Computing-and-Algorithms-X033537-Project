@@ -21,6 +21,10 @@ template <typename T>
 class CL_Matrix {
 public:
 	CL_Matrix(u_int32_t r, u_int32_t c);
+//	Inits with value T
+	CL_Matrix(u_int32_t r, u_int32_t c,T value);
+//	If true is given, it inits randomly between 0,1
+	CL_Matrix(u_int32_t r, u_int32_t c,bool random);
 	CL_Matrix(CL_Matrix && other) noexcept;
 	CL_Matrix(const CL_Matrix<T> &other);
 
@@ -35,6 +39,7 @@ public:
 
 	CL_Matrix<T> transpose() const;
 
+//	Dot product between a matrix and another matrix
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
 
 // Forbid accesses with only one variable.
@@ -54,23 +59,44 @@ public:
 // Multiply by constant
 	CL_Matrix<T>& operator*=(T var);
 
+	CL_Matrix<T> operator*(CL_Matrix<T> const &other);
 
-	CL_Matrix<T>& operator=(const CL_Matrix  &mat);
+	void printDimension()const;
+
 	CL_Matrix<T>& operator=(CL_Matrix  mat);
 
 	template<typename V>
-	friend bool checkalign(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
+	friend CL_Matrix<V> operator-(CL_Matrix<V> const &lhs, CL_Matrix<V> const & rhs);
 
 	template<typename V>
-	friend bool checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
+	friend CL_Matrix<V> operator+(CL_Matrix<V> const &lhs, CL_Matrix<V> const & rhs);
 
-	friend void swap<>(CL_Matrix<T> & lhs, CL_Matrix<T> & rhs);
+	template<typename V>
+	friend CL_Matrix<V> operator*(V val, CL_Matrix<V> const & rhs);
+
+	template<typename V>
+	friend void checkalign(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
+
+	template<typename V>
+	friend void checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
+
+	friend inline void swap(CL_Matrix & lhs, CL_Matrix& rhs){
+		using std::swap;
+		swap(lhs.mat,rhs.mat);
+		swap(lhs._n_rows,rhs._n_rows);
+		swap(lhs._n_cols,rhs._n_cols);
+		swap(lhs._cl,rhs._cl);
+	}
+
+	std::pair<int,int> getDimensions();
 
 //	Computes sigmoid function from this object and returns the result
-	CL_Matrix<T> sigmoid();
+	CL_Matrix<T> sigmoid() const;
+
+	CL_Matrix<T> sigmoidgrad() const;
 
 //	Computes tanh function and returns the result
-	CL_Matrix<T> tanh();
+	CL_Matrix<T> tanh() const;
 
 	u_int32_t getCols() const {
 		return _n_cols;
@@ -105,8 +131,6 @@ private:
 //
 //}
 
-template <typename T>
-CL_Matrix<T> operator+(CL_Matrix<T> lhs, CL_Matrix<T> const & rhs);
 
 
 

@@ -14,8 +14,7 @@ class MSE : public Cost{
 public:
 	MSE();
 	virtual ~MSE();
-	float cost(float f);
-	float grad(float f);
+	Matrix cost(Matrix& f);
 };
 
 #endif /* COST_MSE_H_ */

@@ -16,7 +16,9 @@ public:
 	Activation();
 	virtual ~Activation();
 // Uses activation function of the input arguments src and returns the result
-	virtual CL_Matrix<float> activate(CL_Matrix<float>& src) = 0;
+	virtual CL_Matrix<float> propagate(const CL_Matrix<float>& src) = 0;
+
+	virtual CL_Matrix<float> grad(const CL_Matrix<float>& src) = 0;
 //	virtual cl::Buffer activate(cl::Buffer& buf) = 0;
 };
 

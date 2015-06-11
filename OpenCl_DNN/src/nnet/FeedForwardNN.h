@@ -15,24 +15,40 @@
 #include <random>
 #include "CLMatrix.hpp"
 #include <iostream>
+#include "MSE.h"
 #include <cassert>
+#include <memory>
 
 typedef CL_Matrix<float> Matrix;
 
 class FeedForwardNN {
 public:
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,double lrate);
+	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,double lrate);
 	virtual ~FeedForwardNN();
 
-	void addHiddenLayer(const HiddenLayer layer);
+//	void addHiddenLayer(const HiddenLayer layer);
 
-	void feedforward(Matrix &in, Matrix *out);
 
-	void backpropagate(Matrix *out_diff, Matrix *in_diff);
+	void addHiddenLayer(const u_int32_t neurons);
+
+	void addActivation(Activation* activation);
+
+	Matrix feedforward(Matrix &in);
+
+	void trainbatch(Matrix &in, Matrix &target);
+
+	void trainsgd();
+
+	void backpropagate(Matrix &error);
+
+	void setCost(Cost *c){
+		this->_costfunc = c;
+	}
 
 private:
 
-	void init(Matrix &input);
+	void init();
 
 
 // Learning rate of the N
@@ -51,9 +67,21 @@ private:
 // Array indicating which activations for each layer we have
 //	const std::vector<double (*)(double)> *activations;
 
-	std::vector<HiddenLayer> hiddenlayers;
+//	std::vector<HiddenLayer> hiddenlayers;
+
+	std::vector<u_int32_t> _hid_dims;
+
+	std::vector<std::reference_wrapper<Activation>> _activations;
 
 	std::vector<std::pair<Matrix,Matrix>> _weight_biases;
+
+//	Derivatives stored for the backpropagation
+	std::vector<Matrix> _deriv;
+// Buffer for
+	std::vector<Matrix> _backprop_buf;
+
+//	The costfunction used to calculate the target loss and backpropagation
+	Cost* _costfunc;
 
 //	unsigned int _seed;
 

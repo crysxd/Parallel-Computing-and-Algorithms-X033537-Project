@@ -56,22 +56,27 @@ inline OpenCL::OpenCL(const char * programpath){
 }
 
 
-inline OpenCL::OpenCL(const OpenCL &other):platform(other.platform),context(other.context),device(other.device){
-	this->contents = new char[strlen(other.contents)];
-	strcpy(this->contents,other.contents);
+inline OpenCL::OpenCL(const OpenCL &other):platform(other.platform),
+		context(other.context),device(other.device),contents(new char[strlen(other.contents)+1]){
+	std::copy(other.contents,other.contents+strlen(other.contents),contents);
+	contents[strlen(other.contents)] = {'\0'};
+}
 
+inline OpenCL::OpenCL(OpenCL &&other):OpenCL(other.contents){
+	swap(*this,other);
 }
 
 inline OpenCL& OpenCL::operator=(OpenCL other){
 	swap(*this,other);
-	return *this;
+	return (*this);
 }
 
 inline void swap(OpenCL &lhs,OpenCL &rhs){
-	std::swap(lhs.contents,rhs.contents);
-	std::swap(lhs.context,rhs.context);
-	std::swap(lhs.platform,rhs.platform);
-	std::swap(lhs.device,rhs.device);
+	using std::swap;
+	swap(lhs.contents,rhs.contents);
+	swap(lhs.context,rhs.context);
+	swap(lhs.platform,rhs.platform);
+	swap(lhs.device,rhs.device);
 }
 
 inline OpenCL::~OpenCL() {
@@ -237,21 +242,23 @@ inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> co
     case 3:
     	globalrange=new cl::NDRange(globalsize[0],globalsize[1],globalsize[2]);
     	break;
+    default:
+    	globalrange=new cl::NDRange();
     }
 
-    cl::NDRange *localrange;
-    switch(blocksize.size()){
-    case 1:
-    	localrange=new cl::NDRange(blocksize[0]);
-    	break;
-    case 2:
-    	localrange=new cl::NDRange(blocksize[0],blocksize[1]);
-    	break;
-    case 3:
-    	localrange=new cl::NDRange(blocksize[0],blocksize[1],blocksize[2]);
-    	break;
-
-    }
+//    cl::NDRange *localrange;
+//    switch(blocksize.size()){
+//    case 1:
+//    	localrange=new cl::NDRange(blocksize[0]);
+//    	break;
+//    case 2:
+//    	localrange=new cl::NDRange(blocksize[0],blocksize[1]);
+//    	break;
+//    case 3:
+//    	localrange=new cl::NDRange(blocksize[0],blocksize[1],blocksize[2]);
+//    	break;
+//
+//    }
 
     cl::Event event;
     ///////////////////////////////////

@@ -8,11 +8,15 @@
 #ifndef COST_COST_H_
 #define COST_COST_H_
 
+#include "CLMatrix.hpp"
+
+typedef CL_Matrix<float> Matrix;
+
 class Cost {
 public:
 	Cost();
 	virtual ~Cost();
-	virtual float grad(float  f) = 0;
+	virtual Matrix cost(Matrix& f) = 0;
 };
 
 #endif /* COST_COST_H_ */

@@ -23,6 +23,8 @@ public:
 
 	OpenCL(const OpenCL &other);
 
+	OpenCL(OpenCL &&other);
+
 	OpenCL& operator=(OpenCL other);
 
 	virtual ~OpenCL();
@@ -43,8 +45,8 @@ private:
 
 	//buildExecutable is called by loadProgram
 	//build runtime executable from a program
-	cl::Device device;
 	cl::Context context;
+	cl::Device device;
 
 
 	/////////////////////////////////////////////////////////////////////

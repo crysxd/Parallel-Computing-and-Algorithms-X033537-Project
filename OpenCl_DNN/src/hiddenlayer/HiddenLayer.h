@@ -20,7 +20,9 @@ public:
 	HiddenLayer(Activation &activation,u_int32_t dim);
 	virtual ~HiddenLayer();
 
-	void propagate(Matrix *input,Matrix &weight, Matrix &bias);
+	Matrix propagate(const Matrix &input,const Matrix &weight,const Matrix &bias);
+
+	Matrix grad(const Matrix &layer);
 
 //	Getters and setters
 	u_int32_t getDim() const {

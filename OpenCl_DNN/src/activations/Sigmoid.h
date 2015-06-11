@@ -23,7 +23,10 @@ public:
 //	CL_Matrix<T> activateMat(CL_Matrix<T> &src);
     // activates the sigmoid function. Used the GPU. Puts the vector f onto the GPU
     // and returns the result from the device copied to the host
-	virtual CL_Matrix<float> activate(CL_Matrix<float>& f);
+	virtual CL_Matrix<float> propagate(const CL_Matrix<float>& f);
+
+	virtual CL_Matrix<float> grad(const CL_Matrix<float>& src);
+
     // The same as activate, except that no back-copy is used
 //	std::vector<util::GPU_Buffer> activateKeep(std::vector<float>& f);
 //    // EXPERIMENTAL! Activates the sigmoid on the device and calculates it while still
