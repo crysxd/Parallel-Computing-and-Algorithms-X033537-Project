@@ -64,6 +64,10 @@ public:
 	void printDimension()const;
 
 	CL_Matrix<T>& operator=(CL_Matrix  mat);
+//	Get the sub matrix of Column c, zero based
+	CL_Matrix<T> subMatCol(u_int32_t c);
+// Returns the row of the matrix, zero based
+	CL_Matrix<T> subMatRow(u_int32_t r);
 
 	template<typename V>
 	friend CL_Matrix<V> operator-(CL_Matrix<V> const &lhs, CL_Matrix<V> const & rhs);
@@ -111,28 +115,25 @@ public:
 
 private:
 
-
-
-//	The acutal matrix behind it, we use std vector because the OpenCL
-//	Interface is using it too, so we dont want to copy arrays around.
-	std::vector<T> mat;
-//	Number of columns
-	u_int32_t _n_cols;
+	CL_Matrix(u_int32_t row,u_int32_t col,std::vector<T>& data);
 
 //	Number of rows
 	u_int32_t _n_rows;
+//	Number of columns
+	u_int32_t _n_cols;
+
+//	The acutal matrix behind it, we use std vector because the OpenCL
+	std::vector<T> mat;
 
 	OpenCL _cl;
 
 };
 
-//tempalte
-//ostream &operator<<(ostream &output, const CL_Matrix<T> &mat){
-//
-//}
-
-
-
+template<typename T>
+inline CL_Matrix<T>::CL_Matrix(u_int32_t row, u_int32_t col,
+		std::vector<T>& data):CL_Matrix<T>(row,col) {
+	this->mat = data;
+}
 
 #include "CLMatrix.cpp"
 

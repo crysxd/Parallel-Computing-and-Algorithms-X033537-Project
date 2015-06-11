@@ -69,6 +69,30 @@ TEST(Matrix,nonaligned){
 
 }
 
+TEST(Matrix,subvector){
+	auto r = 10u;
+	auto c = 6u;
+	CL_Matrix<float> mat (r,c);
+	mat.fill(2.);
+	CL_Matrix<float> subcol = mat.subMatCol(2);
+
+	EXPECT_EQ(subcol.getCols(),1);
+	EXPECT_EQ(subcol.getRows(),r);
+
+	CL_Matrix<float> subrow = mat.subMatRow(2);
+//
+	EXPECT_EQ(subrow.getCols(),c);
+	EXPECT_EQ(subrow.getRows(),1);
+//
+	for(auto i=0u; i < r ; i++){
+		EXPECT_EQ(subcol(i,0),2.);
+	}
+	for(auto i=0u; i < c ; i++){
+		EXPECT_EQ(subrow(0,i),2.);
+	}
+
+}
+
 TEST(Matrix,addsubmul){
     auto r=20u;
     auto c=20u;
@@ -314,28 +338,30 @@ TEST(Activation,Tanh){
 }
 
 
-TEST(Nnet,feedforward){
-	CL_Matrix<float> input(20,1);
-	input.fill(0.);
-	Sigmoid s;
-	FeedForwardNN dnn(20,2,0.9);
-	dnn.addActivation(&s);
-	dnn.addActivation(&s);
-	dnn.addHiddenLayer(10);
-	CL_Matrix<float> out = dnn.feedforward(input);
-}
+//TEST(Nnet,feedforward){
+//	CL_Matrix<float> input(20,1);
+//	input.fill(0.);
+//	Sigmoid s;
+//	FeedForwardNN dnn(20,2,0.9);
+//	dnn.addActivation(&s);
+//	dnn.addActivation(&s);
+//	dnn.addHiddenLayer(10);
+//	CL_Matrix<float> out = dnn.feedforward(input);
+//}
 
 
 TEST(Nnet,batchgradient){
-	CL_Matrix<float> input(20,1);
+	CL_Matrix<float> input(3,3);
 	input.fill(0.);
 	CL_Matrix<float> target(2,1);
 	target.fill(1.);
 	Sigmoid s;
-	FeedForwardNN dnn(20,2,0.9);
+	FeedForwardNN dnn(3,1,0.01);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
-	dnn.addHiddenLayer(10);
+	dnn.addActivation(&s);
+	dnn.addHiddenLayer(5);
+	dnn.addHiddenLayer(4);
 	dnn.trainbatch(input,target);
 }
 

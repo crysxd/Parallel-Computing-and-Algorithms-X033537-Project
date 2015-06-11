@@ -23,8 +23,8 @@ typedef CL_Matrix<float> Matrix;
 
 class FeedForwardNN {
 public:
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,double lrate);
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,double lrate);
+	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate);
+	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,float lrate);
 	virtual ~FeedForwardNN();
 
 //	void addHiddenLayer(const HiddenLayer layer);
@@ -51,10 +51,11 @@ private:
 	void init();
 
 
+
 // Learning rate of the N
 //	It is used for the update, where it is defined as:
 
-	double _l_rate;
+	float _l_rate;
 // Momentum
 //	velocity = momentum * velocity - learning_rate * gradient
 //	params = params + velocity
@@ -82,6 +83,8 @@ private:
 
 //	The costfunction used to calculate the target loss and backpropagation
 	Cost* _costfunc;
+
+
 
 //	unsigned int _seed;
 

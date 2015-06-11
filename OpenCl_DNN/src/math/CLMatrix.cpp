@@ -8,7 +8,7 @@
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
-	_n_cols(c),_n_rows(r),mat(r*c),_cl("kernels.cl"){
+_n_rows(r),_n_cols(c),mat(r*c),_cl("kernels.cl"){
 }
 
 template<typename T>
@@ -106,11 +106,13 @@ inline T CL_Matrix<T>::operator [](u_int32_t n) const {
 
 template<typename T>
 inline T& CL_Matrix<T>::operator ()(u_int32_t r, u_int32_t c) {
+	assert(r*c < this->mat.size());
 	return this->mat.at(r * this->_n_cols + c);
 }
 
 template<typename T>
 inline T CL_Matrix<T>::operator ()(u_int32_t r, u_int32_t c) const {
+	assert(r*c < this->mat.size());
 	return this->mat.at( r * this->_n_cols + c);
 }
 
@@ -197,8 +199,30 @@ inline std::pair<int, int> CL_Matrix<T>::getDimensions() {
 }
 
 template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::subMatCol(u_int32_t c) {
+	assert(c<this->_n_cols);
+	std::vector<T> col;
+	for(auto i = c; i < this->mat.size(); i+=_n_cols){
+		col.push_back(this->mat.at(i));
+	}
+	CL_Matrix<T> res(this->_n_rows,1,col);
+	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::subMatRow(u_int32_t r) {
+	assert(r < this->_n_rows);
+	typename std::vector<T>::const_iterator first = this->mat.begin()+r*this->_n_cols;
+	typename std::vector<T>::const_iterator last = this->mat.begin()+(r+1)*this->_n_cols;
+	std::vector<T> row(first,last);
+	CL_Matrix<T> res(1,this->_n_cols,row);
+	return res;
+
+}
+
+template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::tanh() const{
-	CL_Matrix res(this->_n_rows, this->_n_cols);
+	CL_Matrix<T> res(this->_n_rows, this->_n_cols);
 	std::vector<std::size_t> outputargs = {2};
 	std::vector<std::size_t> localWorkSize = {1,1};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
