@@ -190,7 +190,6 @@ set(HEADERS
     ${ACTIVATIONS_DIR}/Activation.h
     ${ACTIVATIONS_DIR}/Sigmoid.h
     ${ACTIVATIONS_DIR}/TanH.h
-    ${CL_INTERFACE_DIR}/ClInterface.hpp
     ${CL_INTERFACE_DIR}/OpenCL.hpp
     ${CL_INTERFACE_DIR}/util.hpp
     ${COST_DIR}/Cost.h
