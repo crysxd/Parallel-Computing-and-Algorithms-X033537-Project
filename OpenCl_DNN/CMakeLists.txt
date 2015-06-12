@@ -57,9 +57,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         "-Wold-style-cast -Wparentheses -Wlogical-op -Woverloaded-virtual"
         "-Wfloat-equal -Wpointer-arith -Wcast-align -Wcast-qual"
         "-Winit-self -Wwrite-strings -Wstrict-null-sentinel"
-        "-Wredundant-decls -Wswitch-default -Wundef -Wunused-parameter"
+        "-Wredundant-decls -Wswitch-default -Wundef"
         "-Wmissing-include-dirs"
         "-Wdisabled-optimization"
+        #-Wunused-parameter
         #"-Werror"
         #"-Wnoexcept"
 

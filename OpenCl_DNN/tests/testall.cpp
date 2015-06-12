@@ -35,6 +35,20 @@ TEST(Matrix,init){
 
 }
 
+// TEST(Matrix,shuffle){
+//     Matrix m(4,4,true);
+//     // std::cout << m;
+//     // std::cout << std::endl;
+//     // m.shuffle(true);
+
+//     std::cout << m ;
+
+//     m.shuffle(false);
+//     std::cout << std::endl;
+
+//     std::cout << m;
+// }
+
 TEST(Matrix,transpose){
     int r = 25;
     int c = 30;
@@ -338,14 +352,6 @@ TEST(Activation,Tanh){
 }
 
 
-TEST(OpenCL,Mats){
-//	std::vector<Matrix> a ;
-//	for(auto i=0u;i< 10000; i++){
-//		std::cout << i << std::endl;
-//		a.push_back(CL_Matrix<float>(20,1));
-//	}
-}
-
 
 TEST(Nnet,batchgradient){
 	CL_Matrix<float> input(3,3);
@@ -357,7 +363,11 @@ TEST(Nnet,batchgradient){
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(5);
-	dnn.trainbatch(input,target);
+	std::vector<float> errors = dnn.trainbatch(input,target);
+    for (auto i = 1u; i < errors.size(); ++i)
+    {
+        EXPECT_GE(errors[i-1] - errors[i]  ,0);
+    }
 }
 
 

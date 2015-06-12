@@ -27,18 +27,16 @@ public:
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,float lrate);
 	virtual ~FeedForwardNN();
 
-//	void addHiddenLayer(const HiddenLayer layer);
-
-
+	/** Adds a hidden layer with neuron- neurons to the network*/
 	void addHiddenLayer(const u_int32_t neurons);
-
+	/** Adds an activation function to the network */
 	void addActivation(Activation* activation);
 
 	Matrix feedforward(Matrix &in,bool learn);
 
 	Matrix test(Matrix&in);
 
-	void trainbatch(Matrix &in, Matrix &target);
+	std::vector<float> trainbatch(Matrix &in, Matrix &target);
 
 	void trainsgd();
 

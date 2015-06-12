@@ -89,7 +89,6 @@ CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
 //	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
 	std::vector<std::size_t> localWorkSize = {localrows,localcols};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
-
     this->_cl.runKernel("mat_mul",outputargs,globalWorkSize,localWorkSize,this->mat,other.mat,this->_n_cols,other._n_cols,res.mat);
 	return res;
 }
@@ -148,6 +147,49 @@ inline void CL_Matrix<T>::fill(T fill) {
 	std::fill(this->mat.begin(), this->mat.end(), fill);
 }
 
+
+/**
+ *
+ */
+template<typename T>
+inline void CL_Matrix<T>::shuffle(bool row){
+	// Shuffles the row or column of the matrix depending on the
+	// given boolean value
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	std::vector<std::pair<int,int>> indices;
+	if (row){
+		for (auto i = 0u; i < this->mat.size(); i+=_n_cols)
+		{
+			indices.push_back(std::make_pair(i,i+_n_cols-1));
+		}
+		std::shuffle(indices.begin(),indices.end(),mt);
+		auto matind=0u;
+		for(std::pair<int,int> &e :indices){
+			for(auto j = e.first; j <= e.second ; j++){
+				std::swap(this->mat[matind],this->mat[j]);
+				matind ++;
+			}
+		}
+	}
+	else{
+		for (auto i = 0u; i <_n_rows; i++)
+		{
+			indices.push_back(std::make_pair(i,i+_n_rows*(_n_cols-1)));
+		}
+		std::shuffle(indices.begin(),indices.end(),mt);
+		auto matind=0u;
+		for(std::pair<int,int> &e :indices){
+			for(auto j = e.first; j <= e.second ; j+= _n_rows){
+				std::swap(this->mat[matind],this->mat[j]);
+				matind= (matind+_n_rows)%(this->mat.size());
+			}
+			matind++;
+		}
+	}
+}
+
+
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
     for(unsigned i = 0; i < this->mat.size(); ++i) {
@@ -175,6 +217,23 @@ inline CL_Matrix<T> CL_Matrix<T>::sigmoidgrad() const {
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
 	this->_cl.runKernel("sigmoidgrad",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
 	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T>::operator T const &() const{
+	if(_n_cols!=1 && _n_rows !=1){
+		throw "size not 1x1";
+	}
+	return *(this)(0,0);
+}
+
+template<typename T>
+inline CL_Matrix<T>::operator T &(){
+	if(_n_cols!=1 && _n_rows !=1){
+		throw "size not 1x1";
+	}
+    return (*this)( 0, 0 );
+
 }
 
 template<typename T>

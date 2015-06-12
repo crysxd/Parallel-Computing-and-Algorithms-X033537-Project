@@ -11,6 +11,9 @@
     #define DEBUG 1
 #endif
 
+
+#define NUM_EPOCHS 2
+
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 //	Init weights and biases
 
@@ -104,27 +107,30 @@ FeedForwardNN::~FeedForwardNN() {
 
 
 
-void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
+std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 	// trains in batch gradient descent.
 	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
 	// of data we have.
 	// E.g the matrix (5,1000), has a 5 dimensional input and 1000 samples.
+	std::vector<float> errors;
 	if(in.getRows() != this->_in_dim){
 		std::cerr<< "Input dimensions and datainput dimensions do not match. Expected : " << this->_in_dim
 				<< " , but got " << in.getRows() << " in the matrix";
-		return;
+		return errors;
 	}
 	if(target.getRows() != this->_out_dim){
 		std::cerr<< "Target dimensions and output dimensions do not match. Expected : " << this->_out_dim
 						<< " , but got " << target.getRows() << " in the matrix";
-		return;
+		return errors;
 	}
-// Init the weights and other variables
+	// Init the weights and other variables
 	this->init();
-	for(auto i=0u; i < 100;i++){
+	// Begin running the neural network for NUM_EPOCHS iterations
+	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
+		Matrix epoch_error(target.getRows(),1);
 		std::vector<std::pair<Matrix,Matrix>> w_b;
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-//			Init the weights and biases for this epoch with zero
+			//Init the weights and biases for this epoch with zero
 			Matrix weight = this->_weight_biases[i].first;
 			Matrix bias = this->_weight_biases[i].second;
 //			Accumulators should be zero
@@ -138,20 +144,34 @@ void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
+			// Get the column of the input and use it as input
 			Matrix inputvector = in.subMatCol(i);
+			////////////////////////////////////////////////////////////
+			// Feed forward step, returns the predictions of the nnet //
+			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
 			Matrix error = (target - predict);
+
+			epoch_error+= error;
+			///////////////////////////////
+			// Backpropagate the errors  //
+			///////////////////////////////
 			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
-//			We got the weights, so just update the non accumulated ones
+			//We got the weights, so just update the non accumulated ones
 			for(int i=this->_weight_biases.size()-1; i>=0;i--){
 				w_b[i].first += delta_w_b[i].first;
 				w_b[i].second += delta_w_b[i].second;
 			}
-			std::cout << "Training Error " << error;
 		}
+		// Print out the result
+#if !DEBUG
+		std::cout << "Epoch " << epoch +1 << " Error " << 0.5f*epoch_error.transpose().dot(epoch_error);
+#endif
+		errors.push_back((float)epoch_error);
 
-
-//		Update the weights
+		/////////////////////////
+		// Update the weights //
+		/////////////////////////
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
 			this->_weight_biases[i].first += this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases[i].second += this->_l_rate * w_b[w_b.size()-i-1].second;
@@ -160,6 +180,8 @@ void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 
 	}
+
+	return errors;
 
 
 }

@@ -30,19 +30,32 @@ public:
 
 	virtual ~CL_Matrix();
 
+/////////////////////////////////
+// Fillin values and constants //
+/////////////////////////////////
+	/** Zeros the matrix, equal to fill(0) */
 	void zeros();
 
+	/**
+	 * Randomizes the values in the array
+	 * @param min minimum number which will be generated
+	 * @param max Maximum number which will be generated
+	 */
 	void random(T min,T max);
-
+	/** Fills in the array with a given constant T */
 	void fill(T fill);
+	/** Shuffles the column or row of the given matrix. */
+	void shuffle(bool row);
 
-
+	/** Transposes the matrix */
 	CL_Matrix<T> transpose() const;
 
 //	Dot product between a matrix and another matrix
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
 
-// Forbid accesses with only one variable.
+/////////////////////////////////////////////
+// Forbid accesses with only one variable. //
+/////////////////////////////////////////////
 	T & operator[](u_int32_t n);
 	T operator[](u_int32_t n) const;
 
@@ -61,6 +74,11 @@ public:
 
 	CL_Matrix<T> operator*(CL_Matrix<T> const &other);
 
+	operator T const &() const;
+
+	operator T &();
+
+
 	void printDimension()const;
 
 	CL_Matrix<T>& operator=(CL_Matrix  mat);
@@ -78,12 +96,18 @@ public:
 	template<typename V>
 	friend CL_Matrix<V> operator*(V val, CL_Matrix<V> const & rhs);
 
+////////////////////////////////////////////////////////////
+// Checkers to assert that sizes do match for add and dot //
+////////////////////////////////////////////////////////////
 	template<typename V>
 	friend void checkalign(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
 	template<typename V>
 	friend void checkdot(CL_Matrix<V>const &lhs,CL_Matrix<V> const &rhs);
 
+///////////////////
+// Copy and swap //
+///////////////////
 	friend inline void swap(CL_Matrix & lhs, CL_Matrix& rhs){
 		using std::swap;
 		swap(lhs.mat,rhs.mat);
@@ -96,10 +120,10 @@ public:
 
 //	Computes sigmoid function from this object and returns the result
 	CL_Matrix<T> sigmoid() const;
-
+ 	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgrad() const;
 
-//	Computes tanh function and returns the result
+//	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
 
 	u_int32_t getCols() const {
@@ -124,7 +148,8 @@ private:
 
 //	The acutal matrix behind it, we use std vector because the OpenCL
 	std::vector<T> mat;
-
+// The interface to openCL. Keep in mind to use the OpenCLPort singleton
+// Since too many instances crash OpenCL;
 	OpenCL _cl;
 
 };
