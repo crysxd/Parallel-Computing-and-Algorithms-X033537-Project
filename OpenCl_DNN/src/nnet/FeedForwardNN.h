@@ -34,13 +34,13 @@ public:
 
 	void addActivation(Activation* activation);
 
-	Matrix feedforward(Matrix &in);
+	Matrix feedforward(Matrix &in,bool learn);
 
 	void trainbatch(Matrix &in, Matrix &target);
 
 	void trainsgd();
 
-	void backpropagate(Matrix &error);
+	std::vector<std::pair<Matrix,Matrix>> backpropagate(Matrix &error);
 
 	void setCost(Cost *c){
 		this->_costfunc = c;
@@ -67,7 +67,7 @@ private:
 	u_int32_t _in_dim;
 // Array indicating which activations for each layer we have
 //	const std::vector<double (*)(double)> *activations;
-
+	u_int32_t _net_size;
 //	std::vector<HiddenLayer> hiddenlayers;
 
 	std::vector<u_int32_t> _hid_dims;

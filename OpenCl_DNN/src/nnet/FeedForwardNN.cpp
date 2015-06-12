@@ -11,7 +11,7 @@
     #define DEBUG 1
 #endif
 
-Matrix FeedForwardNN::feedforward(Matrix& in) {
+Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 //	Init weights and biases
 
 	Matrix &tmpin = in;
@@ -28,16 +28,19 @@ Matrix FeedForwardNN::feedforward(Matrix& in) {
 //		Calculate output of the current layer
 //		Apply activation
 		tmpin = activ.propagate(weights.dot(tmpin) + bias);
-//		Store the derivatives of the layers, for backprop
-		this->_deriv.push_back(activ.grad(tmpin));
-//		Store the output of every later for the backpropagation
-		this->_backprop_buf.push_back(tmpin);
+//		If non learning mode, we dont need to store anything, just propagate through
+		if (learn){
+	//		Store the derivatives of the layers, for backprop
+			this->_deriv.push_back(activ.grad(tmpin));
+	//		Store the output of every later for the backpropagation
+			this->_backprop_buf.push_back(tmpin);
+		}
 	}
 //	Return the output of the network
 	return tmpin;
 }
 
-void FeedForwardNN::backpropagate(Matrix &error) {
+std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error) {
 	// For backpropagation we use the following rule:
 	// first estimate the output error, by calculating the derivative D ( aka _deriv) times the error
 	// Which is equal to out * (1-out) * (y-t)
@@ -48,18 +51,25 @@ void FeedForwardNN::backpropagate(Matrix &error) {
 	// Finally we update by using gradient descrent:
 	//	W_i = W_i - l_rate * \delta_i.
 //	Last layer
+	std::vector<std::pair<Matrix,Matrix>> nablas;
+
 	Matrix delta_l = (error * this->_deriv.back());
+
 #if !DEBUG
 	std::cout << "Updating layer " << this->_weight_biases.size()-1 << " with dimensions : ";
 	this->_weight_biases.back().first.printDimension();
 	std::cout << endl;
 #endif
 	Matrix const &nabla =  this->_backprop_buf[this->_backprop_buf.size()-2].dot(delta_l.transpose());
+
 //	Update last layer weights
-	this->_weight_biases.back().first -= this->_l_rate * nabla.transpose();
+//	this->_weight_biases.back().first -= this->_l_rate * nabla.transpose();
 //	Update last bias
-	this->_weight_biases.back().second -= this->_l_rate * delta_l;
-	for(int i=this->_activations.size()-2;i >= 0;i--){
+//	this->_weight_biases.back().second -= this->_l_rate * delta_l;
+
+	nablas.push_back(std::make_pair(nabla.transpose(),delta_l));
+
+	for(int i=this->_net_size-2;i >= 0;i--){
 #if !DEBUG
 		std::cout << "Updating layer" << i << " with dimensions : ";
 		this->_weight_biases[i+1].first.printDimension();
@@ -71,10 +81,14 @@ void FeedForwardNN::backpropagate(Matrix &error) {
 		// refers to the current layer weight!
 		Matrix const &nabla_back = this->_backprop_buf[i].dot(delta_l.transpose());
 		//	Update the layer weights
-		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
+//		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
 		// Update the bias
-		this->_weight_biases[i].second -= this->_l_rate * delta_l;
+//		this->_weight_biases[i].second -= this->_l_rate * delta_l;
+
+		nablas.push_back(std::make_pair(nabla_back.transpose(),delta_l));
+//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 	}
+	return nablas;
 
 
 }
@@ -95,22 +109,47 @@ void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		return;
 	}
 	if(target.getRows() != this->_out_dim){
-		std::cerr<< "Input dimensions and datainput dimensions do not match. Expected : " << this->_out_dim
+		std::cerr<< "Target dimensions and output dimensions do not match. Expected : " << this->_out_dim
 						<< " , but got " << target.getRows() << " in the matrix";
 		return;
 	}
 // Init the weights and other variables
 	this->init();
-	for(auto i=0u; i < 5;i++){
+	for(auto i=0u; i < 100;i++){
+		std::vector<std::pair<Matrix,Matrix>> w_b;
+		for(int i=this->_weight_biases.size()-1; i>=0;i--){
+//			Init the weights and biases for this epoch with zero
+			Matrix weight = this->_weight_biases[i].first;
+			Matrix bias = this->_weight_biases[i].second;
+			weight.zeros();
+			bias.zeros();
+			w_b.push_back(
+					std::make_pair(
+							weight,bias
+					));
+		}
+
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
 			Matrix inputvector = in.subMatCol(i);
-			Matrix const &predict = this->feedforward(inputvector);
+			Matrix const &predict = this->feedforward(inputvector,true);
 			Matrix error = (target - predict);
+			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
+			for(int i=this->_weight_biases.size()-1; i>=0;i--){
+				w_b[i].first += delta_w_b[i].first;
+				w_b[i].second += delta_w_b[i].second;
+			}
 			std::cout << "Training Error " << error;
 			std::cout << "Output "<< predict;
-			this->backpropagate(error);
 		}
+
+
+//		Update the weights
+		for(int i=this->_weight_biases.size()-1; i>=0;i--){
+			this->_weight_biases[i].first += w_b[w_b.size()-i-1].first;
+			this->_weight_biases[i].second += w_b[w_b.size()-i-1].second;
+		}
+
 
 	}
 
@@ -136,6 +175,8 @@ void FeedForwardNN::init() {
 	assert(this->_hid_dims.size() > 0);
 	assert(this->_activations.size()>0);
 	assert(this->_activations.size() == this->_hid_dims.size()+ 1);
+
+	this->_net_size = this->_activations.size();
 //	First layer is initialized independently
 //	Using rvalue references
 	auto i = 0u;

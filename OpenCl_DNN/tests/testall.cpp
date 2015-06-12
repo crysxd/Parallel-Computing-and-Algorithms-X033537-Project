@@ -356,12 +356,10 @@ TEST(Nnet,batchgradient){
 	CL_Matrix<float> target(2,1);
 	target.fill(1.);
 	Sigmoid s;
-	FeedForwardNN dnn(3,1,0.01);
-	dnn.addActivation(&s);
+	FeedForwardNN dnn(3,2,0.1);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(5);
-	dnn.addHiddenLayer(4);
 	dnn.trainbatch(input,target);
 }
 
