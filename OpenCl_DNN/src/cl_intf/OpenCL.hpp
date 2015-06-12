@@ -40,8 +40,8 @@ public:
 
 	friend void swap(OpenCL &,OpenCL &);
 private:
-	//handles for creating an opencl context
-	cl::Platform platform;
+//	//handles for creating an opencl context
+//	cl::Platform platform;
 
 	//buildExecutable is called by loadProgram
 	//build runtime executable from a program

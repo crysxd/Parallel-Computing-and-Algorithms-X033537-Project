@@ -56,8 +56,7 @@ inline OpenCL::OpenCL(const char * programpath){
 }
 
 
-inline OpenCL::OpenCL(const OpenCL &other):platform(other.platform),
-		context(other.context),device(other.device),contents(new char[strlen(other.contents)+1]){
+inline OpenCL::OpenCL(const OpenCL &other):context(other.context),device(other.device),contents(new char[strlen(other.contents)+1]){
 	std::copy(other.contents,other.contents+strlen(other.contents),contents);
 	contents[strlen(other.contents)] = {'\0'};
 }
@@ -75,7 +74,6 @@ inline void swap(OpenCL &lhs,OpenCL &rhs){
 	using std::swap;
 	swap(lhs.contents,rhs.contents);
 	swap(lhs.context,rhs.context);
-	swap(lhs.platform,rhs.platform);
 	swap(lhs.device,rhs.device);
 }
 

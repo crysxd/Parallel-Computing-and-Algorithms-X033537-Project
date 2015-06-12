@@ -338,16 +338,13 @@ TEST(Activation,Tanh){
 }
 
 
-//TEST(Nnet,feedforward){
-//	CL_Matrix<float> input(20,1);
-//	input.fill(0.);
-//	Sigmoid s;
-//	FeedForwardNN dnn(20,2,0.9);
-//	dnn.addActivation(&s);
-//	dnn.addActivation(&s);
-//	dnn.addHiddenLayer(10);
-//	CL_Matrix<float> out = dnn.feedforward(input);
-//}
+TEST(OpenCL,Mats){
+//	std::vector<Matrix> a ;
+//	for(auto i=0u;i< 10000; i++){
+//		std::cout << i << std::endl;
+//		a.push_back(CL_Matrix<float>(20,1));
+//	}
+}
 
 
 TEST(Nnet,batchgradient){

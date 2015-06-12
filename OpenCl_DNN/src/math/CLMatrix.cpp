@@ -8,7 +8,7 @@
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
-_n_rows(r),_n_cols(c),mat(r*c),_cl("kernels.cl"){
+_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
 }
 
 template<typename T>

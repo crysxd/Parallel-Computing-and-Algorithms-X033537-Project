@@ -86,7 +86,7 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 //		this->_weight_biases[i].second -= this->_l_rate * delta_l;
 
 		nablas.push_back(std::make_pair(nabla_back.transpose(),delta_l));
-//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
+
 	}
 	return nablas;
 
@@ -102,7 +102,13 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate):
 FeedForwardNN::~FeedForwardNN() {
 }
 
+
+
 void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
+	// trains in batch gradient descent.
+	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
+	// of data we have.
+	// E.g the matrix (5,1000), has a 5 dimensional input and 1000 samples.
 	if(in.getRows() != this->_in_dim){
 		std::cerr<< "Input dimensions and datainput dimensions do not match. Expected : " << this->_in_dim
 				<< " , but got " << in.getRows() << " in the matrix";
@@ -121,6 +127,7 @@ void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 //			Init the weights and biases for this epoch with zero
 			Matrix weight = this->_weight_biases[i].first;
 			Matrix bias = this->_weight_biases[i].second;
+//			Accumulators should be zero
 			weight.zeros();
 			bias.zeros();
 			w_b.push_back(
@@ -135,19 +142,20 @@ void FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			Matrix const &predict = this->feedforward(inputvector,true);
 			Matrix error = (target - predict);
 			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
+//			We got the weights, so just update the non accumulated ones
 			for(int i=this->_weight_biases.size()-1; i>=0;i--){
 				w_b[i].first += delta_w_b[i].first;
 				w_b[i].second += delta_w_b[i].second;
 			}
 			std::cout << "Training Error " << error;
-			std::cout << "Output "<< predict;
 		}
 
 
 //		Update the weights
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-			this->_weight_biases[i].first += w_b[w_b.size()-i-1].first;
-			this->_weight_biases[i].second += w_b[w_b.size()-i-1].second;
+			this->_weight_biases[i].first += this->_l_rate * w_b[w_b.size()-i-1].first;
+			this->_weight_biases[i].second += this->_l_rate * w_b[w_b.size()-i-1].second;
+//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 		}
 
 
@@ -168,6 +176,10 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim,
 		std::vector<u_int32_t> hid_dims, float lrate):FeedForwardNN(indim,outdim,lrate) {
 	_hid_dims = hid_dims;
 
+}
+
+Matrix FeedForwardNN::test(Matrix& in) {
+//	Just run a ffwd and return result
 }
 
 void FeedForwardNN::init() {

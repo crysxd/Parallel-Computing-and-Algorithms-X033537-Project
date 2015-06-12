@@ -36,6 +36,8 @@ public:
 
 	Matrix feedforward(Matrix &in,bool learn);
 
+	Matrix test(Matrix&in);
+
 	void trainbatch(Matrix &in, Matrix &target);
 
 	void trainsgd();

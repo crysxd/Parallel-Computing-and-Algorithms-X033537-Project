@@ -60,7 +60,8 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         "-Wredundant-decls -Wswitch-default -Wundef -Wunused-parameter"
         "-Wmissing-include-dirs"
         "-Wdisabled-optimization"
-        "-Wnoexcept"
+        #"-Werror"
+        #"-Wnoexcept"
 
         #"-Wshadow"
         #"-Wsign-conversion"
@@ -192,6 +193,7 @@ set(HEADERS
     ${ACTIVATIONS_DIR}/TanH.h
     ${CL_INTERFACE_DIR}/OpenCL.hpp
     ${CL_INTERFACE_DIR}/util.hpp
+    ${CL_INTERFACE_DIR}/OpenCLPort.h
     ${COST_DIR}/Cost.h
     ${COST_DIR}/MSE.h
     ${HIDDENLAYER_DIR}/HiddenLayer.h
@@ -205,6 +207,7 @@ set(SOURCES
     ${ACTIVATIONS_DIR}/Sigmoid.cpp
     ${ACTIVATIONS_DIR}/TanH.cpp
     ${CL_INTERFACE_DIR}/util.cpp
+    ${CL_INTERFACE_DIR}/OpenCLPort.cpp
     ${COST_DIR}/Cost.cpp
     ${COST_DIR}/MSE.cpp
     ${HIDDENLAYER_DIR}/HiddenLayer.cpp

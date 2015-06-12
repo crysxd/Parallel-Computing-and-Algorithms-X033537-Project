@@ -15,7 +15,7 @@
 #include <random>
 #include <iostream>
 #include <cassert>
-#include "OpenCL.hpp"
+#include "OpenCLPort.h"
 
 template <typename T>
 class CL_Matrix {
