@@ -1,0 +1,43 @@
+\chapter{Examples}
+
+%=======================================================================================
+\section{Example Section}
+
+%---------------------------------------------------------------------------------------
+\subsection{Example Subsection}
+
+%---------------------------------------------------------------------------------------
+\subsubsection{Example Subsubsection}
+
+%=======================================================================================
+\section{Listings}
+In listing \ref{example_listing} you can see the usage of an image.
+\begin{figure}
+\lstset{language=php}
+\begin{lstlisting}
+<?php
+    $hello = "Hello {$_GET['name']}";
+    echo $hello;
+?>
+\end{lstlisting}
+\caption{This is the caption for the example listing. (Extract from \texttt{hello.php})}
+\label{example_listing}
+\end{figure}
+
+%=======================================================================================
+\section{Graphics}
+In figure \ref{example_image} you can see the usage of an image.
+\begin{figure}
+\includegraphics[width=\textwidth]{content/graphics/example.jpg}
+\caption{This is the caption for the example image}
+\label{example_image}
+\end{figure}
+
+%=======================================================================================
+\section{Lists}
+This is a basic list
+\begin{itemize}
+\item First item
+\item Second item
+\item Third item
+\end{itemize}
