@@ -181,6 +181,14 @@ find_package(OpenCL REQUIRED)
 include_directories(${OpenCL_INCLUDE_DIRS})
 # set(LIBS ${LIBS} ${OpenCL_LIBRARIES})
 
+# for example, on Fedora with beignet, use:
+# export CUSTOM_OPENCL=/usr/lib64/beignet/libcl.so
+if(DEFINED ENV{CUSTOM_OPENCL})
+    set(OPENCL $ENV{CUSTOM_OPENCL})
+else()
+    set(OPENCL OpenCL)
+endif()
+
 # Include directories
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${ACTIVATIONS_DIR} ${CL_INTERFACE_DIR} ${COST_DIR} ${HIDDENLAYER_DIR} ${NNET_DIR} ${MATH_DIR})
@@ -227,8 +235,8 @@ add_library(${DNN_STATIC_LIB}
 # Executable for the application
 set(EXECUTABLE_OUTPUT_PATH ${BINARY_DIR})
 add_executable(${EXECUTEABLE} ${EXECUTEABLE_PATH})
-target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} OpenCL pthread)
+target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} ${OPENCL} pthread)
 #Executeable for the tests
 
 add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
-target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} OpenCL pthread)
+target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL} pthread)
