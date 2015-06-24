@@ -7,6 +7,7 @@
 \usepackage{multirow}
 \usepackage{fancyvrb}
 \usepackage{subfig}
+\usepackage{xcolor}
 \usepackage{CJKutf8}
 \captionsetup[subfigure]{labelformat=empty}
 \usepackage{indentfirst}
@@ -71,36 +72,82 @@
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
- 
-\lstdefinestyle{codestyle}{
-	backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                     
-    numbersep=5pt,                  
-    showspaces=false,                
-    showstringspaces=false,
-    showtabs=false,                  
-    tabsize=2
-}
 
-\lstset{style=codestyle}
-
-\lstdefinelanguage{JavaScript}{
-	keywords={break, case, catch, continue, debugger, default, delete, do, else,
-	finally, for, function, if, in, instanceof, new, return, switch, this, throw,
-	try, typeof, var, void, while, with}, morecomment=[l]{//},
-	morecomment=[s]{/*}{*/}, morestring=[b]',
-	morestring=[b]",
-	sensitive=true
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+backgroundcolor=\color{lbcolor},
+    tabsize=4,    
+%   rulecolor=,
+    language=[GNU]C++,
+        basicstyle=\scriptsize,
+        upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=false,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        numbers=left,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.026,0.112,0.095},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+        numberstyle=\color[rgb]{0.205, 0.142, 0.73},
+%        \lstdefinestyle{C++}{language=C++,style=numbers}’.
 }
+\lstset{
+    backgroundcolor=\color{lbcolor},
+    tabsize=4,
+  language=C++,
+  captionpos=b,
+  tabsize=3,
+  frame=lines,
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=5pt,
+  breaklines=true,
+  showstringspaces=false,
+  basicstyle=\footnotesize,
+%  identifierstyle=\color{magenta},
+  keywordstyle=\color[rgb]{0,0,1},
+  commentstyle=\color{codegreen},
+  stringstyle=\color{red}
+  } 
+
+%\lstdefinestyle{codestyle}{
+%	backgroundcolor=\color{backcolour},   
+%    commentstyle=\color{codegreen},
+%    keywordstyle=\color{magenta},
+%    numberstyle=\tiny\color{codegray},
+%    stringstyle=\color{codepurple},
+%    basicstyle=\footnotesize,
+%    breakatwhitespace=false,         
+%    breaklines=true,                 
+%    captionpos=b,                    
+%    keepspaces=true,                 
+%    numbers=left,                     
+%    numbersep=5pt,                  
+%    showspaces=false,                
+%    showstringspaces=false,
+%    showtabs=false,                  
+%    tabsize=2
+%}
+%
+%\lstset{style=codestyle}
+%
+%\lstdefinelanguage{JavaScript}{
+%	keywords={break, case, catch, continue, debugger, default, delete, do, else,
+%	finally, for, function, if, in, instanceof, new, return, switch, this, throw,
+%	try, typeof, var, void, while, with}, morecomment=[l]{//},
+%	morecomment=[s]{/*}{*/}, morestring=[b]',
+%	morestring=[b]",
+%	sensitive=true
+%}
 
 % include für Visio Dokumente. 1cm Rand wird weggeschniten
 \newcommand{\includevisio}[2][]{\includegraphics[clip, trim=1cm 1cm 1cm 1cm, #1]{#2}} 

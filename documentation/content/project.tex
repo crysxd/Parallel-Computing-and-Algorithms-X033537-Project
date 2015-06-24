@@ -8,26 +8,51 @@ We use the following notation:
 \item Matrices are written in uppercase bold e.g. $\mathbf{X}$.
 \item Vectors are written in lowercase bold e..g $\mathbf{x}$.
 \item scalars are written in lowercase or uppercase. Lowercase indicates that it is a counting variable and uppercase that it is one of the limits in an finite set.
-\item For all functions , e.g. $f(x)$, where $x = \mathbf{X}$ , we apply the function elementwise.
-\item Dot product is indicated by simple concatination of two matrices/vectors e.g. $\mathbf{X} \mathbf{y}$.
+\item For all functions , e.g. $f(x)$, where $x = \mathbf{X}$ , we apply the function element wise.
+\item Dot product is indicated by simple concatenation of two matrices/vectors e.g. $\mathbf{X} \mathbf{y}$.
 \item Element wise multiplication is indicated as $\mathbf{X} \otimes \mathbf{Z}$.
 \end{itemize}
 
 Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier. 
 
-Overall we have two different modes: Training and evaluation. In the training phase we use the backpropagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
+Overall we have two different modes: Training and evaluation. In the training phase we use the back propagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
 
-The weights are in our simple case randomly initzialized and then updated using the backpropagation rule.
+The weights are in our simple case randomly initialized and then updated using the back propagation rule.
 
 A basic neural network has therefore the following parameters:
 \begin{itemize}
 \item The weights from an neuron $k$ in layer $a$ to a neuron $j$ in layer $b$
 \item The input to the network, usually a vector $\mathbf{x}$ with $k$ values
+\item The target which should be estimated, usually a vector $\mathbf{t}$ with $q$ values.
 \item The learning rate $\eta$, which is the indicator how fast the network learns.
 \end{itemize}
 
 Moreover we can add some advanced techniques as the momentum to speed up the training the momentum 
 
+
+\subsection{Gradient Descent}
+Gradient descent is a first-order optimization algorithm. To find a local minimum of a function using gradient descent, it takes steps proportional to the negative of the gradient (or of the approximate gradient) of the function at the current point. If instead one takes steps proportional to the positive of the gradient, one approaches a local maximum of that function; the procedure is then known as gradient ascent \cite{Kiwiel2001,Qian1999}.
+
+Gradient descent is based on the observation that if the multivariable function $F(\mathbf{x})$ is defined and differentiable in a neighborhood of a point $\mathbf{a}$, then $F(\mathbf{x})$ decreases fastest if one goes from $\mathbf{a}$ in the direction of the negative gradient of F at $\mathbf{a}, -\nabla F(\mathbf{a})$ \cite{Yuan1999}. It follows that, if
+\begin{equation}
+\mathbf{b} = \mathbf{a}-\gamma\nabla F(\mathbf{a})
+\end{equation}
+for $\gamma$ small enough, then $F(\mathbf{a})\geq F(\mathbf{b})$. With this observation in mind, one starts with a guess $\mathbf{x}_0$ for a local minimum of F, and considers the sequence $\mathbf{x}_0, \mathbf{x}_1, \mathbf{x}_2, \dots$ such that
+\begin{equation}
+\mathbf{x}_{n+1}=\mathbf{x}_n-\gamma_n \nabla F(\mathbf{x}_n),\ n \ge 0.
+\end{equation}
+
+Finally we have \cite{Cauchy1847}:
+\begin{equation}
+F(\mathbf{x}_0)\ge F(\mathbf{x}_1)\ge F(\mathbf{x}_2)\ge \cdots,
+\end{equation}
+
+
+\subsection{Stochastic Gradient Descent}
+
+\subsection{The Forward Backward procedure in detail}
+
+To train the network we use the standard back-propagation algorithm, which essentially does a forward and a backward pass of the network in a row.
 Firstly we initialize the weights in a matrix. 
 \begin{align}
 \mathbf{W}_{j \times k } = \begin{bmatrix}
@@ -48,8 +73,6 @@ a_{k}
 \paragraph{Forward propagation} is one of the two passes the network needs to do ( hence it's name ).
 In forward propagation the network calculates the predicted output of the network.
 
-Here we assume having 
-
 The output of the hidden layer $j$ of the network can be calculated as the weighted sum of the inputs
 \begin{align}
 \mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k = \mathbf{W} \mathbf{x}
@@ -59,7 +82,7 @@ Even though this method should already work, we add a bias to every node to incr
 
 \begin{align}
 \mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k + b_k = \mathbf{W} \mathbf{x} + \mathbf{b}
-\end{align}
+\end{align}r
 
 
 Later we see that back-propagation needs some variables, which can be already precomputed during the forward step. These two variables are the output $\mathbf{o}_j$ of layer $j$ and the derivative of the output w.r.t to the weighted sum $\mathbf{nnet}_j$. We represent the derivatives in a matrix $\mathbf{D}$ and the output of the current layer 
@@ -75,5 +98,87 @@ For the outputs, we simply feed forward the network and store the output $\mathb
 \mathbf{o}_j = \varphi \left( \mathbf{Wx+b} \right)
 \end{align}
 
+As soon as the feed forward is done, we produced an output of the network, which we can denote as $\mathbf{o}_L$. Now we need to decide how close our output is to the targetted output $\mathbf{t}$. For this we use a cost function in usual cases it is sufficient to use $MSE$ as such, which is defined as:
+\begin{equation}
+\label{eq:mse}
+\mathbf{err} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
+\end{equation}
 
-\paragraph{Backpropagation}
+Here (\ref{eq:mse}) we need to make sure that the last output layer has the same dimensions as the target output.
+
+
+\paragraph{Backpropagation} starts when all layers are trained. The idea behind backpropation is that the hidden layers do not produce any output. So we cannot modify their weights directly, since we don’t know how large the error was. With back propagation we calculate the error at the output layer $L$ and then propagate this error to the hidden layers back. Therefore we update all $L-1$ weight matrices and biases.
+
+At first we calculate the differences between the target output and the estimated output.
+
+\begin{align}
+\boldsymbol{\delta}_L = \mathbf{err} \otimes \mathbf{D}\\
+\nabla \mathbf{W}_L = \mathbf{o}_L \boldsymbol{\delta}_L^T
+\end{align}
+
+We store both, the deltas and the nablas to later update the weights ( with the $\nabla$s) and the biases (using the $\mathbf{\delta}$).
+From here on we then calculate the other layers backwards, we do:
+\begin{align}
+\boldsymbol{\delta}_i = \mathbf{D}_i \otimes \left( \mathbf{W}_{i+1}^T \boldsymbol{\delta}_{i+1} \right)\\
+\nabla \mathbf{W}_i = \mathbf{o}_i \boldsymbol{\delta}_i^T
+\end{align}
+Whereas we again store the deltas and the nablas to later update the weights.
+
+To update the weights, we use the usual gradient descent update rule:
+\begin{align}
+\mathbf{W}^{*} = \mathbf{W} - \alpha \nabla \mathbf{W}_i\\
+\end{align}
+
+To update the biases, we use essentially the same update rule, but only consider the given $\boldsymbol{\delta}_{i}$s.
+\begin{equation}
+\mathbf{b}^{*} = \mathbf{b} - \alpha \boldsymbol{\delta}_i\\
+\end{equation}
+
+Finally, if we would like to improve the converging speed we can apply momentum. Momentum adds extra "velocity" towards the gradient curve, by using the last estimated value of the gradient $\mathbf{W}^{*}_{p-1}$ ($p$ denotes the current iteration) and applying on that the momentum as:
+
+
+\section{Implementation details}
+
+OpenCL offers multiple implementation types. It is natively written in C, but has also a C++ wrapper onboard. We used in our project the C++ wrapper since it is more naturally to use that in a C++ project.
+First one needs to include the necessary header into any class.
+
+\begin{lstlisting}[caption=OpenCL C++ header]
+#include <CL/cl.hpp>
+\end{lstlisting}
+
+\label{lst:mult}
+\begin{lstlisting}[caption=Example Kernel function]
+__kernel void mult(const int wSrc, __global const float* A,__global const float* B,__global float* output)
+{
+   const int idx = get_global_id(0);
+   const int idy = get_global_id(1);
+
+   output[idy*wSrc+idx] = A[idy*wSrc+idx] * B[idy*wSrc+idx];
+}
+\end{lstlisting}
+OpenCL uses externally defined functions ( coined as kernels ) to compile the code and run it, during the runtime. Therefore one needs to write a kernel for its needs. An example kernel can be seen at \ref{lst:mult}. In our case we defined various kernels, for dot products and other matrix operations.
+
+Since OpenCL is a multi device and platform GPU/CPU interface, one needs to first figure out which kind of platform (e.g. NVIDIA,AMD,Intel) the current machine is using and then decide which accelerator will be used \ref{lst:plat}.
+
+\label{lst:plat}
+\begin{lstlisting}[caption=Get Platforms and devices]
+void exampleplatform(const char * programpath){
+std::vector<cl::Platform> all_platforms;
+cl::Platform::get(&all_platforms);
+//Assume having only one platform
+cl::Platform defaultplatform = all_platforms[0];
+std::vector<cl::Device> all_gpu_devices;
+//CL_DEVICE_TYPE_GPU can also be CL_DEVICE_TYPE_CPU for CPU
+defaultplatform.getDevices(CL_DEVICE_TYPE_GPU, &all_gpu_devices);
+}
+\end{lstlisting}
+
+
+Moreover since OpenCL is compiled during runtime, one needs to extract the code from the kernel file (e.g. kernel.cl) and give this content to the OpenCL
+
+
+
+\paragraph{The interface to OpenCL} was written in C++11 and makes heavily use of the current variadic args feature. For this small scale task, the interface is definately too complex, but it can be used in any other  
+\begin{lstlisting}[language=c++]
+
+\end{lstlisting}

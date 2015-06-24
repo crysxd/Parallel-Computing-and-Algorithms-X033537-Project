@@ -1,0 +1,43 @@
+@article{Kiwiel2001,
+author = {Kiwiel, Krzysztof C.},
+doi = {10.1007/PL00011414},
+issn = {0025-5610},
+journal = {Mathematical Programming},
+month = mar,
+number = {1},
+pages = {1--25},
+title = {{Convergence and efficiency of subgradient methods for quasiconvex minimization}},
+url = {http://link.springer.com/10.1007/PL00011414},
+volume = {90},
+year = {2001}
+}
+@article{GeoffreyHinton,
+author = {{Geoffrey Hinton} and Hinton, Geoffrey and Swersky, Kevin and Srivastava, Nitish},
+journal = {YouTube},
+title = {{6 - 3 - The momentum method}},
+url = {https://www.youtube.com/watch?v=ts7I5Iw4Y5M}
+}
+@article{Qian1999,
+author = {Qian, Ning},
+journal = {Neural Networks},
+number = {1},
+pages = {145 -- 151},
+title = {{On the momentum term in gradient descent learning algorithms}},
+volume = {12},
+year = {1999}
+}
+@article{Yuan1999,
+author = {Yuan, Ya-xiang},
+journal = {AMS/IP Studies in Advanced Mathematics},
+number = {2},
+title = {{Step-sizes for the gradient method}},
+volume = {42},
+year = {1999}
+}
+@book{Cauchy1847,
+author = {Cauchy, Augustin},
+pages = {536 -- 538},
+title = {{M\'{e}thode g\'{e}n\'{e}rale pour la r\'{e}solution des syst\`{e}mes d'\'{e}quations simultan\'{e}es}},
+url = {http://gallica.bnf.fr/ark:/12148/bpt6k2982c.image.f540.pagination.langEN},
+year = {1847}
+}
