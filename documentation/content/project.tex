@@ -1,0 +1,79 @@
+\chapter{Project Description}
+
+\section{Basics}
+
+%Can put  this into the introduction
+We use the following notation:
+\begin{itemize}
+\item Matrices are written in uppercase bold e.g. $\mathbf{X}$.
+\item Vectors are written in lowercase bold e..g $\mathbf{x}$.
+\item scalars are written in lowercase or uppercase. Lowercase indicates that it is a counting variable and uppercase that it is one of the limits in an finite set.
+\item For all functions , e.g. $f(x)$, where $x = \mathbf{X}$ , we apply the function elementwise.
+\item Dot product is indicated by simple concatination of two matrices/vectors e.g. $\mathbf{X} \mathbf{y}$.
+\item Element wise multiplication is indicated as $\mathbf{X} \otimes \mathbf{Z}$.
+\end{itemize}
+
+Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier. 
+
+Overall we have two different modes: Training and evaluation. In the training phase we use the backpropagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
+
+The weights are in our simple case randomly initzialized and then updated using the backpropagation rule.
+
+A basic neural network has therefore the following parameters:
+\begin{itemize}
+\item The weights from an neuron $k$ in layer $a$ to a neuron $j$ in layer $b$
+\item The input to the network, usually a vector $\mathbf{x}$ with $k$ values
+\item The learning rate $\eta$, which is the indicator how fast the network learns.
+\end{itemize}
+
+Moreover we can add some advanced techniques as the momentum to speed up the training the momentum 
+
+Firstly we initialize the weights in a matrix. 
+\begin{align}
+\mathbf{W}_{j \times k } = \begin{bmatrix}
+w_{11} & w_{12} & \ldots & w_{1k}\\
+w_{21} & \ddots & & \vdots\\
+\vdots & & \ddots  & \vdots\\
+w_{j1} & \ldots & \ldots  & w_{jk}\\
+\end{bmatrix},
+\mathbf{x}_{1 \times k} = \begin{bmatrix}
+a_{1} \\
+\vdots\\
+\vdots \\
+a_{k}
+\end{bmatrix}
+\end{align}
+
+
+\paragraph{Forward propagation} is one of the two passes the network needs to do ( hence it's name ).
+In forward propagation the network calculates the predicted output of the network.
+
+Here we assume having 
+
+The output of the hidden layer $j$ of the network can be calculated as the weighted sum of the inputs
+\begin{align}
+\mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k = \mathbf{W} \mathbf{x}
+\end{align}
+
+Even though this method should already work, we add a bias to every node to increase the learning speed and void that the network stops learning.
+
+\begin{align}
+\mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k + b_k = \mathbf{W} \mathbf{x} + \mathbf{b}
+\end{align}
+
+
+Later we see that back-propagation needs some variables, which can be already precomputed during the forward step. These two variables are the output $\mathbf{o}_j$ of layer $j$ and the derivative of the output w.r.t to the weighted sum $\mathbf{nnet}_j$. We represent the derivatives in a matrix $\mathbf{D}$ and the output of the current layer 
+\begin{align}
+\mathbf{D} = \frac{\mathbf{o}_j}{\mathbf{nnet}_j}
+\end{align}
+In case of sigmoid activation function, we obtain:
+\begin{align}
+\mathbf{D} = \varphi \left( \mathbf{nnet}_j \right) \left( 1 - \varphi \left(\mathbf{nnet}_j \right) \right)
+\end{align}
+For the outputs, we simply feed forward the network and store the output $\mathbf{o}_j$ in out buffered lists.
+\begin{align}
+\mathbf{o}_j = \varphi \left( \mathbf{Wx+b} \right)
+\end{align}
+
+
+\paragraph{Backpropagation}

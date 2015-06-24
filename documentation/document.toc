@@ -1,0 +1,7 @@
+\select@language {english}
+\select@language {english}
+\contentsline {chapter}{Table of Contents}{i}{Doc-Start}
+\contentsline {chapter}{List of Figures}{iii}{Doc-Start}
+\contentsline {chapter}{\numberline {1}Project Description}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Basics}{1}{section.1.1}
+\contentsline {paragraph}{\nonumberline Forward propagation}{1}{section*.1}

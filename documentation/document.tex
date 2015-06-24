@@ -1,0 +1,62 @@
+%------------------------------------------------------------------------------
+% Setup
+%------------------------------------------------------------------------------
+\documentclass[ 
+	12pt,
+	a4paper,
+	bibliography=totoc,
+	cleardoublepage=e, 
+	index=totoc,
+	ngerman, 
+	openright
+	final, 
+	listof=nochaptergap,
+	]{scrbook}
+	
+\include{framework/usepackage}
+\include{framework/preamble}
+
+%------------------------------------------------------------------------------
+% Dokument
+%------------------------------------------------------------------------------
+\begin{document}
+
+\setcounter{secnumdepth}{3}
+ 
+% Titelblatt
+\include{framework/title}
+\cleardoubleemptypage
+
+\frontmatter
+
+% Inhaltsverzeichnis
+\tableofcontents
+\addcontentsline{toc}{chapter}{Table of Contents}
+\cleardoubleemptypage
+
+% Abbildungsverzeichnis einbinden und ins Inhaltsverzeichnis
+% WORKAROUND: tocloft und KOMA funktionieren zusammen nicht
+% korrekt\phantomsection
+\addcontentsline{toc}{chapter}{\listfigurename} 
+\listoffigures
+\cleardoubleemptypage
+
+% Abkürzungsverzeichnis
+\include{framework/abbreviations}
+
+\mainmatter
+
+% Inhalt
+\include{content/examples}
+\include{content/project}
+
+% Literaturverzeichnis
+\singlespacing
+\bibliographystyle{alphadin}
+\bibliography{bibtex}
+
+\appendix
+\include{content/anhang}
+% Hier können Anhaenge angefuegt werden
+
+\end{document}
