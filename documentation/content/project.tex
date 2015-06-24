@@ -50,6 +50,25 @@ F(\mathbf{x}_0)\ge F(\mathbf{x}_1)\ge F(\mathbf{x}_2)\ge \cdots,
 
 \subsection{Stochastic Gradient Descent}
 
+Both statistical estimation and machine learning consider the problem of minimizing an objective function that has the form of a sum:
+\begin{equation}
+Q(w) = \sum_{i=1}^n Q_i(w)
+\end{equation}
+
+where the parameter $w^*$ which minimizes Q(w) is to be estimated. Each summand function $Q_i$ is typically associated with the $i$-th observation in the data set (used for training).
+
+When used to minimize the above function, a standard (or "batch") gradient descent method would perform the following iterations :
+\begin{equation}
+w := w - \eta \nabla Q(w) = w - \alpha \sum_{i=1}^n \nabla Q_i(w)
+\end{equation}
+where $\eta$ is the learning rate.
+
+But since in many cases, the update of one gradient would take to estimate the gradient over the whole dataset, the computation would take too much time. Often times we only need a rough estimate of the gradient, not a precise one.
+
+Therefore in Stochastic Gradient descent we randomly subset the training set and only take some samples out of it and estimate the gradient out of the seen sample set.
+
+The important thing to do is to randomize the training set, since otherwise only a small portion of the training set will be seen and leads to wrong gradients.
+
 \subsection{The Forward Backward procedure in detail}
 
 To train the network we use the standard back-propagation algorithm, which essentially does a forward and a backward pass of the network in a row.
