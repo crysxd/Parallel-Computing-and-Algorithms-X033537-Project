@@ -10,5 +10,5 @@
 \contentsline {paragraph}{\nonumberline Forward propagation}{3}{section*.1}
 \contentsline {paragraph}{\nonumberline Backpropagation}{4}{section*.2}
 \contentsline {section}{\numberline {1.2}Implementation details}{5}{section.1.2}
-\contentsline {paragraph}{\nonumberline The interface to OpenCL}{6}{section*.3}
-\contentsline {chapter}{\nonumberline Bibliography}{7}{chapter*.4}
+\contentsline {paragraph}{\nonumberline The interface to OpenCL}{5}{section*.3}
+\contentsline {chapter}{\nonumberline Bibliography}{11}{chapter*.4}
