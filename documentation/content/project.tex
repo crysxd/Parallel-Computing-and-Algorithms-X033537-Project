@@ -2,6 +2,7 @@
 
 \section{Basics}
 
+
 %Can put  this into the introduction
 We use the following notation:
 \begin{itemize}
@@ -16,6 +17,8 @@ We use the following notation:
 Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier. 
 
 Overall we have two different modes: Training and evaluation. In the training phase we use the back propagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
+
+Furthermore a neural network contains $L$ hidden layers, which are called hidden since their output is not directly observable.
 
 The weights are in our simple case randomly initialized and then updated using the back propagation rule.
 
@@ -48,7 +51,7 @@ F(\mathbf{x}_0)\ge F(\mathbf{x}_1)\ge F(\mathbf{x}_2)\ge \cdots,
 \end{equation}
 
 
-\subsection{Stochastic Gradient Descent}
+\subsection{Minibatch Stochastic Gradient Descent}
 
 Both statistical estimation and machine learning consider the problem of minimizing an objective function that has the form of a sum:
 \begin{equation}
@@ -65,7 +68,14 @@ where $\eta$ is the learning rate.
 
 But since in many cases, the update of one gradient would take to estimate the gradient over the whole dataset, the computation would take too much time. Often times we only need a rough estimate of the gradient, not a precise one.
 
-Therefore in Stochastic Gradient descent we randomly subset the training set and only take some samples out of it and estimate the gradient out of the seen sample set.
+What stochastic gradient descent does is to remove the sum and only uses one sample to estimate the gradient. 
+\begin{equation}
+w := w - \eta \nabla Q(w) = w - \alpha \nabla Q(w)
+\end{equation}
+In practice this turns out to be less effective than batch gradient descent, since we only get a very rough estimate of the gradient.
+Therefore the minibatch gradient descent technique is used. The difference here is that while batch gradient descent uses $n$ samples and stochastic gradient descent uses only $1$, minibatch gradient uses $b$ training samples, where $b << n$. Typical sizes for $b$ are in the range if $b \in {2,\ldots,100}$.
+
+Therefore in minibatch stochastic Gradient descent we randomly subset the training set and only take some samples out of it and estimate the gradient out of the seen sample set.
 
 The important thing to do is to randomize the training set, since otherwise only a small portion of the training set will be seen and leads to wrong gradients.
 
@@ -302,3 +312,6 @@ template<std::size_t P = 0, typename... Tp>
 
 This recipe can be used to do the same actions for the reading buffers out after the transfer has finished.
 Therefore we can create a highly dynamic wrapper class for OpenCL.
+
+\subsection{Using the Interface}
+
