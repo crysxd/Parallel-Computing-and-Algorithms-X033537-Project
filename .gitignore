@@ -26,3 +26,9 @@
 *.exe
 *.out
 *.app
+
+*.pyc
+
+*.py~
+
+OpenCl_DNN/src/wrapper/savefile.bin
