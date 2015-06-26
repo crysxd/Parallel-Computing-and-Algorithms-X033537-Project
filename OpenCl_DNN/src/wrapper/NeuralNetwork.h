@@ -15,6 +15,7 @@ class NeuralNetwork {
 	float learningRate;
 	float momentum;
 	FeedForwardNN* network = 0;
+    std::vector<float> lastErrors;
 	void fillMatrixFromNumpy(Matrix &matrix, float* inputValues, int rowLength, int rowCount);
 
 public:
@@ -24,7 +25,7 @@ public:
 	uint64_t save(std::string saveFile);
 	double getResultNode(uint64_t node);
 	void test(float* inputValues, int rowLength, int rowCount);
-	void train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount);
+	void train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen);
 	uint64_t getOutputSize();
 	uint64_t getInputSize();
 	void readMatTest(float *out[], int *rows, int *cols);

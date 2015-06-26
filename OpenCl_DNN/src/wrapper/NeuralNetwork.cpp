@@ -99,7 +99,7 @@ void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int rowLen
 	}
 }
 
-void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
+void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen) {
     /* Transform row length from the length in byte to the length in floats */
 	inputRowLength = inputRowLength/ sizeof(float);
 	outputRowLength = outputRowLength/ sizeof(float);
@@ -110,10 +110,10 @@ void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowL
 	this->fillMatrixFromNumpy(matrixOut, inputValues, outputRowLength, rowCount);
 
 	/* Run */
-	std::vector<float> errors= this->network->trainbatch(matrixIn, matrixOut);
+	this->lastErrors = this->network->trainbatch(matrixIn, matrixOut);
 
-	/* FIXME: Give errors back / output */
-
+	*errorsOut = this->lastErrors.data();
+    *errorsLen = this->lastErrors.size();
 }
 
 uint64_t NeuralNetwork::getOutputSize() {
@@ -150,8 +150,8 @@ extern "C" {
 
     }
 
-    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
-    	foo->train(inputValues, outputValues, inputRowLength, outputRowLength, rowCount);
+    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen) {
+    	foo->train(inputValues, outputValues, inputRowLength, outputRowLength, rowCount, errorsOut, errorsLen);
 
     }
 

@@ -7,6 +7,9 @@ lib = cdll.LoadLibrary('../../bin/libnn.so')
 
 class NeuralNetwork(object):
     def __init__(self, saveFile=None, layerCount=0, layerSize=None, actFunctions=None, learningRate=0, momentum=0):
+        self.buffer_from_memory = pythonapi.PyBuffer_FromMemory
+        self.buffer_from_memory.restype = py_object
+
         if layerSize != None and actFunctions != None and layerCount != 0 and learningRate != 0 and momentum != 0:
             layerCount = c_ulonglong(layerCount)
             layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
@@ -28,7 +31,11 @@ class NeuralNetwork(object):
     def train(self, inputValues, outputValues):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_train(self.obj, inputvaluespointer, outputValuespointer, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0])
+        errors = ctypes.POINTER(ctypes.c_float)()
+        errorsLen = ctypes.c_int()
+        lib.NeuralNetwork_train(self.obj, inputvaluespointer, outputValuespointer, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0], ctypes.byref(errors), ctypes.byref(errorsLen))
+
+        return self._toNpArray(errors, (errorsLen, ))
 
     def test(self, inputValues):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
@@ -53,9 +60,12 @@ class NeuralNetwork(object):
         data = ctypes.POINTER(ctypes.c_float)()
         lib.NeuralNetwork_readMatTest(self.obj, ctypes.byref(data), ctypes.byref(rows), ctypes.byref(cols))
 
-        buffer_from_memory = pythonapi.PyBuffer_FromMemory
-        buffer_from_memory.restype = py_object
-        buffer = buffer_from_memory(data, 4*rows.value*cols.value)
+        buffer = self.buffer_from_memory(data, 4*rows.value*cols.value)
 
         a = np.frombuffer(buffer, np.float32).reshape((rows.value, cols.value))
         return a
+
+    @classmethod
+    def _toNpArray(cls, data, shape):
+        buffer = self.buffer_from_memory(data, 4*np.prod(shape))
+        return np.frombuffer(buffer, np.float32).reshape(shape)
