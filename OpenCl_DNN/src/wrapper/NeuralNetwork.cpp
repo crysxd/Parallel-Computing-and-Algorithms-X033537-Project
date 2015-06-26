@@ -73,13 +73,13 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 void NeuralNetwork::test(float* inputValues, int rowLength, int rowCount) {
     /* Transform row length from the length in byte to the length in floats */
 	rowLength /= sizeof(float);
-
+    std::cout << "WDADWD" <<std::endl;
 	/* Create matrix */
-	CLMatrix matrix(rowCount, this->getInputSize());
-	this->fillCLMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
+	Matrix matrix(rowCount, this->getInputSize());
+	this->fillMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
 
 	/* Run */
-	CLMatrix result = this->network.test(matrix);
+	Matrix result = this->network->test(matrix);
 
 	/* FIXME: Give result back / output */
 }
@@ -90,28 +90,27 @@ double NeuralNetwork::getResultNode(uint64_t node) {
 }
 
 
-void NeuralNetwork::fillCLMatrixFromNumpy(CLMatrix &matrix, float* numpy, int rowLength, int rowCount) {
+void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int rowLength, int rowCount) {
 	for(int r=0; r<rowCount; r++) {
 		for(int c=0; c<4; c++) {
 			float* addr = numpy + rowLength * r + c;
 			matrix.fillAt(r, c, *addr);
-
 		}
 	}
 }
 
 void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
     /* Transform row length from the length in byte to the length in floats */
-	rowLength /= sizeof(float);
-
+	inputRowLength = inputRowLength/ sizeof(float);
+	outputRowLength = outputRowLength/ sizeof(float);
 	/* Create matrix */
-	CLMatrix matrixIn(rowCount, this->getInputSize());
-	CLMatrix matrixOut(rowCount, this->getInputSize());
-	this->fillCLMatrixFromNumpy(matrixIn, inputValues, intputRowLength, rowCount);
-	this->fillCLMatrixFromNumpy(matrixOut, inputValues, outtputRowLength, rowCount);
+	Matrix matrixIn(rowCount, this->getInputSize());
+	Matrix matrixOut(rowCount, this->getInputSize());
+	this->fillMatrixFromNumpy(matrixIn, inputValues, inputRowLength, rowCount);
+	this->fillMatrixFromNumpy(matrixOut, inputValues, outputRowLength, rowCount);
 
 	/* Run */
-	CLMatrix errors = this->network.trainbatch(matrixIn, matrixOut);
+	std::vector<float> errors= this->network->trainbatch(matrixIn, matrixOut);
 
 	/* FIXME: Give errors back / output */
 
@@ -137,27 +136,29 @@ void NeuralNetwork::readMatTest(float *out[], int *rows, int *cols) {
 
 extern "C" {
 	NeuralNetwork* NeuralNetwork_new(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum) {
-		return new NeuralNetwork(layerCount, layerSize, actFunctions, learningRate, momentum); 
-	
+		return new NeuralNetwork(layerCount, layerSize, actFunctions, learningRate, momentum);
+
 	}
-    
-    NeuralNetwork* NeuralNetwork_newLoad(char* saveFile) { 
-    	return new NeuralNetwork(saveFile); 
+
+    NeuralNetwork* NeuralNetwork_newLoad(char* saveFile) {
+    	return new NeuralNetwork(saveFile);
 
     }
 
-    uint64_t NeuralNetwork_save(NeuralNetwork* foo, char* saveFile) { 
-    	return foo->save(saveFile); 
+    uint64_t NeuralNetwork_save(NeuralNetwork* foo, char* saveFile) {
+    	return foo->save(saveFile);
 
     }
-    
-    void NeuralNetwork_train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
-    	foo->train(inputValues, outPutValues, inputRowLength, outputRowLength, rowCount); 
-    
+
+    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
+    	foo->train(inputValues, outputValues, inputRowLength, outputRowLength, rowCount);
+
     }
 
     void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int rowLength, int rowCount) {
-    	foo->test(inputValues, rowLength, rowCount); 
+        std::cout << "WDADWD" <<std::endl;
+
+    	foo->test(inputValues, rowLength, rowCount);
 
     }
 
@@ -167,17 +168,17 @@ extern "C" {
     }
 
     void NeuralNetwork_free(NeuralNetwork* foo) {
-    	delete foo; 
+    	delete foo;
 
     }
 
     uint64_t NeuralNetwork_getOutputSize(NeuralNetwork* foo) {
-    	return foo->getOutputSize(); 
+    	return foo->getOutputSize();
 
     }
 
     uint64_t NeuralNetwork_getInputSize(NeuralNetwork* foo) {
-    	return foo->getInputSize(); 
+    	return foo->getInputSize();
 
     }
 

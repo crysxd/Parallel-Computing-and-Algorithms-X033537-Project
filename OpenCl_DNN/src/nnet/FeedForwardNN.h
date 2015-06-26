@@ -25,6 +25,9 @@ class FeedForwardNN {
 public:
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate);
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,float lrate);
+
+	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate, std::vector<std::pair<Matrix,Matrix>> weight_biases);
+
 	virtual ~FeedForwardNN();
 
 	/** Adds a hidden layer with neuron- neurons to the network*/
@@ -37,6 +40,7 @@ public:
 	Matrix test(Matrix&in);
 
 	std::vector<float> trainbatch(Matrix &in, Matrix &target);
+// Helper functions to get the strides
 
 	void trainsgd();
 
@@ -45,6 +49,11 @@ public:
 	void setCost(Cost *c){
 		this->_costfunc = c;
 	}
+
+	const std::vector<std::pair<Matrix, Matrix> >& getWeightBiases() const {
+		return _weight_biases;
+	}
+
 
 private:
 

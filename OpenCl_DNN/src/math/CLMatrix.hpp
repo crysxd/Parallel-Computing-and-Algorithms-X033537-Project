@@ -47,6 +47,8 @@ public:
 	/** Shuffles the column or row of the given matrix. */
 	void shuffle(bool row);
 
+	void fillAt(u_int32_t i,u_int32_t j,T value);
+
 	/** Transposes the matrix */
 	CL_Matrix<T> transpose() const;
 
@@ -126,12 +128,20 @@ public:
 //	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
 
+	T* data() const{
+		return this->mat.data();
+	}
+
 	u_int32_t getCols() const {
 		return _n_cols;
 	}
 
 	u_int32_t getRows() const {
 		return _n_rows;
+	}
+
+	u_int32_t getLength() const{
+		return this->mat.size();
 	}
 
 	template< typename V>
@@ -141,10 +151,10 @@ private:
 
 	CL_Matrix(u_int32_t row,u_int32_t col,std::vector<T>& data);
 
-//	Number of rows
-	u_int32_t _n_rows;
 //	Number of columns
 	u_int32_t _n_cols;
+//	Number of rows
+	u_int32_t _n_rows;
 
 //	The acutal matrix behind it, we use std vector because the OpenCL
 	std::vector<T> mat;
@@ -153,6 +163,8 @@ private:
 	OpenCL _cl;
 
 };
+
+
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t row, u_int32_t col,

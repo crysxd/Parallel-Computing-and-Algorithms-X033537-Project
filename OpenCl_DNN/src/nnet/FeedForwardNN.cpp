@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 2
+#define NUM_EPOCHS 10
 
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 //	Init weights and biases
@@ -167,7 +167,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 #if !DEBUG
 		std::cout << "Epoch " << epoch +1 << " Error " << 0.5f*epoch_error.transpose().dot(epoch_error);
 #endif
-		errors.push_back((float)epoch_error);
+		errors.push_back(static_cast<float>(epoch_error));
 
 		/////////////////////////
 		// Update the weights //
@@ -202,6 +202,24 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim,
 
 Matrix FeedForwardNN::test(Matrix& in) {
 //	Just run a ffwd and return result
+	assert(in.getRows() == _in_dim);
+//	Matrix predictions(10,10,);
+	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
+		for(auto i=0u; i < in.getCols();i++){
+			// Get the column of the input and use it as input
+			Matrix inputvector = in.subMatCol(i);
+//			Do not train the network
+			Matrix const &predict = this->feedforward(inputvector,false);
+
+		}
+	}
+//	return predictions;
+
+}
+
+FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate,
+		std::vector<std::pair<Matrix, Matrix> > weight_biases):FeedForwardNN(indim,outdim,lrate) {
+	this->_weight_biases = weight_biases;
 }
 
 void FeedForwardNN::init() {
@@ -235,4 +253,3 @@ void FeedForwardNN::init() {
 
 
 }
-

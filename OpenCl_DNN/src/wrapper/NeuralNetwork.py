@@ -12,7 +12,7 @@ class NeuralNetwork(object):
             layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
             actFunctions = actFunctions.ctypes.data_as(POINTER(c_ulonglong))
             learningRate = c_float(learningRate)
-            momentum = c_float(momentum)            
+            momentum = c_float(momentum)
 
             self.obj = lib.NeuralNetwork_new(layerCount, layerSize, actFunctions, learningRate, momentum)
 
@@ -26,13 +26,13 @@ class NeuralNetwork(object):
         lib.NeuralNetwork_save(self.obj, saveFile)
 
     def train(self, inputValues, outputValues):
-        inputValues = inputValues.ctypes.data_as(POINTER(c_float))
-        outputValues = outputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_train(self.obj, inputValues, outputValues, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0])
+        inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
+        outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
+        lib.NeuralNetwork_train(self.obj, inputvaluespointer, outputValuespointer, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0])
 
     def test(self, inputValues):
-        inputValues = inputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_test(self.obj, inputValues, inputValues.strides[0], inputValues.shape[0])
+        inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
+        lib.NeuralNetwork_test(self.obj, inputvaluespointer, inputValues.strides[0], inputValues.shape[0])
 
     def getResultNode(self, node):
         node = c_int(node)

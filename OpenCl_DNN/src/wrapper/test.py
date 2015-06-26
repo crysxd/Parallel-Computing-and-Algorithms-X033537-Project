@@ -6,15 +6,15 @@ f = NeuralNetwork(None, 3, np.array([5,10,2]), np.array([1,2,3]), 1337.1, 1337.2
 
 print f.getInputSize()
 print f.getOutputSize()
-arr = f.test(arr)
-f.save("savefile.bin")
+# arr = f.test(arr)
+# f.save("savefile.bin")
 
-print "Load...."
-f = NeuralNetwork("savefile.bin")
-print f.getInputSize()
-print f.getOutputSize()
-for i in range(0, f.getOutputSize()):
-    print f.getResultNode(i)
+# print "Load...."
+# f = NeuralNetwork("savefile.bin")
+# print f.getInputSize()
+# print f.getOutputSize()
+# for i in range(0, f.getOutputSize()):
+#     print f.getResultNode(i)
 
-print f.readMatTest()
-print type(f.readMatTest())
+# print f.readMatTest()
+# print type(f.readMatTest())

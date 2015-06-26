@@ -189,6 +189,12 @@ inline void CL_Matrix<T>::shuffle(bool row){
 	}
 }
 
+template<typename T>
+inline void CL_Matrix<T>::fillAt(u_int32_t r, u_int32_t c, T value) {
+	assert(r*c < this->mat.size());
+	this->mat.at( r * this->_n_cols + c) = value;
+}
+
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {

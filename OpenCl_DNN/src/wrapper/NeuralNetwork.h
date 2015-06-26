@@ -5,6 +5,8 @@
 #include "CLMatrix.hpp"
 #include "FeedForwardNN.h"
 
+typedef CL_Matrix<float> Matrix;
+
 class NeuralNetwork {
 	double* result = 0;
 	uint64_t layerCount;
@@ -13,7 +15,7 @@ class NeuralNetwork {
 	float learningRate;
 	float momentum;
 	FeedForwardNN* network = 0;
-	void fillCLMatrixFromNumpy(CLMatrix &matrix, float* inputValues, int rowLength, int rowCount);
+	void fillMatrixFromNumpy(Matrix &matrix, float* inputValues, int rowLength, int rowCount);
 
 public:
 	NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum);
