@@ -128,7 +128,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 	this->init();
 	// Begin running the neural network for NUM_EPOCHS iterations
 	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
-		Matrix epoch_error(target.getRows(),1);
+		double epoch_error = 0;
 		std::vector<std::pair<Matrix,Matrix>> w_b;
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
 			//Init the weights and biases for this epoch with zero
@@ -154,7 +154,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			Matrix const &predict = this->feedforward(inputvector,true);
 			Matrix error = (target.subMatCol(i) - predict);
 
-			epoch_error+= error;
+			epoch_error+= 0.5*error.transpose().dot(error);
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
@@ -166,10 +166,10 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			}
 		}
 		// Print out the result
-#if !DEBUG
-		std::cout << "Epoch " << epoch +1 << " Error " << 0.5f*epoch_error.transpose().dot(epoch_error);
-#endif
-		errors.push_back(static_cast<float>(epoch_error));
+// #if !DEBUG
+		std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
+// #endif
+		errors.push_back(epoch_error);
 
 		/////////////////////////
 		// Update the weights //
