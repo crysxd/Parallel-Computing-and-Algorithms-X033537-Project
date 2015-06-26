@@ -15,9 +15,12 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 
 // 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
 
-// 	std::vector<uint64_t> layerSizes(this->layerSize, this->layerSize + this->layerCount);
-// 	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
-
+	std::vector<uint32_t> layerSizes(this->layerCount);
+    for(int i = 0; i < this->layerCount-2; i++)
+        layerSizes[i] = uint32_t(*(this->layerSize+i));
+	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
+    for(int i = 0; i < this->layerCount; i++)
+        this->network->addActivation(&this->sigmoid);
 }
 
 NeuralNetwork::NeuralNetwork(std::string saveFile)
@@ -106,17 +109,21 @@ void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int rowLen
 }
 
 void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen) {
+    std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
     /* Transform row length from the length in byte to the length in floats */
 	inputRowLength = inputRowLength/ sizeof(float);
 	outputRowLength = outputRowLength/ sizeof(float);
 	/* Create matrix */
 	Matrix matrixIn(rowCount, this->getInputSize());
-	Matrix matrixOut(rowCount, this->getInputSize());
+	Matrix matrixOut(rowCount, this->getOutputSize());
 	this->fillMatrixFromNumpy(matrixIn, inputValues, inputRowLength, rowCount);
 	this->fillMatrixFromNumpy(matrixOut, inputValues, outputRowLength, rowCount);
+    std::cout << "in " << matrixIn.getRows() << 'x' << matrixIn.getCols() << '\n';
+    std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
 	/* Run */
 	this->lastErrors = this->network->trainbatch(matrixIn, matrixOut);
+    std::cout << "trained\n";
 
 	*errorsOut = this->lastErrors.data();
     *errorsLen = this->lastErrors.size();

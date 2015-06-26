@@ -70,7 +70,6 @@ class NeuralNetwork(object):
         a = np.frombuffer(buffer, np.float32).reshape((rows.value, cols.value))
         return a
 
-    @classmethod
-    def _toNpArray(cls, data, shape):
+    def _toNpArray(self, data, shape):
         buffer = self.buffer_from_memory(data, 4*np.prod(shape))
         return np.frombuffer(buffer, np.float32).reshape(shape)

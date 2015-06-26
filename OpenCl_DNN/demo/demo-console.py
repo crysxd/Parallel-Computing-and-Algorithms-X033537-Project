@@ -17,14 +17,17 @@ def loadData(dataset):
 def outputToNumber(output):
     return np.where(output==np.max(output))[0][0]
 
-trainImages, trainOutput, trainNumbers = loadData('training')
+# trainImages, trainOutput, trainNumbers = loadData('training')
+trainImages, trainOutput, trainNumbers = loadData('testing')
 testImages, testOutput, testNumbers = loadData('testing')
 
 nn = NeuralNetwork(layerCount=3,
-                   layerSize=np.array([5,10,2]),
-                   actFunctions=np.array([1,2,3]),
-                   learningRate=1337.1,
+                   layerSize=np.array([784,1000,10]),
+                   actFunctions=np.array([1,1]),
+                   learningRate=0.1,
                    momentum=1337.2)
+
+print 'train, input shape:', trainImages.shape, 'output shape:', trainOutput.shape
 
 errors = nn.train(trainImages, trainOutput)
 print errors

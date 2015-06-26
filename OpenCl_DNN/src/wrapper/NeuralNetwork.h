@@ -4,6 +4,7 @@
 #include <fstream>
 #include "CLMatrix.hpp"
 #include "FeedForwardNN.h"
+#include "Sigmoid.h"
 
 typedef CL_Matrix<float> Matrix;
 
@@ -17,6 +18,7 @@ class NeuralNetwork {
 	FeedForwardNN* network = 0;
     std::vector<float> lastErrors;
 	void fillMatrixFromNumpy(Matrix &matrix, float* inputValues, int rowLength, int rowCount);
+    Sigmoid sigmoid;
 
 public:
 	NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum);
