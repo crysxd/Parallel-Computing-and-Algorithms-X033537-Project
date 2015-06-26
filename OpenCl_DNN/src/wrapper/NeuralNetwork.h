@@ -24,5 +24,6 @@ public:
 	void train(double* inputValues, double* outputValues);
 	uint64_t getOutputSize();
 	uint64_t getInputSize();
+	void readMatTest(float *out[], int *rows, int *cols);
 
 };

@@ -17,3 +17,6 @@ print f.getInputSize()
 print f.getOutputSize()
 for i in range(0, f.getOutputSize()):
     print f.getResultNode(i)
+
+print f.readMatTest()
+print type(f.readMatTest())

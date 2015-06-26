@@ -1,5 +1,6 @@
 from ctypes import cdll
 import numpy as np
+import ctypes
 from ctypes import *
 
 lib = cdll.LoadLibrary('../../bin/libnn.so')
@@ -45,3 +46,16 @@ class NeuralNetwork(object):
 
     def __del__(self):
         lib.NeuralNetwork_free(self.obj)
+
+    def readMatTest(self):
+        rows = ctypes.c_int()
+        cols = ctypes.c_int()
+        data = ctypes.POINTER(ctypes.c_float)()
+        lib.NeuralNetwork_readMatTest(self.obj, ctypes.byref(data), ctypes.byref(rows), ctypes.byref(cols))
+
+        buffer_from_memory = pythonapi.PyBuffer_FromMemory
+        buffer_from_memory.restype = py_object
+        buffer = buffer_from_memory(data, 4*rows.value*cols.value)
+
+        a = np.frombuffer(buffer, np.float32).reshape((rows.value, cols.value))
+        return a

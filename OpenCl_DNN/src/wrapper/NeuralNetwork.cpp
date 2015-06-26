@@ -115,6 +115,14 @@ uint64_t NeuralNetwork::getInputSize() {
 
 }
 
+float testData[] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
+
+void NeuralNetwork::readMatTest(float *out[], int *rows, int *cols) {
+    *out = testData;
+    *rows = 2;
+    *cols = 3;
+}
+
 extern "C" {
 	NeuralNetwork* NeuralNetwork_new(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum) {
 		return new NeuralNetwork(layerCount, layerSize, actFunctions, learningRate, momentum); 
@@ -159,5 +167,9 @@ extern "C" {
     uint64_t NeuralNetwork_getInputSize(NeuralNetwork* foo) {
     	return foo->getInputSize(); 
 
+    }
+
+    void NeuralNetwork_readMatTest(NeuralNetwork* foo, float *out[], int *rows, int *cols) {
+        foo->readMatTest(out, rows, cols);
     }
 }
