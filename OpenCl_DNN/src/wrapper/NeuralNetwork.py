@@ -7,9 +7,9 @@ lib = cdll.LoadLibrary('./libnn.so')
 class NeuralNetwork(object):
     def __init__(self, saveFile=None, layerCount=0, layerSize=None, actFunctions=None, learningRate=0, momentum=0):
         if layerSize != None and actFunctions != None and layerCount != 0 and learningRate != 0 and momentum != 0:
-            layerCount = c_int(layerCount)
-            layerSize = layerSize.ctypes.data_as(POINTER(c_longlong))
-            actFunctions = actFunctions.ctypes.data_as(POINTER(c_longlong))
+            layerCount = c_ulonglong(layerCount)
+            layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
+            actFunctions = actFunctions.ctypes.data_as(POINTER(c_ulonglong))
             learningRate = c_float(learningRate)
             momentum = c_float(momentum)            
 
@@ -24,11 +24,13 @@ class NeuralNetwork(object):
     def save(self, saveFile):
         lib.NeuralNetwork_save(self.obj, saveFile)
 
-    def train(self):
-        lib.NeuralNetwork_train(self.obj)
+    def train(self, inputValues, outputValues):
+        inputValues = inputValues.ctypes.data_as(POINTER(c_float))
+        outputValues = outputValues.ctypes.data_as(POINTER(c_float))
+        lib.NeuralNetwork_train(self.obj, inputValues, outputValues)
 
     def calc(self, inputValues):
-        inputValues = inputValues.ctypes.data_as(POINTER(c_longlong))
+        inputValues = inputValues.ctypes.data_as(POINTER(c_float))
         lib.NeuralNetwork_calc(self.obj, inputValues)
 
     def getResultNode(self, node):
