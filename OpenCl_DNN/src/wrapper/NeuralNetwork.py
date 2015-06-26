@@ -27,11 +27,11 @@ class NeuralNetwork(object):
     def train(self, inputValues, outputValues):
         inputValues = inputValues.ctypes.data_as(POINTER(c_float))
         outputValues = outputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_train(self.obj, inputValues, outputValues)
+        lib.NeuralNetwork_train(self.obj, inputValues, outputValues, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0])
 
-    def calc(self, inputValues):
+    def test(self, inputValues):
         inputValues = inputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_calc(self.obj, inputValues)
+        lib.NeuralNetwork_test(self.obj, inputValues, inputValues.strides[0], inputValues.shape[0])
 
     def getResultNode(self, node):
         node = c_int(node)

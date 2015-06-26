@@ -70,16 +70,18 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 
 }
 
-void NeuralNetwork::calc(double* inputValues) {
-	std::cout << "In calc()\n";
+void NeuralNetwork::test(float* inputValues, int rowLength, int rowCount) {
+    /* Transform row length from the length in byte to the length in floats */
+	rowLength /= sizeof(float);
 
-	std::cout << "input values: \n";
-	for(int i=0; i<this->getInputSize(); i++)
-		std::cout << "\t" << inputValues[i] << "\n";
+	/* Create matrix */
+	CLMatrix matrix(rowCount, this->getInputSize());
+	this->fillCLMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
 
-	for(int i=0; i<this->getOutputSize(); i++)
-		this->result[i] = 1337+i;
+	/* Run */
+	CLMatrix result = this->network.test(matrix);
 
+	/* FIXME: Give result back / output */
 }
 
 double NeuralNetwork::getResultNode(uint64_t node) {
@@ -88,20 +90,30 @@ double NeuralNetwork::getResultNode(uint64_t node) {
 }
 
 
-void NeuralNetwork::train(double* inputValues, double* outputValues) {
-	std::cout << "In train()\n";
-		std::cout << "input values: \n";
-	for(int i=0; i<this->getInputSize(); i++)
-		std::cout << "\t" << inputValues[i] << "\n";
+void NeuralNetwork::fillCLMatrixFromNumpy(CLMatrix &matrix, float* numpy, int rowLength, int rowCount) {
+	for(int r=0; r<rowCount; r++) {
+		for(int c=0; c<4; c++) {
+			float* addr = numpy + rowLength * r + c;
+			matrix.fillAt(r, c, *addr);
 
+		}
+	}
+}
 
-	std::cout << "output values: \n";
-	for(int i=0; i<this->getOutputSize(); i++)
-		std::cout << "\t" << outputValues[i] << "\n";
+void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
+    /* Transform row length from the length in byte to the length in floats */
+	rowLength /= sizeof(float);
 
-	//CL_Matrix<float> target;
-	//CL_Matrix<float> input;
-	//std::vector<float> errors = dnn.trainbatch(input,target);
+	/* Create matrix */
+	CLMatrix matrixIn(rowCount, this->getInputSize());
+	CLMatrix matrixOut(rowCount, this->getInputSize());
+	this->fillCLMatrixFromNumpy(matrixIn, inputValues, intputRowLength, rowCount);
+	this->fillCLMatrixFromNumpy(matrixOut, inputValues, outtputRowLength, rowCount);
+
+	/* Run */
+	CLMatrix errors = this->network.trainbatch(matrixIn, matrixOut);
+
+	/* FIXME: Give errors back / output */
 
 }
 
@@ -131,13 +143,13 @@ extern "C" {
 
     }
     
-    void NeuralNetwork_train(NeuralNetwork* foo, double* inputValues, double* outPutValues) {
-    	foo->train(inputValues, outPutValues); 
+    void NeuralNetwork_train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount) {
+    	foo->train(inputValues, outPutValues, inputRowLength, outputRowLength, rowCount); 
     
     }
 
-    void NeuralNetwork_calc(NeuralNetwork* foo, double* inputValues) {
-    	foo->calc(inputValues); 
+    void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int rowLength, int rowCount) {
+    	foo->test(inputValues, rowLength, rowCount); 
 
     }
 
