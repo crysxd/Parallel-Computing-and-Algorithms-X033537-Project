@@ -29,10 +29,10 @@ nn = NeuralNetwork(layerCount=3,
 
 print 'train, input shape:', trainImages.shape, 'output shape:', trainOutput.shape
 
-errors = nn.train(trainImages, trainOutput)
+errors = nn.train(trainImages[:,1:20], trainOutput[:,1:20])
 print errors
 
-result = nn.test(testImages)
+result = nn.test(testImages[:,1:20])
 print result
 
 errors = sum([outputToNumber(result[:,i]) == testNumbers[i] for i in range(result.shape[1])])

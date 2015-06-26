@@ -108,6 +108,7 @@ FeedForwardNN::~FeedForwardNN() {
 
 
 std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
+    std::cout << "train " << in.getRows() << 'x' << in.getCols() << " -> " << target.getRows() << 'x' << target.getCols() << '\n';
 	// trains in batch gradient descent.
 	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
 	// of data we have.
@@ -144,13 +145,14 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
+            std::cout << "epoch: " << epoch << ", i: " << i << "\n";
 			// Get the column of the input and use it as input
 			Matrix inputvector = in.subMatCol(i);
 			////////////////////////////////////////////////////////////
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-			Matrix error = (target - predict);
+			Matrix error = (target.subMatCol(i) - predict);
 
 			epoch_error+= error;
 			///////////////////////////////
@@ -226,6 +228,7 @@ void FeedForwardNN::init() {
 
 	assert(this->_hid_dims.size() > 0);
 	assert(this->_activations.size()>0);
+    std::cout << this->_activations.size() << ' ' << this->_hid_dims.size() << '\n';
 	assert(this->_activations.size() == this->_hid_dims.size()+ 1);
 
 	this->_net_size = this->_activations.size();

@@ -17,7 +17,7 @@ class NeuralNetwork {
 	float momentum;
 	FeedForwardNN* network = 0;
     std::vector<float> lastErrors;
-	void fillMatrixFromNumpy(Matrix &matrix, float* inputValues, int rowLength, int rowCount);
+	void fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0, int shape1, int strides0, int strides1);
     Sigmoid sigmoid;
 
 public:
@@ -27,7 +27,7 @@ public:
 	uint64_t save(std::string saveFile);
 	double getResultNode(uint64_t node);
 	void test(float* inputValues, int rowLength, int rowCount, float *resultOut[], int *resultRows, int *resultCols);
-	void train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen);
+	void train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen);
 	uint64_t getOutputSize();
 	uint64_t getInputSize();
 	void readMatTest(float *out[], int *rows, int *cols);

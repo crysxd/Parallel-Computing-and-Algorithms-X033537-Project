@@ -15,11 +15,11 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 
 // 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
 
-	std::vector<uint32_t> layerSizes(this->layerCount);
+	std::vector<uint32_t> layerSizes(this->layerCount-2);
     for(int i = 0; i < this->layerCount-2; i++)
         layerSizes[i] = uint32_t(*(this->layerSize+i));
 	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
-    for(int i = 0; i < this->layerCount; i++)
+    for(int i = 0; i < this->layerCount - 1; i++)
         this->network->addActivation(&this->sigmoid);
 }
 
@@ -83,7 +83,8 @@ void NeuralNetwork::test(float* inputValues, int rowLength, int rowCount, float 
     std::cout << "WDADWD" <<std::endl;
 	/* Create matrix */
 	Matrix matrix(rowCount, this->getInputSize());
-	this->fillMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
+    //TODO
+// 	this->fillMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
 
 	/* Run */
 	this->result = this->network->test(matrix);
@@ -99,25 +100,27 @@ double NeuralNetwork::getResultNode(uint64_t node) {
 }
 
 
-void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int rowLength, int rowCount) {
-	for(int r=0; r<rowCount; r++) {
-		for(int c=0; c<4; c++) {
-			float* addr = numpy + rowLength * r + c;
+void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0, int shape1, int strides0, int strides1) {
+	for(int r=0; r < shape0; r++) {
+		for(int c=0; c < shape1; c++) {
+//             std::cout << r*strides1 + c*strides0 << ' ' << r << ' ' << c << '\n';
+//             std::cout.flush();
+			float* addr = numpy + r*strides0/4 + c*strides1/4;
 			matrix.fillAt(r, c, *addr);
 		}
 	}
 }
 
-void NeuralNetwork::train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen) {
-    std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
+void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+//     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
     /* Transform row length from the length in byte to the length in floats */
-	inputRowLength = inputRowLength/ sizeof(float);
-	outputRowLength = outputRowLength/ sizeof(float);
+// 	inputRowLength = inputRowLength/ sizeof(float);
+// 	outputRowLength = outputRowLength/ sizeof(float);
 	/* Create matrix */
-	Matrix matrixIn(rowCount, this->getInputSize());
-	Matrix matrixOut(rowCount, this->getOutputSize());
-	this->fillMatrixFromNumpy(matrixIn, inputValues, inputRowLength, rowCount);
-	this->fillMatrixFromNumpy(matrixOut, inputValues, outputRowLength, rowCount);
+	Matrix matrixIn(inShape0, inShape1);
+	Matrix matrixOut(outShape0, outShape1);
+	this->fillMatrixFromNumpy(matrixIn, inputValues, inShape0, inShape1, inStrides0, inStrides1);
+	this->fillMatrixFromNumpy(matrixOut, outputValues, outShape0, outShape1, outStrides0, outStrides1);
     std::cout << "in " << matrixIn.getRows() << 'x' << matrixIn.getCols() << '\n';
     std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
@@ -163,8 +166,8 @@ extern "C" {
 
     }
 
-    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen) {
-    	foo->train(inputValues, outputValues, inputRowLength, outputRowLength, rowCount, errorsOut, errorsLen);
+    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+    	foo->train(inputValues, inShape0, inShape1, inStrides0, inStrides1, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
 
     }
 
