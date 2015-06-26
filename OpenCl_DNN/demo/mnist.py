@@ -1,6 +1,6 @@
 # source: http://g.sweyla.com/blog/2012/mnist-numpy/
 
-import os, struct
+import os, struct, gzip
 from array import array as pyarray 
 from numpy import append, array, int8, uint8, zeros
 
@@ -80,19 +80,19 @@ def load_mnist(dataset="training", digits=None, path=None, asbytes=False, select
             raise ValueError("Unspecified path requires environment variable $MNIST to be set")
 
     try:
-        images_fname = os.path.join(path, files[dataset][0])
-        labels_fname = os.path.join(path, files[dataset][1])
+        images_fname = os.path.join(path, files[dataset][0]+'.gz')
+        labels_fname = os.path.join(path, files[dataset][1]+'.gz')
     except KeyError:
         raise ValueError("Data set must be 'testing' or 'training'")
 
     # We can skip the labels file only if digits aren't specified and labels aren't asked for
     if return_labels or digits is not None:
-        flbl = open(labels_fname, 'rb')
+        flbl = gzip.open(labels_fname, 'rb')
         magic_nr, size = struct.unpack(">II", flbl.read(8))
         labels_raw = pyarray("b", flbl.read())
         flbl.close()
 
-    fimg = open(images_fname, 'rb')
+    fimg = gzip.open(images_fname, 'rb')
     magic_nr, size, rows, cols = struct.unpack(">IIII", fimg.read(16))
     images_raw = pyarray("B", fimg.read())
     fimg.close()
