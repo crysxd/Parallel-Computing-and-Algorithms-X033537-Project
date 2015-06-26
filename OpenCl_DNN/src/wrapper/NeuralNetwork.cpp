@@ -77,14 +77,11 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 
 }
 
-void NeuralNetwork::test(float* inputValues, int rowLength, int rowCount, float *resultOut[], int *resultRows, int *resultCols) {
-    /* Transform row length from the length in byte to the length in floats */
-	rowLength /= sizeof(float);
+void NeuralNetwork::test(float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
     std::cout << "WDADWD" <<std::endl;
 	/* Create matrix */
-	Matrix matrix(rowCount, this->getInputSize());
-    //TODO
-// 	this->fillMatrixFromNumpy(matrix, inputValues, rowLength, rowCount);
+	Matrix matrix(shape0, shape1);
+	this->fillMatrixFromNumpy(matrix, inputValues, shape0, shape1, strides0, strides1);
 
 	/* Run */
 	this->result = this->network->test(matrix);
@@ -171,10 +168,10 @@ extern "C" {
 
     }
 
-    void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int rowLength, int rowCount, float *resultOut[], int *resultRows, int *resultCols) {
+    void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
         std::cout << "WDADWD" <<std::endl;
 
-    	foo->test(inputValues, rowLength, rowCount, resultOut, resultRows, resultCols);
+    	foo->test(inputValues, shape0, shape1, strides0, strides1, resultOut, resultRows, resultCols);
 
     }
 

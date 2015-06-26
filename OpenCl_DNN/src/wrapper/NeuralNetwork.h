@@ -26,7 +26,7 @@ public:
 	~NeuralNetwork();
 	uint64_t save(std::string saveFile);
 	double getResultNode(uint64_t node);
-	void test(float* inputValues, int rowLength, int rowCount, float *resultOut[], int *resultRows, int *resultCols);
+	void test(float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols);
 	void train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen);
 	uint64_t getOutputSize();
 	uint64_t getInputSize();

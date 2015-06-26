@@ -205,17 +205,17 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim,
 Matrix FeedForwardNN::test(Matrix& in) {
 //	Just run a ffwd and return result
 	assert(in.getRows() == _in_dim);
-//	Matrix predictions(10,10,);
-	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
-		for(auto i=0u; i < in.getCols();i++){
-			// Get the column of the input and use it as input
-			Matrix inputvector = in.subMatCol(i);
-//			Do not train the network
-			Matrix const &predict = this->feedforward(inputvector,false);
-
-		}
+	Matrix predictions(this->_out_dim, in.getCols());
+    for(auto i=0u; i < in.getCols();i++){
+        // Get the column of the input and use it as input
+        Matrix inputvector = in.subMatCol(i);
+        std::cout << "test feedforward " << inputvector.getRows() << 'x' << inputvector.getCols() << '\n';
+//		Do not train the network
+        Matrix const &predict = this->feedforward(inputvector, false);
+        for (int j =0; j < this->_out_dim; j++)
+            predictions.fillAt(j, i, predict(j, 0));
 	}
-//	return predictions;
+	return predictions;
 
 }
 
