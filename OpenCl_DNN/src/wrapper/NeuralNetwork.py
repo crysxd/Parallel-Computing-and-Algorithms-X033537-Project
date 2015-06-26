@@ -2,8 +2,9 @@ from ctypes import cdll
 import numpy as np
 import ctypes
 from ctypes import *
+import os
 
-lib = cdll.LoadLibrary('../../bin/libnn.so')
+lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), '../../bin/libnn.so'))
 
 class NeuralNetwork(object):
     def __init__(self, saveFile=None, layerCount=0, layerSize=None, actFunctions=None, learningRate=0, momentum=0):
