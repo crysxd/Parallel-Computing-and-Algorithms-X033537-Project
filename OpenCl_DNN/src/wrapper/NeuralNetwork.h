@@ -8,7 +8,7 @@
 typedef CL_Matrix<float> Matrix;
 
 class NeuralNetwork {
-	double* result = 0;
+	Matrix result;
 	uint64_t layerCount;
 	uint64_t* layerSize = 0;
 	uint64_t* actFunctions = 0;
@@ -24,7 +24,7 @@ public:
 	~NeuralNetwork();
 	uint64_t save(std::string saveFile);
 	double getResultNode(uint64_t node);
-	void test(float* inputValues, int rowLength, int rowCount);
+	void test(float* inputValues, int rowLength, int rowCount, float *resultOut[], int *resultRows, int *resultCols);
 	void train(float* inputValues, float* outputValues, int inputRowLength, int outputRowLength, int rowCount, float *errorsOut[], int *errorsLen);
 	uint64_t getOutputSize();
 	uint64_t getInputSize();

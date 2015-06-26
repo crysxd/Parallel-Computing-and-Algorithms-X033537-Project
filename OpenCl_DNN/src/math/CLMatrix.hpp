@@ -128,7 +128,7 @@ public:
 //	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
 
-	T* data() const{
+	T* data() {
 		return this->mat.data();
 	}
 

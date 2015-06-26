@@ -35,11 +35,15 @@ class NeuralNetwork(object):
         errorsLen = ctypes.c_int()
         lib.NeuralNetwork_train(self.obj, inputvaluespointer, outputValuespointer, inputValues.strides[0], outputValues.strides[0], inputValues.shape[0], ctypes.byref(errors), ctypes.byref(errorsLen))
 
-        return self._toNpArray(errors, (errorsLen, ))
+        return self._toNpArray(errors, (errorsLen.value, ))
 
     def test(self, inputValues):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
-        lib.NeuralNetwork_test(self.obj, inputvaluespointer, inputValues.strides[0], inputValues.shape[0])
+        rows = ctypes.c_int()
+        cols = ctypes.c_int()
+        result = ctypes.POINTER(ctypes.c_float)()
+        lib.NeuralNetwork_test(self.obj, inputvaluespointer, inputValues.strides[0], inputValues.shape[0], ctypes.byref(result), ctypes.byref(rows), ctypes.byref(cols))
+        return self._toNpArray(errors, (rows.value, cols.value))
 
     def getResultNode(self, node):
         node = c_int(node)
