@@ -2,7 +2,8 @@
 #include <cstring>
 #include <cstdint>
 #include <fstream>
-//#include "CLMatrix.hpp"
+#include "CLMatrix.hpp"
+#include "FeedForwardNN.h"
 
 class NeuralNetwork {
 	double* result = 0;
@@ -11,7 +12,7 @@ class NeuralNetwork {
 	uint64_t* actFunctions = 0;
 	float learningRate;
 	float momentum;
-	//FeedForwardNN* network = 0;
+	FeedForwardNN* network = 0;
 
 public:
 	NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum);

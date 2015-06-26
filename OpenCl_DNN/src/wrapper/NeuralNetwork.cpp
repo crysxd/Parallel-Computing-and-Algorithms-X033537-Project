@@ -13,8 +13,8 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 
 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
 
-	//vector<uint64_t> layerSizes(this->layerSizes, this->layerSizes + this->layerCount);
-	//this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
+// 	std::vector<uint64_t> layerSizes(this->layerSize, this->layerSize + this->layerCount);
+// 	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
 
 }
 
@@ -35,8 +35,8 @@ NeuralNetwork::NeuralNetwork(std::string saveFile) {
 
 	file.close();
 
-	//vector<uint64_t> layerSizes(this->layerSizes, this->layerSizes + this->layerCount);
-	//this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
+// 	std::vector<uint64_t> layerSizes(this->layerSize, this->layerSize + this->layerCount);
+// 	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
 
 }
 

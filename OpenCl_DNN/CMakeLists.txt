@@ -173,6 +173,7 @@ set(COST_DIR src/cost)
 set(HIDDENLAYER_DIR src/hiddenlayer)
 set(NNET_DIR src/nnet)
 set(MATH_DIR src/math)
+set(WRAPPER_DIR src/wrapper)
 
 # Find necessary packages
 find_package(GTest REQUIRED)
@@ -240,3 +241,10 @@ target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} ${OPENCL} pthread)
 
 add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
 target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL} pthread)
+
+################################################################################
+#                                 PYTHON WRAPPER                               #
+################################################################################
+
+add_library(nn SHARED ${WRAPPER_DIR}/NeuralNetwork.cpp ${SOURCES})
+target_link_libraries(nn ${OPENCL} pthread)
