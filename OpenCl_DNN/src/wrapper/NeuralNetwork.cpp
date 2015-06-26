@@ -35,8 +35,8 @@ NeuralNetwork::NeuralNetwork(std::string saveFile) {
 
 	file.close();
 
-	vector<uint64_t> layerSizes(this->layerSizes, this->layerSizes + this->layerCount);
-	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
+	//vector<uint64_t> layerSizes(this->layerSizes, this->layerSizes + this->layerCount);
+	//this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
 
 }
 
