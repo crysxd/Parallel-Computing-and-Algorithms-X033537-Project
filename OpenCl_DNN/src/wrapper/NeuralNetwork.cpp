@@ -18,6 +18,7 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 	std::vector<uint32_t> layerSizes(this->layerCount-2);
     for(int i = 0; i < this->layerCount-2; i++)
         layerSizes[i] = uint32_t(*(this->layerSize+i));
+
 	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
     for(int i = 0; i < this->layerCount - 1; i++)
         this->network->addActivation(&this->sigmoid);
@@ -78,7 +79,6 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 }
 
 void NeuralNetwork::test(float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
-    std::cout << "WDADWD" <<std::endl;
 	/* Create matrix */
 	Matrix matrix(shape0, shape1);
 	this->fillMatrixFromNumpy(matrix, inputValues, shape0, shape1, strides0, strides1);
@@ -169,8 +169,6 @@ extern "C" {
     }
 
     void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
-        std::cout << "WDADWD" <<std::endl;
-
     	foo->test(inputValues, shape0, shape1, strides0, strides1, resultOut, resultRows, resultCols);
 
     }
