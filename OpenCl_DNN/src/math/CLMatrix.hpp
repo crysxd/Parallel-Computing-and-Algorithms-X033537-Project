@@ -56,8 +56,7 @@ public:
 //	Dot product between a matrix and another matrix
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
 
-	CL_Matrix<T> dotgpu(const CL_Matrix<T>& other) const;
-
+	CL_Matrix<T> dotgpu(CL_Matrix<T>& other);
 /////////////////////////////////////////////
 // Forbid accesses with only one variable. //
 /////////////////////////////////////////////

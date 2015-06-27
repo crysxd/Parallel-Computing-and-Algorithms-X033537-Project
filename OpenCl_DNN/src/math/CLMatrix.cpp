@@ -84,16 +84,20 @@ void CL_Matrix<T>::fetchdata(){
 }
 
 template<typename T>
-CL_Matrix<T> CL_Matrix<T>::dotgpu(const CL_Matrix<T>& other) const{
+CL_Matrix<T> CL_Matrix<T>::dotgpu(CL_Matrix<T>& other){
 	checkdot(*this,other);
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
+//	res.syncHostWithDevice();
+//	this->syncHostWithDevice();
+//	other.syncHostWithDevice();
 //	Last argument is the output argument
 	std::size_t localrows = ceil(float(this->_n_rows)/100);
 	std::size_t localcols = ceil(float(this->_n_cols)/100);
 //	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
 	std::vector<std::size_t> localWorkSize = {localrows,localcols};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
+
 	this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,res.gpu_buf);
 	return res;
 }
@@ -167,8 +171,6 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
 template<typename T>
 inline void CL_Matrix<T>::fill(T fill) {
 	std::fill(this->mat.begin(), this->mat.end(), fill);
-	std::cout << "Syncing";
-	syncHostWithDevice();
 }
 
 
