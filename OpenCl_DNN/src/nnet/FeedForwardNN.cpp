@@ -12,11 +12,11 @@
 #endif
 
 
-#define NUM_EPOCHS 10
+#define NUM_EPOCHS 2
 
 #define MINI_BATCH_SIZE 10
-
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
+
 //	Init weights and biases
 
 	Matrix &tmpin = in;
@@ -24,7 +24,7 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 // Store the activations and the gradients for the backpropagation later
 	auto i=0u;
 //Append the input layer as the first layer into the buffer;
-	this->_backprop_buf.push_back(tmpin);
+	this->_backprop_buf.at(0)=tmpin;
 
 	for(; i < this->_activations.size();i++ ){
 		Activation& activ = _activations[i];
@@ -36,9 +36,12 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 //		If non learning mode, we dont need to store anything, just propagate through
 		if (learn){
 	//		Store the derivatives of the layers, for backprop
-			this->_deriv.push_back(activ.grad(tmpin));
-	//		Store the output of every later for the backpropagation
-			this->_backprop_buf.push_back(tmpin);
+			this->_deriv.at(i) = activ.grad(tmpin);
+	//		Store the output of every layer for the backpropagation, except the last one
+			if (i+1 < this->_activations.size()){
+				this->_backprop_buf.at(i+1) = tmpin;
+			}
+
 		}
 	}
 //	Return the output of the network
@@ -65,26 +68,21 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 	this->_weight_biases.back().first.printDimension();
 	std::cout << endl;
 #endif
-	Matrix const &nabla =  this->_backprop_buf[this->_backprop_buf.size()-2].dot(delta_l.transpose());
-
-//	Update last layer weights
-//	this->_weight_biases.back().first -= this->_l_rate * nabla.transpose();
-//	Update last bias
-//	this->_weight_biases.back().second -= this->_l_rate * delta_l;
+// Get the last hidden layer from the back_propbuf
+	Matrix const &nabla =  this->_backprop_buf.back().dot(delta_l.transpose());
 
 	nablas.push_back(std::make_pair(nabla.transpose(),delta_l));
-
 	for(int i=this->_net_size-2;i >= 0;i--){
 #if !DEBUG
-		std::cout << "Updating layer" << i << " with dimensions : ";
+		std::cout << "Updating layer " << i << " with dimensions : ";
 		this->_weight_biases[i+1].first.printDimension();
 		std::cout << std::endl;
 #endif
-		delta_l = this->_deriv[i]*(this->_weight_biases[i+1].first.transpose().dot(delta_l));
+		delta_l = this->_deriv.at(i)*(this->_weight_biases[i+1].first.transpose().dot(delta_l));
 		// Note that backprop_buf has size of L = number of layers, whereas activations are L-1!
 		// Therefore _backprop_buf[i] refers to the last layer not the current one, thought weight_biases[i]
 		// refers to the current layer weight!
-		Matrix const &nabla_back = this->_backprop_buf[i].dot(delta_l.transpose());
+		Matrix const &nabla_back = this->_backprop_buf.at(i).dot(delta_l.transpose());
 		//	Update the layer weights
 //		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
 		// Update the bias
@@ -179,7 +177,8 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
 			this->_weight_biases[i].first += this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases[i].second += this->_l_rate * w_b[w_b.size()-i-1].second;
-//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
+//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)r
+//			std::cout << "i " <<i << " " << std::endl<< w_b[w_b.size()-i-1].first << std::endl;
 		}
 
 
@@ -299,6 +298,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
 			this->_weight_biases[i].first += this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].first;
 			this->_weight_biases[i].second += this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].second;
+
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 		}
 
@@ -312,7 +312,7 @@ void FeedForwardNN::init() {
 
 	assert(this->_hid_dims.size() > 0);
 	assert(this->_activations.size()>0);
-    std::cout << this->_activations.size() << ' ' << this->_hid_dims.size() << '\n';
+//    std::cout << this->_activations.size() << ' ' << this->_hid_dims.size() << '\n';
 	assert(this->_activations.size() == this->_hid_dims.size()+ 1);
 
 	this->_net_size = this->_activations.size();
@@ -322,21 +322,27 @@ void FeedForwardNN::init() {
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[0],this->_in_dim,true),
 			Matrix(this->_hid_dims[0],1,true)));
+//	Initialize the buffers for the derivaties and the output of each layer
+	this->_deriv.push_back(Matrix(this->_hid_dims[0],1));
+	this->_backprop_buf.push_back(Matrix(this->_hid_dims[0],1));
+
 	for(;i < this->_hid_dims.size()-1;i++){
 		this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[i+1],this->_hid_dims[i],true)
 			,
 			Matrix(this->_hid_dims[i+1],1,true)
 		));
+		this->_deriv.push_back(Matrix(this->_hid_dims[i+1],1));
+		this->_backprop_buf.push_back(Matrix(this->_hid_dims[i+1],1));
 	}
+
+	this->_backprop_buf.push_back(Matrix(this->_out_dim,1));
+	this->_deriv.push_back(Matrix(this->_out_dim,1));
 //	Add for the last layer the output layer
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_out_dim,this->_hid_dims[i],true),
 			Matrix(this->_out_dim,1,true)
 			)
 	);
-
-
-
 
 }
