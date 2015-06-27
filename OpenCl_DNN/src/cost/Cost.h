@@ -16,7 +16,7 @@ class Cost {
 public:
 	Cost();
 	virtual ~Cost();
-	virtual Matrix cost(Matrix& f) = 0;
+	virtual Matrix cost(const Matrix& target,const Matrix& predict) const = 0;
 };
 
 #endif /* COST_COST_H_ */

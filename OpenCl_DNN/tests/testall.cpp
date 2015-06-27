@@ -377,7 +377,7 @@ TEST(Nnet,sgd){
 	CL_Matrix<float> target(2,1);
 	target.fill(1.);
 	Sigmoid s;
-	FeedForwardNN dnn(3,2,0.1);
+	FeedForwardNN dnn(3,2,0.5,0.1);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(5);

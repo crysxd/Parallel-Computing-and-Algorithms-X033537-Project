@@ -16,11 +16,6 @@ MSE::~MSE() {
 	// TODO Auto-generated destructor stub
 }
 
-Matrix MSE::cost(Matrix& f) {
-	Matrix res(f.getRows(),f.getCols());
-//	for(auto i=0u; i < f.getRows();i++){
-//		for(auto j=0u ; j < f.getCols();j++){
-//		}
-//	}
+Matrix MSE::cost(const Matrix& target,const Matrix& output)const {
+	return 0.5f*((target - output)*(target-output));
 }
-

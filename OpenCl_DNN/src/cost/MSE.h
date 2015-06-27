@@ -14,7 +14,7 @@ class MSE : public Cost{
 public:
 	MSE();
 	virtual ~MSE();
-	Matrix cost(Matrix& f);
+	Matrix cost(const Matrix& target,const Matrix &output) const;
 };
 
 #endif /* COST_MSE_H_ */

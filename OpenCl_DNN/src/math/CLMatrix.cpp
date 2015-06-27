@@ -204,7 +204,6 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
     return (*this);
 }
 
-
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::sigmoid() const{
 	CL_Matrix res(this->_n_rows, this->_n_cols);
