@@ -37,9 +37,10 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 	file.read((char*) &weightsSize, sizeof(size_t));
 
 	/* Allocate buffer, read and assign */
-	void* buf = malloc(weightSize);
-	file.read((char*) buf, weightsSize);
-	this->network->getWeightBiases().assign(buf, buf + weightsSize);
+	void* buf = malloc(weightsSize);
+//	CHRIS: TODO: GIBT FEHLER
+//	file.read((char*) buf, weightsSize);
+//	this->network->getWeightBiases().assign(buf, buf + weightsSize);
 
 	file.close();
 
@@ -95,7 +96,8 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 	file.write((char*) &(this->momentum), sizeof(float));
 	file.write((char*) this->layerSize, sizeof(uint64_t) * this->layerCount);
 	file.write((char*) this->actFunctions, sizeof(uint64_t) * this->layerCount);
-	file.write((char*) &this->weightsSize, sizeof(size_t));
+//	CHRIS TODO: DUNNO WHAT TO DO
+//	file.write((char*) &this->weightsSize, sizeof(size_t));
  	file.write(weights, weightsSize);
 	file.close();
 

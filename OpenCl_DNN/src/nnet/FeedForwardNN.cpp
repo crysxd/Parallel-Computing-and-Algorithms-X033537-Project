@@ -201,11 +201,6 @@ void FeedForwardNN::addActivation(Activation* activation) {
 	this->_activations.push_back(*activation);
 }
 
-FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim,
-		std::vector<u_int32_t> hid_dims, float lrate):FeedForwardNN(indim,outdim,lrate) {
-	_hid_dims = hid_dims;
-
-}
 
 Matrix FeedForwardNN::test(Matrix& in) {
 //	Just run a ffwd and return result

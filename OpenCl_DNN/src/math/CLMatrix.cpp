@@ -167,6 +167,7 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
 template<typename T>
 inline void CL_Matrix<T>::fill(T fill) {
 	std::fill(this->mat.begin(), this->mat.end(), fill);
+	std::cout << "Syncing";
 	syncHostWithDevice();
 }
 
