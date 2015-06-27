@@ -1,8 +1,7 @@
 #include "NeuralNetwork.h"
 
 NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum)
-    : result(Matrix(1,1,0.0f))
-{
+    : result(Matrix(1,1,0.0f)) {
 	this->layerSize = (uint64_t*) std::malloc(sizeof(uint64_t) * layerCount);
 	std::memcpy(this->layerSize, layerSize, sizeof(uint64_t) * layerCount);
 
@@ -13,19 +12,12 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 	this->learningRate = learningRate;
 	this->momentum = momentum;
 
-// 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
+	this->initNetwork();
 
-	std::vector<uint32_t> layerSizes(this->layerCount-2);
-    for(int i = 0; i < this->layerCount-2; i++)
-        layerSizes[i] = uint32_t(*(this->layerSize+i));
-	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
-    for(int i = 0; i < this->layerCount - 1; i++)
-        this->network->addActivation(&this->sigmoid);
 }
 
 NeuralNetwork::NeuralNetwork(std::string saveFile)
-    : result(Matrix(1,1,0.0f))
-{
+    : result(Matrix(1,1,0.0f)) {
 	std::ifstream file (saveFile, std::ios::in | std::ios::binary);
 	file.read((char*) &(this->layerCount), sizeof(int64_t));
 	file.read((char*) &(this->learningRate), sizeof(float));
@@ -37,20 +29,48 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 	this->actFunctions = (uint64_t*) std::malloc(sizeof(uint64_t) * this->layerCount);
 	file.read((char*) this->actFunctions, sizeof(int64_t) * this->layerCount);
 
-// 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
-// 	file.read((char*) this->result, sizeof(double) * this->getOutputSize());
+	/* Init network */
+	this->initNetwork();
+
+	/* Read size of weights in byte */
+	size_t weightsSize;
+	file.read((char*) &weightsSize, sizeof(size_t));
+
+	/* Allocate buffer, read and assign */
+	void* buf = malloc(weightSize);
+	file.read((char*) buf, weightsSize);
+	this->network->getWeightBiases().assign(buf, buf + weightsSize);
 
 	file.close();
 
-// 	std::vector<uint64_t> layerSizes(this->layerSize, this->layerSize + this->layerCount);
-// 	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
+
 
 }
 
+void NeuralNetwork::initNetwork() {
+	/* Create nn */
+	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), this->learningRate);
+    
+    /* Add layers */
+    for(int i=1; i<this->layerCount-1; i++) {
+    	this->network->addHiddenLayer(this->layerSize[i]);
+    }
+
+	/* Add actionations */
+    for(int i=0; i<this->layerCount-1; i++) {
+    	/* Add TanH function */
+    	if(this->actFunctions[i] == ACTIVATION_TAN_H)  {
+        	this->network->addActivation(&this->tanH);
+    	}
+
+        /* SIGMOID is default, if a int is not mapped */
+        else {
+        	this->network->addActivation(&this->sigmoid);
+        }
+    }
+}
+
 NeuralNetwork::~NeuralNetwork() {
-// 	if(this->result != 0) {
-// 		free(this->result);
-// 	}
 	if(this->layerSize != 0) {
 		free(this->layerSize);
 	}
@@ -59,26 +79,29 @@ NeuralNetwork::~NeuralNetwork() {
 		free(this->actFunctions);
 	}
 
-	/*if(this->network != 0) {
+	if(this->network != 0) {
 		delete this->network;
-	}*/
+	}
 
 }
 
 uint64_t NeuralNetwork::save(std::string saveFile) {
+	char* weights = (char*) this->network->getWeightBiases().data();
+	size_t weightsSize = this->network->getWeightBiases().size() * sizeof(std::pair<Matrix, Matrix>);
+
 	std::ofstream file (saveFile, std::ios::out | std::ios::binary);
 	file.write((char*) &(this->layerCount), sizeof(uint64_t));
 	file.write((char*) &(this->learningRate), sizeof(float));
 	file.write((char*) &(this->momentum), sizeof(float));
 	file.write((char*) this->layerSize, sizeof(uint64_t) * this->layerCount);
 	file.write((char*) this->actFunctions, sizeof(uint64_t) * this->layerCount);
-// 	file.write((char*) this->result, sizeof(uint64_t) * this->getOutputSize());
+	file.write((char*) &this->weightsSize, sizeof(size_t));
+ 	file.write(weights, weightsSize);
 	file.close();
 
 }
 
 void NeuralNetwork::test(float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
-    std::cout << "WDADWD" <<std::endl;
 	/* Create matrix */
 	Matrix matrix(shape0, shape1);
 	this->fillMatrixFromNumpy(matrix, inputValues, shape0, shape1, strides0, strides1);
@@ -196,8 +219,6 @@ extern "C" {
     }
 
     void NeuralNetwork_test(NeuralNetwork* foo, float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
-        std::cout << "WDADWD" <<std::endl;
-
     	foo->test(inputValues, shape0, shape1, strides0, strides1, resultOut, resultRows, resultCols);
 
     }

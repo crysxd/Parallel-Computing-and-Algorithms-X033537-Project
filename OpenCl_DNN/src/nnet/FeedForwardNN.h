@@ -24,7 +24,6 @@ typedef CL_Matrix<float> Matrix;
 class FeedForwardNN {
 public:
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate);
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate,float momentum);
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,std::vector<u_int32_t> hid_dims,float lrate);
 
 	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate, std::vector<std::pair<Matrix,Matrix>> weight_biases);
