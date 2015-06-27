@@ -25,6 +25,7 @@ class NeuralNetwork {
 	void fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0, int shape1, int strides0, int strides1);
     Sigmoid sigmoid;
     TanH tanH;
+    void initNetwork();
 
 public:
 	NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum);

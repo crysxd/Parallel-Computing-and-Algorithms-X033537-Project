@@ -1,8 +1,7 @@
 #include "NeuralNetwork.h"
 
 NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum)
-    : result(Matrix(1,1,0.0f))
-{
+    : result(Matrix(1,1,0.0f)) {
 	this->layerSize = (uint64_t*) std::malloc(sizeof(uint64_t) * layerCount);
 	std::memcpy(this->layerSize, layerSize, sizeof(uint64_t) * layerCount);
 
@@ -13,32 +12,12 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 	this->learningRate = learningRate;
 	this->momentum = momentum;
 
-// 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
-
-	std::vector<uint32_t> layerSizes(this->layerCount-2);
-    for(int i = 0; i < this->layerCount-2; i++)
-        layerSizes[i] = uint32_t(*(this->layerSize+i));
-
-	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
-    
-    /* Add layers */
-    for(int i=1; i<this->layerCount-1; i++)
-    	this->network->addHiddenLayer(this->layerSize[i]);
-    
-	/* Add actionations */
-    for(int i = 0; i < this->layerCount - 1; i++)
-    	if(actFunctions[i] == ACTIVATION_TAN_H) 
-        	this->network->addActivation(&this->tanH);
-
-        /* SIGMOID is default, if a int is not mapped */
-        else
-        	this->network->addActivation(&this->sigmoid);
+	this->initNetwork();
 
 }
 
 NeuralNetwork::NeuralNetwork(std::string saveFile)
-    : result(Matrix(1,1,0.0f))
-{
+    : result(Matrix(1,1,0.0f)) {
 	std::ifstream file (saveFile, std::ios::in | std::ios::binary);
 	file.read((char*) &(this->layerCount), sizeof(int64_t));
 	file.read((char*) &(this->learningRate), sizeof(float));
@@ -50,20 +29,36 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 	this->actFunctions = (uint64_t*) std::malloc(sizeof(uint64_t) * this->layerCount);
 	file.read((char*) this->actFunctions, sizeof(int64_t) * this->layerCount);
 
-// 	this->result = (double*) std::malloc(sizeof(double) * this->getOutputSize());
-// 	file.read((char*) this->result, sizeof(double) * this->getOutputSize());
-
 	file.close();
 
-// 	std::vector<uint64_t> layerSizes(this->layerSize, this->layerSize + this->layerCount);
-// 	this->network = new FeedForwardNN(this->getInputSize(), this->getOutputSize(), layerSizes, this->learningRate);
+	this->initNetwork();
 
 }
 
+void NeuralNetwork::initNetwork() {
+	/* Create nn */
+	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), this->learningRate);
+    
+    /* Add layers */
+    for(int i=1; i<this->layerCount-1; i++) {
+    	this->network->addHiddenLayer(this->layerSize[i]);
+    }
+
+	/* Add actionations */
+    for(int i=0; i<this->layerCount-1; i++) {
+    	/* Add TanH function */
+    	if(this->actFunctions[i] == ACTIVATION_TAN_H)  {
+        	this->network->addActivation(&this->tanH);
+    	}
+
+        /* SIGMOID is default, if a int is not mapped */
+        else {
+        	this->network->addActivation(&this->sigmoid);
+        }
+    }
+}
+
 NeuralNetwork::~NeuralNetwork() {
-// 	if(this->result != 0) {
-// 		free(this->result);
-// 	}
 	if(this->layerSize != 0) {
 		free(this->layerSize);
 	}
@@ -72,9 +67,9 @@ NeuralNetwork::~NeuralNetwork() {
 		free(this->actFunctions);
 	}
 
-	/*if(this->network != 0) {
+	if(this->network != 0) {
 		delete this->network;
-	}*/
+	}
 
 }
 
