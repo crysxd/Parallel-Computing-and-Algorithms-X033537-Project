@@ -40,6 +40,17 @@ class NeuralNetwork(object):
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
+    def trainsgd(self, inputValues, outputValues):
+        inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
+        outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
+        errors = ctypes.POINTER(ctypes.c_float)()
+        errorsLen = ctypes.c_int()
+        print 'in', inputValues.shape, inputValues.strides
+        print 'out', outputValues.shape, outputValues.strides
+        lib.NeuralNetwork_trainsgd(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
+
+        return self._toNpArray(errors, (errorsLen.value, ))
+
     def test(self, inputValues):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         rows = ctypes.c_int()

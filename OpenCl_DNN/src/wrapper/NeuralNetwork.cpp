@@ -129,6 +129,28 @@ void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int in
     *errorsLen = this->lastErrors.size();
 }
 
+
+void NeuralNetwork::trainsgd(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+//     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
+    /* Transform row length from the length in byte to the length in floats */
+//  inputRowLength = inputRowLength/ sizeof(float);
+//  outputRowLength = outputRowLength/ sizeof(float);
+    /* Create matrix */
+    Matrix matrixIn(inShape0, inShape1);
+    Matrix matrixOut(outShape0, outShape1);
+    this->fillMatrixFromNumpy(matrixIn, inputValues, inShape0, inShape1, inStrides0, inStrides1);
+    this->fillMatrixFromNumpy(matrixOut, outputValues, outShape0, outShape1, outStrides0, outStrides1);
+    std::cout << "in " << matrixIn.getRows() << 'x' << matrixIn.getCols() << '\n';
+    std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
+
+    /* Run */
+    this->lastErrors = this->network->trainsgd(matrixIn, matrixOut);
+    std::cout << "trained\n";
+
+    *errorsOut = this->lastErrors.data();
+    *errorsLen = this->lastErrors.size();
+}
+
 uint64_t NeuralNetwork::getOutputSize() {
 	return this->layerSize[this->layerCount-1];
 
@@ -165,6 +187,11 @@ extern "C" {
 
     void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
     	foo->train(inputValues, inShape0, inShape1, inStrides0, inStrides1, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
+
+    }
+
+    void NeuralNetwork_trainsgd(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+        foo->trainsgd(inputValues, inShape0, inShape1, inStrides0, inStrides1, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
 
     }
 
