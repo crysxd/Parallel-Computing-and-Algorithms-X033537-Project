@@ -42,7 +42,7 @@ public:
 	std::vector<float> trainbatch(Matrix &in, Matrix &target);
 // Helper functions to get the strides
 
-	void trainsgd();
+	std::vector<float> trainsgd(Matrix &in, Matrix &target);
 
 	std::vector<std::pair<Matrix,Matrix>> backpropagate(Matrix &error);
 

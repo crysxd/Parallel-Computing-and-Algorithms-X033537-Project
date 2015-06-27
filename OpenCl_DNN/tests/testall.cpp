@@ -371,6 +371,24 @@ TEST(Nnet,batchgradient){
     }
 }
 
+TEST(Nnet,sgd){
+	CL_Matrix<float> input(3,3);
+	input.fill(0.);
+	CL_Matrix<float> target(2,1);
+	target.fill(1.);
+	Sigmoid s;
+	FeedForwardNN dnn(3,2,0.1);
+	dnn.addActivation(&s);
+	dnn.addActivation(&s);
+	dnn.addHiddenLayer(5);
+	std::vector<float> errors = dnn.trainsgd(input,target);
+    for (auto i = 1u; i < errors.size(); ++i)
+    {
+        EXPECT_GE(errors[i-1] - errors[i]  ,0);
+    }
+}
+
+
 
 int main(int argc,char **argv){
     ::testing::InitGoogleTest(&argc, argv);
