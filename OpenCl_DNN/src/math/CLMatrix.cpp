@@ -9,12 +9,14 @@
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
 _n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
+	this->fill(0);
 }
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, T value):
-	CL_Matrix<T>(r,c){
+_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
 	this->fill(value);
+
 }
 
 template<typename T>
@@ -50,7 +52,7 @@ CL_Matrix<T>& CL_Matrix<T>::operator=(CL_Matrix<T> other){
 
 template<typename T>
 inline void CL_Matrix<T>::zeros() {
-	std::fill(this->mat.begin(), this->mat.end(), 0);
+	this->fill(0);
 }
 
 template<typename T>
@@ -74,6 +76,26 @@ inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
 
 inline int gcd(int a, int b) {
     return b == 0 ? a : gcd(b, a % b);
+}
+
+template<typename T>
+void CL_Matrix<T>::fetchdata(){
+	this->_cl.readBuffer(this->gpu_buf,this->mat);
+}
+
+template<typename T>
+CL_Matrix<T> CL_Matrix<T>::dotgpu(const CL_Matrix<T>& other) const{
+	checkdot(*this,other);
+//	initzialize the result matrix
+	CL_Matrix res(this->_n_rows, other._n_cols);
+//	Last argument is the output argument
+	std::size_t localrows = ceil(float(this->_n_rows)/100);
+	std::size_t localcols = ceil(float(this->_n_cols)/100);
+//	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
+	std::vector<std::size_t> localWorkSize = {localrows,localcols};
+	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
+	this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,res.gpu_buf);
+	return res;
 }
 
 template<typename T>
@@ -145,7 +167,21 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
 template<typename T>
 inline void CL_Matrix<T>::fill(T fill) {
 	std::fill(this->mat.begin(), this->mat.end(), fill);
+	syncHostWithDevice();
 }
+
+
+template<typename T>
+inline void CL_Matrix<T>::syncHostWithDevice() {
+	this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
+
+}
+
+template<typename T>
+inline void CL_Matrix<T>::syncDeviceWithHost() {
+	this->_cl.readBuffer(this->gpu_buf,this->mat);
+}
+
 
 
 /**
@@ -211,6 +247,25 @@ inline CL_Matrix<T> CL_Matrix<T>::sigmoid() const{
 	std::vector<std::size_t> localWorkSize = {1,1};
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
 	this->_cl.runKernel("sigmoid",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
+	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::sigmoidcpu() const {
+
+	CL_Matrix res(this->_n_rows,this->_n_cols);
+	for(auto i=0u; i < this->mat.size();i++){
+		res.mat.at(i) = 1.f/(1.f+exp(this->mat.at(i)));
+	}
+	return res;
+}
+
+template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::sigmoidgradcpu() const {
+	CL_Matrix res(this->_n_rows,this->_n_cols);
+	for(auto i=0u; i < this->mat.size();i++){
+		res.mat.at(i) = 1.f/(1.f+exp(this->mat.at(i)))* (1- (1.f/(1.f+exp(this->mat.at(i)))));
+	}
 	return res;
 }
 

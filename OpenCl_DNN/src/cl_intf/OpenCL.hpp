@@ -29,10 +29,27 @@ public:
 
 	virtual ~OpenCL();
 
+	template<typename T>
+	cl::Buffer putDataOnGPU(std::vector<T> const & arg);
+
+//	Put an array on the GPU
+	template<typename T,std::size_t N>
+	cl::Buffer putDataOnGPU(T const (& arg)[N]);
+
+	template<typename T>
+	void readBuffer(cl::Buffer& ,T* data);
+
+	template<typename T>
+	void readBuffer(cl::Buffer& ,std::vector<T>& data);
+
 //	Runs a given kernel. Not that u need to allocate at least the space required for any array
 //	That might be filled with data, we only return and read out the last arg
 	template<typename... Tp>
 	void runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs,std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ...args) const;
+//Runs kernel, but does not read any output arguments
+	template<typename... Tp>
+	void runKernelnoOut(const char* kernelname,std::vector<std::size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ...args) const;//	template<typename... Tp>
+//	void runKernel(const char* kernelname,std::vector<std::size_t> const & outputargs,std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ...args) const;
 
 	void loadProgram(const char *path);
 
@@ -47,6 +64,9 @@ private:
 	//build runtime executable from a program
 	cl::Context context;
 	cl::Device device;
+//	cl::Program program;
+
+	void initProgramQuene(cl::Program*,cl::CommandQueue*);
 
 
 	/////////////////////////////////////////////////////////////////////
@@ -55,23 +75,25 @@ private:
 
 //	Hook for the iteration
 	template<std::size_t P,typename ...Tp>
-	typename std::enable_if<P == sizeof ...(Tp), void>::type readargs(std::tuple<Tp ...>&& t,std::size_t outputarg,cl::CommandQueue &,cl::Buffer &outbuf) const;
+	typename std::enable_if<P == sizeof ...(Tp), void>::type readargs(
+			std::tuple<Tp ...>&& t,std::size_t outputarg,cl::Buffer &outbuf,cl::CommandQueue &quene) const;
 
 //  Start of the iteration
 	template<std::size_t P,typename ...Tp>
-	typename std::enable_if< P < sizeof...(Tp), void>::type readargs(std::tuple<Tp...> && t,std::size_t outputarg,cl::CommandQueue &,cl::Buffer &outbuf) const;
+	typename std::enable_if< P < sizeof...(Tp), void>::type readargs(
+			std::tuple<Tp...> && t,std::size_t outputarg,cl::Buffer &outbuf,cl::CommandQueue &quene) const;
 
 
 
 //	Read in the variables
 	template<typename T>
-	void readarg(std::vector<T> & arg, cl::CommandQueue &,cl::Buffer &buf) const;
+	void readarg(std::vector<T> & arg, cl::Buffer &buf,cl::CommandQueue &quene) const;
 
 	template <typename T, std::size_t N>
-	void readarg(T (&arg)[N], cl::CommandQueue &,cl::Buffer &buf) const;
+	void readarg(T (&arg)[N], cl::Buffer &buf,cl::CommandQueue &quene) const;
 
 	template <typename T>
-	void readarg( T &arg, cl::CommandQueue &,cl::Buffer &buf) const;
+	void readarg( T &arg, cl::Buffer &buf,cl::CommandQueue &quene) const;
 
 
 
@@ -81,34 +103,38 @@ private:
 
 //	Hook for the iteration
 	template<std::size_t P=0,typename... Tp>
-	typename std::enable_if<P == sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp ...>&& t,cl::Kernel &k,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const;
+	typename std::enable_if<P == sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp ...>&& t,cl::Kernel &k,std::vector<cl::Buffer> &outputbuffers,cl::CommandQueue &quene) const;
 
 //  Start of the iteration
 	template<std::size_t P = 0, typename... Tp>
-	typename std::enable_if< P < sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const;
+	typename std::enable_if< P < sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,std::vector<cl::Buffer> &outputbuffers,cl::CommandQueue &quene) const;
 
 //	Adding Std::vector as type to the kernel args list
 	template<typename T>
-	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &) const;
+	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &quene) const;
+
 	//In case of an outputargument, this overload is called and the buffer appended to the list
 	template<typename T>
-	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &,std::vector<cl::Buffer> &) const;
+	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,std::vector<cl::Buffer> &,cl::CommandQueue &quene) const;
 
 //	Adding any array into the kernel args
 	template<typename T,std::size_t N>
-	void addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &) const;
+	void addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &quene) const;
 	//In case of an outputargument, this overload is called and the buffer appended to the list
 	template<typename T,std::size_t N>
-	void addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &,std::vector<cl::Buffer> &) const;
+	void addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,std::vector<cl::Buffer> &,cl::CommandQueue &quene) const;
 
 // Adding any constant to the kernel
 	template<typename T>
-	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &) const;
+	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &quene) const;
 //In case of an outputargument, this overload is called and the buffer appended to the list
 	template<typename T>
-	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &,std::vector<cl::Buffer> &) const;
-//
+	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,std::vector<cl::Buffer> &,cl::CommandQueue &quene) const;
+//Specialization in case of a single buffer
+	void addkernelarg(std::size_t i, cl::Buffer const & arg, cl::Kernel & kernel,std::vector<cl::Buffer> &,cl::CommandQueue &quene) const;
 
+//	template<typename T>
+//	typename std::enable_if<std::is_same<T,int>::value,void>::type addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &) const;
 	char *contents;
 };
 
@@ -162,6 +188,8 @@ geterrorstring(
 
     return "Unknown error";
 }
+
+
 
 #include "OpenCL.cpp"
 

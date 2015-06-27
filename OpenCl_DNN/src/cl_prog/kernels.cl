@@ -94,7 +94,9 @@ __kernel void sigmoid(const int wSrc, __global const float* src, __global float*
    /* Now each work-item asks itself: "is my ID inside the vector's range?"
    If the answer is YES, the work-item performs the corresponding computation*/
    // if (idx < num)
-   output[idy*wSrc+idx] = 1.f/ (1.f + exp(-src[idy*wSrc+idx]));
+   for (int i = 0; i < 100000; i++) {
+   	output[idy*wSrc+idx] = 1.f/ (1.f + exp(-src[idy*wSrc+idx]));
+   }
 }
 
 

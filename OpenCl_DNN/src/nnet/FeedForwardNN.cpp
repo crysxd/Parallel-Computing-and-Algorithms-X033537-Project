@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 2
+#define NUM_EPOCHS 10
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -32,7 +32,7 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 		Matrix const &bias = this->_weight_biases[i].second;
 //		Calculate output of the current layer
 //		Apply activation
-		tmpin = activ.propagate(weights.dot(tmpin) + bias);
+		tmpin = activ.propagate(weights.dot(tmpin) - bias);
 //		If non learning mode, we dont need to store anything, just propagate through
 		if (learn){
 	//		Store the derivatives of the layers, for backprop
@@ -179,8 +179,8 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		// Update the weights //
 		/////////////////////////
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-			this->_weight_biases.at(i).first += this->_l_rate * w_b[w_b.size()-i-1].first - this->_momentum * momentumbuf.at(w_b.size()-i-1);
-			this->_weight_biases.at(i).second += this->_l_rate * w_b[w_b.size()-i-1].second;
+			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first + this->_momentum * momentumbuf.at(w_b.size()-i-1);
+			this->_weight_biases.at(i).second -= this->_l_rate * w_b[w_b.size()-i-1].second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 			momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
 		}
@@ -292,22 +292,22 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 					w_b[i].second += delta_w_b[i].second;
 				}
 			}
-		}
-		// Print out the result
-// #if !DEBUG
-		std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
-// #endif
-		errors.push_back(epoch_error);
+			// Print out the result
+	// #if !DEBUG
+			std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
+	// #endif
+			errors.push_back(epoch_error);
 
-		/////////////////////////
-		// Update the weights //
-		/////////////////////////
-		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-			this->_weight_biases[i].first += this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].first;
-			this->_weight_biases[i].second += this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].second;
+			/////////////////////////
+			// Update the weights //
+			/////////////////////////
+			for(int i=this->_weight_biases.size()-1; i>=0;i--){
+				this->_weight_biases[i].first -= this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].first + this->_momentum * momentumbuf.at(w_b.size()-i-1);
+				this->_weight_biases[i].second -= this->_l_rate * 1.f/MINI_BATCH_SIZE * w_b[w_b.size()-i-1].second;
 
-//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
-			momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
+	//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
+				momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
+			}
 		}
 	}
 	return errors;

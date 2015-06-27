@@ -19,6 +19,7 @@ public:
 	static OpenCL& getInstance(const char *kernelname)
 	        {
 				std::map<const char*,OpenCL>::iterator it = OpenCLPort::_openObj.find(kernelname);
+//				std::cout << "Getinstance Called"<<std::endl;
 				if(it != _openObj.end())
 				{
 				   //element found;
@@ -26,11 +27,15 @@ public:
 				}
 				else{
 //					Init new element and put it into the list of known kernels
+
 					static OpenCL instance(kernelname); // Guaranteed to be destroyed.
-					OpenCLPort::_openObj.insert(OpenCLPort::_openObj.begin(),std::make_pair(kernelname,instance));
+					std::pair<const char*,OpenCL> pair = std::make_pair(kernelname,instance);
+					OpenCLPort::_openObj.insert(OpenCLPort::_openObj.begin(),
+							pair);
 					return instance;
 				}
 	        }
+
 private:
 //	DO not allow to create this object
 	static std::map<const char*,OpenCL> _openObj;

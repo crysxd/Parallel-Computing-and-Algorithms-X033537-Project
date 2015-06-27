@@ -15,6 +15,7 @@
 #include <random>
 #include <iostream>
 #include <cassert>
+#include <math.h>
 #include "OpenCLPort.h"
 
 template <typename T>
@@ -55,6 +56,8 @@ public:
 //	Dot product between a matrix and another matrix
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
 
+	CL_Matrix<T> dotgpu(const CL_Matrix<T>& other) const;
+
 /////////////////////////////////////////////
 // Forbid accesses with only one variable. //
 /////////////////////////////////////////////
@@ -80,6 +83,7 @@ public:
 
 	operator T &();
 
+	void fetchdata();
 
 	void printDimension()const;
 
@@ -119,11 +123,14 @@ public:
 	}
 
 	std::pair<int,int> getDimensions();
-
+//	Computes sigmoid function from this object and returns the result
+	CL_Matrix<T> sigmoidcpu() const;
 //	Computes sigmoid function from this object and returns the result
 	CL_Matrix<T> sigmoid() const;
  	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgrad() const;
+ 	/** Calculates the gradient of the sigmoid function, elementwise */
+	CL_Matrix<T> sigmoidgradcpu() const;
 
 //	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
@@ -162,6 +169,13 @@ private:
 // Since too many instances crash OpenCL;
 	OpenCL _cl;
 
+	cl::Buffer gpu_buf;
+
+//	Syncs the buffers of gpu and cpu
+	void syncHostWithDevice();
+
+	void syncDeviceWithHost();
+
 };
 
 
@@ -171,6 +185,7 @@ inline CL_Matrix<T>::CL_Matrix(u_int32_t row, u_int32_t col,
 		std::vector<T>& data):CL_Matrix<T>(row,col) {
 	this->mat = data;
 }
+
 
 #include "CLMatrix.cpp"
 
