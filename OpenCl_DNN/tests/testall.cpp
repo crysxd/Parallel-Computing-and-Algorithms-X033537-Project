@@ -357,7 +357,7 @@ TEST(Activation,Tanh){
 TEST(Nnet,batchgradient){
 	CL_Matrix<float> input(3,3);
 	input.fill(0.);
-	CL_Matrix<float> target(2,1);
+	CL_Matrix<float> target(2,3);
 	target.fill(1.);
 	Sigmoid s;
 	FeedForwardNN dnn(3,2,0.1);
