@@ -20,8 +20,20 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
         layerSizes[i] = uint32_t(*(this->layerSize+i));
 
 	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), layerSizes, this->learningRate);
+    
+    /* Add layers */
+    for(int i=1; i<this->layerCount-1; i++)
+    	this->network->addHiddenLayer(this->layerSize[i]);
+    
+	/* Add actionations */
     for(int i = 0; i < this->layerCount - 1; i++)
-        this->network->addActivation(&this->sigmoid);
+    	if(actFunctions[i] == ACTIVATION_TAN_H) 
+        	this->network->addActivation(&this->tanH);
+
+        /* SIGMOID is default, if a int is not mapped */
+        else
+        	this->network->addActivation(&this->sigmoid);
+
 }
 
 NeuralNetwork::NeuralNetwork(std::string saveFile)
