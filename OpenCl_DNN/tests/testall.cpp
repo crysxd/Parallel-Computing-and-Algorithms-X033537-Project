@@ -75,10 +75,10 @@ TEST(Matrix,nonaligned){
     CL_Matrix<float> mat2(r2,c2);
 
     EXPECT_DEATH(mat1 += mat2,".*Assertion.*failed.*");
-
+//
     EXPECT_DEATH(mat1 -= mat2,".*Assertion.*failed.*");
-
-
+//
+//
     EXPECT_DEATH(mat1.dot(mat2),".*Assertion.*failed.*");
 
 
@@ -204,6 +204,24 @@ TEST(OpenCL,Datatypes){
 
 }
 
+TEST(Matrix,dotgpu){
+
+    int r=20;
+    int c=20;
+
+    CL_Matrix<float> mat(r,c);
+    CL_Matrix<float> other(c,r);
+    mat.fill(5.);
+
+    other.fill(2.);
+    CL_Matrix<float> out = mat.dotgpu(other);
+    for(auto i=0u;i<5;i++){
+		out = out.dotgpu(other);
+	}
+	out.fetchdata();
+
+}
+
 TEST(Matrix,dotsq){
 
     int r=512;
@@ -304,7 +322,7 @@ TEST(Matrix,dotvectordiff){
 }
 
 TEST(Activation,Sigmoid){
-    auto length = 10u;
+    auto length = 1000u;
     CL_Matrix<float> mat(length,1);
     mat.fill(0.);
 	Sigmoid s;
@@ -313,18 +331,20 @@ TEST(Activation,Sigmoid){
     {
         EXPECT_EQ(out(i,0),0.5);
     }
+}
 
-    CL_Matrix<float> mat2(length,length);
-
-    mat2.fill(0.);
-    CL_Matrix<float> out2 = s.propagate(mat2);
-    for(auto i=0u; i < length ; i++){
-    	for(auto j=0u; j < length ; j++){
-    		EXPECT_EQ(out2(i,j),0.5);
-		}
+TEST(Activation,SigmoidCPU){
+    auto length = 1000u;
+    CL_Matrix<float> mat(length,1);
+    mat.fill(0.);
+	CL_Matrix<float> out = mat.sigmoidcpu();
+    for (auto i = 0u; i < length; ++i)
+    {
+        EXPECT_EQ(out(i,0),0.5);
     }
 
 }
+
 
 TEST(Activation,Sigmoidgrad){
 	auto size= 20u;
@@ -392,7 +412,7 @@ TEST(Nnet,sgd){
 
 int main(int argc,char **argv){
     ::testing::InitGoogleTest(&argc, argv);
-//	::testing::GTEST_FLAG(filter) = "Matrix.dotvectordiff:Matrix.dotvector";//":-:*Counter*";
+	::testing::GTEST_FLAG(filter) = "Matrix.*";//":-:*Counter*";
     // Otherwise EXPECT_DEATH will warn us that the execution time may be too slow,
     // since EXPECT_DEATH uses forks, which could not be used
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
