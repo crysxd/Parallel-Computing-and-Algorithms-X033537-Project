@@ -284,11 +284,19 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::sigmoid() const{
 	CL_Matrix res(this->_n_rows, this->_n_cols);
-	std::vector<std::size_t> outputargs = {2};
-	std::vector<std::size_t> localWorkSize = {1,1};
-	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
-	this->_cl.runKernel("sigmoid",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
+    this->sigmoid(&res);
 	return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::sigmoid(CL_Matrix<T> *out) const {
+    this->syncToGpu();
+    out->moveToGpu();
+    assert(out->_n_rows == this->_n_rows);
+    assert(out->_n_cols == this->_n_cols);
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("sigmoid",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,out->gpu_buf);
 }
 
 template<typename T>
@@ -311,13 +319,21 @@ inline CL_Matrix<T> CL_Matrix<T>::sigmoidgradcpu() const {
 }
 
 template<typename T>
-inline CL_Matrix<T> CL_Matrix<T>::sigmoidgrad() const {
-	CL_Matrix res(this->_n_rows, this->_n_cols);
-	std::vector<std::size_t> outputargs = {2};
-	std::vector<std::size_t> localWorkSize = {1,1};
-	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
-	this->_cl.runKernel("sigmoidgrad",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
-	return res;
+inline CL_Matrix<T> CL_Matrix<T>::sigmoidgrad() const{
+    CL_Matrix res(this->_n_rows, this->_n_cols);
+    this->sigmoidgrad(&res);
+    return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::sigmoidgrad(CL_Matrix<T> *out) const {
+    this->syncToGpu();
+    out->moveToGpu();
+    assert(out->_n_rows == this->_n_rows);
+    assert(out->_n_cols == this->_n_cols);
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("sigmoidgrad",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,out->gpu_buf);
 }
 
 template<typename T>
@@ -382,12 +398,20 @@ inline CL_Matrix<T> CL_Matrix<T>::subMatRow(u_int32_t r) {
 
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::tanh() const{
-	CL_Matrix<T> res(this->_n_rows, this->_n_cols);
-	std::vector<std::size_t> outputargs = {2};
-	std::vector<std::size_t> localWorkSize = {1,1};
-	std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
-	this->_cl.runKernel("cl_tanh",outputargs,globalWorkSize,localWorkSize,res._n_cols,this->mat,res.mat);
-	return res;
+    CL_Matrix res(this->_n_rows, this->_n_cols);
+    this->tanh(&res);
+    return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::tanh(CL_Matrix<T> *out) const {
+    this->syncToGpu();
+    out->moveToGpu();
+    assert(out->_n_rows == this->_n_rows);
+    assert(out->_n_cols == this->_n_cols);
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("cl_tanh",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,out->gpu_buf);
 }
 
 template<typename T>

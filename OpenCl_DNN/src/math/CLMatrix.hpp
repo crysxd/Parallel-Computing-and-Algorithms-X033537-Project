@@ -123,13 +123,16 @@ public:
 	CL_Matrix<T> sigmoidcpu() const;
 //	Computes sigmoid function from this object and returns the result
 	CL_Matrix<T> sigmoid() const;
+    void sigmoid(CL_Matrix<T> *out) const;
  	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgrad() const;
+    void sigmoidgrad(CL_Matrix<T> *out) const;
  	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgradcpu() const;
 
 //	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
+    void tanh(CL_Matrix<T> *out) const;
 
 	T* data() {
 		return this->mat.data();

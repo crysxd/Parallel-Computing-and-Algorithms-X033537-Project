@@ -130,7 +130,7 @@ inline cl::Buffer OpenCL::putDataOnGPU(std::vector<T> const &data) {
 //	 The quene pushes and returns the buffer objects between host and device
 	cl::CommandQueue queue(this->context,this->device);
 	cl::Buffer buf(this->context,CL_MEM_READ_WRITE,data.size()*sizeof(T));
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	queue.enqueueWriteBuffer(buf,CL_TRUE,0,data.size()*sizeof(T),&(data[0]));
 	queue.finish();
 	return buf;
@@ -154,7 +154,7 @@ inline void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kern
 {
 
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T),arg);
 	kernel.setArg(i,buffer);
 
@@ -164,7 +164,7 @@ template <typename T, std::size_t N>
 inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
 	kernel.setArg(i,buffer);
 
@@ -174,7 +174,7 @@ template <typename T>
 inline void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
 	kernel.setArg(i,buffer);
 
@@ -227,7 +227,7 @@ inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel &
 		std::vector<cl::Buffer> &outputbuffer,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	cl_int err = quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
 	if (err){
 			std::cerr << "Error while pushing Array. Errorcode: " << err << std::endl;
@@ -243,7 +243,7 @@ void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg,
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 	outputbuffer.push_back(buffer);
-    std::cout << "enqeue\n";
+//    std::cout << "enqeue\n";
 	cl_int err = quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
 	if (err){
 		std::cerr << "Error while pushing Vector. Errorcode: " << err << std::endl;
