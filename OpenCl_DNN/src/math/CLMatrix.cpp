@@ -86,21 +86,28 @@ CL_Matrix<T> CL_Matrix<T>::dotgpu(CL_Matrix<T>& other){
 	checkdot(*this,other);
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
-    std::cout << "res state: " << res.state << '\n';
-    res.moveToGpu();
-    std::cout << "res state: " << res.state << '\n';
+    this->dotgpu(other, &res);
+	return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::dotgpu(CL_Matrix<T>& other, CL_Matrix<T> *out){
+    checkdot(*this,other);
+    assert(out->_n_rows == this->_n_rows);
+    assert(out->_n_cols == other._n_cols);
+
+    out->moveToGpu();
     this->syncToGpu();
     other.syncToGpu();
-//	Last argument is the output argument
-	std::size_t localrows = ceil(float(this->_n_rows)/100);
-	std::size_t localcols = ceil(float(this->_n_cols)/100);
-//	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
-	std::vector<std::size_t> localWorkSize = {localrows,localcols};
-	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
 
-	this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,res.gpu_buf);
-    std::cout << "res state: " << res.state << '\n';
-	return res;
+//	Last argument is the output argument
+    std::size_t localrows = ceil(float(this->_n_rows)/100);
+    std::size_t localcols = ceil(float(this->_n_cols)/100);
+//	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
+    std::vector<std::size_t> localWorkSize = {localrows,localcols};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
+
+    this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,out->gpu_buf);
 }
 
 template<typename T>

@@ -57,6 +57,7 @@ public:
 	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
 
 	CL_Matrix<T> dotgpu(CL_Matrix<T>& other);
+    void dotgpu(CL_Matrix<T>& other, CL_Matrix<T> *out);
 /////////////////////////////////////////////
 // Forbid accesses with only one variable. //
 /////////////////////////////////////////////
