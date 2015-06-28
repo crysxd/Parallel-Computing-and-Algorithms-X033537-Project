@@ -82,16 +82,16 @@ inline int gcd(int a, int b) {
 }
 
 template<typename T>
-CL_Matrix<T> CL_Matrix<T>::dotgpu(CL_Matrix<T>& other){
+CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const {
 	checkdot(*this,other);
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
-    this->dotgpu(other, &res);
+    this->dot(other, &res);
 	return res;
 }
 
 template<typename T>
-void CL_Matrix<T>::dotgpu(CL_Matrix<T>& other, CL_Matrix<T> *out){
+void CL_Matrix<T>::dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
     checkdot(*this,other);
     assert(out->_n_rows == this->_n_rows);
     assert(out->_n_cols == other._n_cols);
@@ -110,22 +110,22 @@ void CL_Matrix<T>::dotgpu(CL_Matrix<T>& other, CL_Matrix<T> *out){
     this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,out->gpu_buf);
 }
 
-template<typename T>
-CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
-    checkdot(*this,other);
-//	initzialize the result matrix
-    CL_Matrix res(this->_n_rows, other._n_cols);
-//	Last argument is the output argument
+//template<typename T>
+//CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
+//    checkdot(*this,other);
+////	initzialize the result matrix
+//    CL_Matrix res(this->_n_rows, other._n_cols);
+////	Last argument is the output argument
 
-    std::size_t localrows = ceil(float(this->_n_rows)/100);
-    std::size_t localcols = ceil(float(this->_n_cols)/100);
-    std::vector<std::size_t> outputargs = {4};
-//	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
-    std::vector<std::size_t> localWorkSize = {localrows,localcols};
-    std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
-    this->_cl.runKernel("mat_mul",outputargs,globalWorkSize,localWorkSize,this->mat,other.mat,this->_n_cols,other._n_cols,res.mat);
-    return res;
-}
+//    std::size_t localrows = ceil(float(this->_n_rows)/100);
+//    std::size_t localcols = ceil(float(this->_n_cols)/100);
+//    std::vector<std::size_t> outputargs = {4};
+////	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
+//    std::vector<std::size_t> localWorkSize = {localrows,localcols};
+//    std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
+//    this->_cl.runKernel("mat_mul",outputargs,globalWorkSize,localWorkSize,this->mat,other.mat,this->_n_cols,other._n_cols,res.mat);
+//    return res;
+//}
 
 template<typename T>
 inline T& CL_Matrix<T>::operator [](u_int32_t n) {

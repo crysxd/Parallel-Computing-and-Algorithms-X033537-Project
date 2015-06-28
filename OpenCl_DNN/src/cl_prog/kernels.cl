@@ -136,3 +136,27 @@ __kernel void mult(const int wSrc, __global const float* A,__global const float*
    // Compute elementwise s(x)(1-s(x))
    output[idy*wSrc+idx] = A[idy*wSrc+idx] * B[idy*wSrc+idx];
 }
+
+__kernel void add(const int wSrc, __global const float* A,__global const float* B,__global float* output)
+{
+   /* get_global_id(0) returns the ID of the thread in execution.
+   As many threads are launched at the same time, executing the same kernel,
+   each one will receive a different ID, and consequently perform a different computation.*/
+   const int idx = get_global_id(0);
+   const int idy = get_global_id(1);
+
+   // Compute elementwise s(x)(1-s(x))
+   output[idy*wSrc+idx] = A[idy*wSrc+idx] + B[idy*wSrc+idx];
+}
+
+__kernel void sub(const int wSrc, __global const float* A,__global const float* B,__global float* output)
+{
+   /* get_global_id(0) returns the ID of the thread in execution.
+   As many threads are launched at the same time, executing the same kernel,
+   each one will receive a different ID, and consequently perform a different computation.*/
+   const int idx = get_global_id(0);
+   const int idy = get_global_id(1);
+
+   // Compute elementwise s(x)(1-s(x))
+   output[idy*wSrc+idx] = A[idy*wSrc+idx] - B[idy*wSrc+idx];
+}
