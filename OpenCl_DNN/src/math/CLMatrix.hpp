@@ -64,10 +64,10 @@ public:
 	T operator[](u_int32_t n) const;
 
 	// Access the matrix coefficient at (r, c)
-	T & operator()(u_int32_t r, u_int32_t c);
+    T & operator()(u_int32_t r, u_int32_t c);
 
 	// Access the matrix coefficient at (r, c)
-	T operator()(u_int32_t r, u_int32_t c) const;
+    T operator()(u_int32_t r, u_int32_t c) const;
 
 //	Componenet wise declarations
 	CL_Matrix<T>& operator+=(CL_Matrix<T> const & mat);
@@ -80,9 +80,7 @@ public:
 
 	operator T const &() const;
 
-	operator T &();
-
-	void fetchdata();
+    operator T &();
 
 	void printDimension()const;
 
@@ -153,7 +151,11 @@ public:
 	template< typename V>
 	friend std::ostream &operator<<(std::ostream &output, const CL_Matrix<V> &mat);
 
+    // TODO make private again
+    enum State {Synced, OnlyGpu, OnlyRam};
+    mutable State state;
 private:
+
 
 	CL_Matrix(u_int32_t row,u_int32_t col,std::vector<T>& data);
 
@@ -163,17 +165,18 @@ private:
 	u_int32_t _n_rows;
 
 //	The acutal matrix behind it, we use std vector because the OpenCL
-	std::vector<T> mat;
+    mutable std::vector<T> mat;
 // The interface to openCL. Keep in mind to use the OpenCLPort singleton
 // Since too many instances crash OpenCL;
-	OpenCL _cl;
+    mutable OpenCL _cl;
 
-	cl::Buffer gpu_buf;
+    mutable cl::Buffer gpu_buf;
 
 //	Syncs the buffers of gpu and cpu
-	void syncHostWithDevice();
-
-	void syncDeviceWithHost();
+    void syncToRam() const;
+    void syncToGpu() const;
+    void moveToRam();
+    void moveToGpu();
 
 };
 

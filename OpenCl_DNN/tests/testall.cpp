@@ -215,11 +215,12 @@ TEST(Matrix,dotgpu){
 
     other.fill(2.);
     CL_Matrix<float> out = mat.dotgpu(other);
-    for(auto i=0u;i<100;i++){
-		out = out.dotgpu(other);
-	}
-	out.fetchdata();
-	std::cout << out(0,0);
+//    for(auto i=0u;i<100;i++){
+//        out = out.dotgpu(other);
+//    }
+    std::cout << "state after dotgpu " << out.state << '\n';
+//	out.fetchdata();
+    std::cout << "foo" << out(0,0);
 
 }
 

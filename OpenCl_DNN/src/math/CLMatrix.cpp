@@ -8,13 +8,13 @@
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c):
-_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
+state(OnlyRam),_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
 	this->fill(0);
 }
 
 template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, T value):
-_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
+state(OnlyRam),_n_rows(r),_n_cols(c),mat(r*c),_cl(OpenCLPort::getInstance("kernels.cl")){
 	this->fill(value);
 
 }
@@ -33,7 +33,7 @@ inline CL_Matrix<T>::~CL_Matrix() {
 }
 
 template<typename T>
-inline CL_Matrix<T>::CL_Matrix(const CL_Matrix<T> &other):_cl(other._cl),_n_cols(other._n_cols),_n_rows(other._n_rows),mat(other.mat){
+inline CL_Matrix<T>::CL_Matrix(const CL_Matrix<T> &other):_cl(other._cl),_n_cols(other._n_cols),_n_rows(other._n_rows),mat(other.mat),gpu_buf(other.gpu_buf),state(other.state){
 }
 
 template <typename T>
@@ -52,11 +52,13 @@ CL_Matrix<T>& CL_Matrix<T>::operator=(CL_Matrix<T> other){
 
 template<typename T>
 inline void CL_Matrix<T>::zeros() {
+    this->moveToRam();
 	this->fill(0);
 }
 
 template<typename T>
 inline void CL_Matrix<T>::random(T min,T max) {
+    this->moveToRam();
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	std::uniform_real_distribution<T> dist(min,max);
@@ -65,6 +67,7 @@ inline void CL_Matrix<T>::random(T min,T max) {
 
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::transpose() const {
+    this->syncToRam();
 	CL_Matrix<T> trans(this->_n_cols,this->_n_rows);
     for(unsigned i = 0; i < this->_n_rows; ++i) {
         for(unsigned j = 0; j < this->_n_cols; ++j) {
@@ -79,18 +82,15 @@ inline int gcd(int a, int b) {
 }
 
 template<typename T>
-void CL_Matrix<T>::fetchdata(){
-	this->_cl.readBuffer(this->gpu_buf,this->mat);
-}
-
-template<typename T>
 CL_Matrix<T> CL_Matrix<T>::dotgpu(CL_Matrix<T>& other){
 	checkdot(*this,other);
 //	initzialize the result matrix
 	CL_Matrix res(this->_n_rows, other._n_cols);
-//	res.syncHostWithDevice();
-//	this->syncHostWithDevice();
-//	other.syncHostWithDevice();
+    std::cout << "res state: " << res.state << '\n';
+    res.moveToGpu();
+    std::cout << "res state: " << res.state << '\n';
+    this->syncToGpu();
+    other.syncToGpu();
 //	Last argument is the output argument
 	std::size_t localrows = ceil(float(this->_n_rows)/100);
 	std::size_t localcols = ceil(float(this->_n_cols)/100);
@@ -99,6 +99,7 @@ CL_Matrix<T> CL_Matrix<T>::dotgpu(CL_Matrix<T>& other){
 	std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
 
 	this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,res.gpu_buf);
+    std::cout << "res state: " << res.state << '\n';
 	return res;
 }
 
@@ -131,18 +132,24 @@ inline T CL_Matrix<T>::operator [](u_int32_t n) const {
 
 template<typename T>
 inline T& CL_Matrix<T>::operator ()(u_int32_t r, u_int32_t c) {
-	assert(r*c < this->mat.size());
-	return this->mat.at(r * this->_n_cols + c);
+    this->syncToRam();
+    std::cout << "at2 " << r << ',' << c << "\n";
+    assert(r*c < this->mat.size());
+    return this->mat.at(r * this->_n_cols + c);
 }
 
 template<typename T>
 inline T CL_Matrix<T>::operator ()(u_int32_t r, u_int32_t c) const {
-	assert(r*c < this->mat.size());
-	return this->mat.at( r * this->_n_cols + c);
+    this->syncToRam();
+    std::cout << "at " << r << ',' << c << "\n";
+    assert(r*c < this->mat.size());
+    return this->mat.at( r * this->_n_cols + c);
 }
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator +=(const CL_Matrix<T>& other) {
+    //TODO: implement on GPU
+    this->moveToRam();
 	checkalign(*this,other);
     for(unsigned i = 0; i < this->mat.size(); ++i) {
         this->mat.at(i) += other.mat.at(i);
@@ -152,6 +159,8 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator +=(const CL_Matrix<T>& other) {
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator -=(const CL_Matrix<T>& other) {
+    //TODO: implement on GPU
+    this->moveToRam();
 	checkalign(*this,other);
     for(unsigned i = 0; i < this->mat.size(); ++i) {
         this->mat.at(i) -= other.mat.at(i);
@@ -161,6 +170,8 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator -=(const CL_Matrix<T>& other) {
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
+    //TODO: implement on GPU
+    this->moveToRam();
 	checkalign(*this,other);
     for(unsigned i = 0; i < this->mat.size(); ++i) {
         this->mat.at(i) *= other.mat.at(i);
@@ -170,19 +181,41 @@ inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
 
 template<typename T>
 inline void CL_Matrix<T>::fill(T fill) {
+    this->moveToRam();
 	std::fill(this->mat.begin(), this->mat.end(), fill);
 }
 
 
 template<typename T>
-inline void CL_Matrix<T>::syncHostWithDevice() {
-	this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
+inline void CL_Matrix<T>::syncToGpu() const {
+    if (this->state == OnlyRam) {
+        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to gpu\n";
+        this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
+        this->state = Synced;
+    }
 
 }
 
 template<typename T>
-inline void CL_Matrix<T>::syncDeviceWithHost() {
-	this->_cl.readBuffer(this->gpu_buf,this->mat);
+inline void CL_Matrix<T>::syncToRam() const {
+    if (this->state == OnlyGpu) {
+        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to ram\n";
+        this->_cl.readBuffer(this->gpu_buf,this->mat);
+        this->state = Synced;
+    }
+}
+
+template<typename T>
+inline void CL_Matrix<T>::moveToGpu() {
+    this->syncToGpu();
+    this->state = OnlyGpu;
+
+}
+
+template<typename T>
+inline void CL_Matrix<T>::moveToRam() {
+    this->syncToRam();
+    this->state = OnlyRam;
 }
 
 
