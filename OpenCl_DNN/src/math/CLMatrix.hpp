@@ -119,6 +119,8 @@ public:
 		swap(lhs._n_rows,rhs._n_rows);
 		swap(lhs._n_cols,rhs._n_cols);
 		swap(lhs._cl,rhs._cl);
+        swap(lhs.gpu_buf, rhs.gpu_buf);
+        swap(lhs.state, rhs.state);
 	}
 
 	std::pair<int,int> getDimensions();
@@ -138,6 +140,7 @@ public:
     void tanh(CL_Matrix<T> *out) const;
 
 	T* data() {
+        this->syncToRam();
 		return this->mat.data();
 	}
 

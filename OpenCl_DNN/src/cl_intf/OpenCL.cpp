@@ -373,11 +373,11 @@ inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> co
 
 }
 
-#include <chrono>
+//#include <chrono>
 
 template<typename ... Tp>
 inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
-    auto start = std::chrono::system_clock::now();
+//    auto start = std::chrono::system_clock::now();
 
     ////////////////////////////////////////////////////
     // Initalize the transfer and executeable objects //
@@ -394,7 +394,7 @@ inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &
 //    Wait for the transfers to finish
     queue.finish();
 
-    std::chrono::duration<double> elapsed_seconds1 = std::chrono::system_clock::now() - start;
+//    std::chrono::duration<double> elapsed_seconds1 = std::chrono::system_clock::now() - start;
 	#if !DEBUG
     std::cout << "Running Kernel : " << kernelname << std::endl;
     #endif
@@ -425,8 +425,8 @@ inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &
         cerr<< " Reason : " << geterrorstring(ret) << endl;
     }
     event.wait();
-    std::chrono::duration<double> elapsed_seconds2 = std::chrono::system_clock::now() - start;
-    std::cout << "kernel times " << elapsed_seconds1.count() << ", "  << elapsed_seconds2.count() << "\n";
+//    std::chrono::duration<double> elapsed_seconds2 = std::chrono::system_clock::now() - start;
+//    std::cout << "kernel times " << elapsed_seconds1.count() << ", "  << elapsed_seconds2.count() << "\n";
 //    Finished
 }
 //
