@@ -366,7 +366,7 @@ inline CL_Matrix<T> CL_Matrix<T>::operator *(const CL_Matrix<T>& other) {
 }
 
 template<typename T>
-void CL_Matrix<T>::mul(const CL_Matrix<T>& other, CL_Matrix<T> *out) {
+void CL_Matrix<T>::mul(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
     checkalign(*this,other);
     checkalign(other,*out);
     this->syncToGpu();
@@ -375,6 +375,30 @@ void CL_Matrix<T>::mul(const CL_Matrix<T>& other, CL_Matrix<T> *out) {
     std::vector<std::size_t> localWorkSize = {1,1};
     std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
     this->_cl.runKernelnoOut("mul",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,other.gpu_buf,out->gpu_buf);
+}
+
+template<typename T>
+void CL_Matrix<T>::add(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
+    checkalign(*this,other);
+    checkalign(other,*out);
+    this->syncToGpu();
+    other.syncToGpu();
+    out->moveToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("add",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,other.gpu_buf,out->gpu_buf);
+}
+
+template<typename T>
+void CL_Matrix<T>::sub(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
+    checkalign(*this,other);
+    checkalign(other,*out);
+    this->syncToGpu();
+    other.syncToGpu();
+    out->moveToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("sub",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,other.gpu_buf,out->gpu_buf);
 }
 
 template<typename T>
@@ -426,38 +450,34 @@ void CL_Matrix<T>::tanh(CL_Matrix<T> *out) const {
 
 template<typename T>
 inline CL_Matrix<T> operator +(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
-    lhs.syncToRam();
-    rhs.syncToRam();
-    std::cout << "operator + not ported yet\n";
-	checkalign(lhs,rhs);
+    checkalign(lhs,rhs);
 	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
-	for(unsigned i = 0; i < res.mat.size(); ++i) {
-		res.mat.at(i) = lhs.mat.at(i) + rhs.mat.at(i);
-	}
+    lhs.add(rhs, &res);
+//    for(unsigned i = 0; i < res.mat.size(); ++i) {
+//		res.mat.at(i) = lhs.mat.at(i) + rhs.mat.at(i);
+//	}
 	return res;
 }
 template<typename T>
 inline CL_Matrix<T> operator -(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
-    lhs.syncToRam();
-    rhs.syncToRam();
-    std::cout << "operator - not ported yet\n";
-	checkalign(lhs,rhs);
+    checkalign(lhs,rhs);
 	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
-	for(unsigned i = 0; i < res.mat.size(); ++i) {
-		res.mat.at(i) = lhs.mat.at(i) - rhs.mat.at(i);
-	}
+    lhs.sub(rhs, &res);
+//	for(unsigned i = 0; i < res.mat.size(); ++i) {
+//		res.mat.at(i) = lhs.mat.at(i) - rhs.mat.at(i);
+//	}
 	return res;
 
 }
 
 template<typename T>
 inline CL_Matrix<T> operator*(T val, CL_Matrix<T> const &rhs) {
-    rhs.syncToRam();
-    std::cout << "operator * not ported yet\n";
-	CL_Matrix<T> res(rhs._n_rows,rhs._n_cols);
-	for(unsigned i = 0; i < res.mat.size(); ++i) {
-		res.mat.at(i) = val*rhs.mat.at(i);
-	}
+    rhs.syncToGpu();
+    CL_Matrix<T> res(rhs._n_rows,rhs._n_cols);
+    res.moveToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {rhs._n_rows,rhs._n_cols};
+    rhs._cl.runKernelnoOut("mul_scalar",globalWorkSize,localWorkSize,rhs._n_cols,rhs.gpu_buf,val,res.gpu_buf);
 	return res;
 }
 

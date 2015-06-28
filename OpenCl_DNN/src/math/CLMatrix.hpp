@@ -76,7 +76,9 @@ public:
 	CL_Matrix<T>& operator*=(T var);
 
 	CL_Matrix<T> operator*(CL_Matrix<T> const &other);
-    void mul(CL_Matrix<T> const &other, CL_Matrix<T> *out);
+    void mul(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
+    void add(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
+    void sub(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
 
 	operator T const &() const;
 

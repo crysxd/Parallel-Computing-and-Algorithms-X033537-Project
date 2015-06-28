@@ -162,7 +162,7 @@ __kernel void sub(const int wSrc, __global const float* A,__global const float* 
    output[idy*wSrc+idx] = A[idy*wSrc+idx] - B[idy*wSrc+idx];
 }
 
-__kernel void mult_scalar(const int wSrc, __global const float* A, const float B,__global float* output)
+__kernel void mul_scalar(const int wSrc, __global const float* A, const float B,__global float* output)
 {
    /* get_global_id(0) returns the ID of the thread in execution.
    As many threads are launched at the same time, executing the same kernel,
