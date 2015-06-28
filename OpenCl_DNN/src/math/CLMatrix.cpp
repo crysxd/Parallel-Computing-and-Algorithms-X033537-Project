@@ -100,7 +100,6 @@ void CL_Matrix<T>::dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
     this->syncToGpu();
     other.syncToGpu();
 
-//	Last argument is the output argument
     std::size_t localrows = ceil(float(this->_n_rows)/100);
     std::size_t localcols = ceil(float(this->_n_cols)/100);
 //	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
@@ -109,23 +108,6 @@ void CL_Matrix<T>::dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
 
     this->_cl.runKernelnoOut("mat_mul",globalWorkSize,localWorkSize,this->gpu_buf,other.gpu_buf,this->_n_cols,other._n_cols,out->gpu_buf);
 }
-
-//template<typename T>
-//CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
-//    checkdot(*this,other);
-////	initzialize the result matrix
-//    CL_Matrix res(this->_n_rows, other._n_cols);
-////	Last argument is the output argument
-
-//    std::size_t localrows = ceil(float(this->_n_rows)/100);
-//    std::size_t localcols = ceil(float(this->_n_cols)/100);
-//    std::vector<std::size_t> outputargs = {4};
-////	Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
-//    std::vector<std::size_t> localWorkSize = {localrows,localcols};
-//    std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
-//    this->_cl.runKernel("mat_mul",outputargs,globalWorkSize,localWorkSize,this->mat,other.mat,this->_n_cols,other._n_cols,res.mat);
-//    return res;
-//}
 
 template<typename T>
 inline T& CL_Matrix<T>::operator [](u_int32_t n) {
@@ -153,34 +135,44 @@ inline T CL_Matrix<T>::operator ()(u_int32_t r, u_int32_t c) const {
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator +=(const CL_Matrix<T>& other) {
-    //TODO: implement on GPU
-    this->moveToRam();
 	checkalign(*this,other);
-    for(unsigned i = 0; i < this->mat.size(); ++i) {
-        this->mat.at(i) += other.mat.at(i);
-    }
+//    for(unsigned i = 0; i < this->mat.size(); ++i) {
+//        this->mat.at(i) += other.mat.at(i);
+//    }
+    this->moveToGpu();
+    other.syncToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("add",globalWorkSize,localWorkSize,other._n_cols,this->gpu_buf,other.gpu_buf,this->gpu_buf);
     return (*this);
 }
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator -=(const CL_Matrix<T>& other) {
-    //TODO: implement on GPU
-    this->moveToRam();
-	checkalign(*this,other);
-    for(unsigned i = 0; i < this->mat.size(); ++i) {
-        this->mat.at(i) -= other.mat.at(i);
-    }
+    checkalign(*this,other);
+//    for(unsigned i = 0; i < this->mat.size(); ++i) {
+//        this->mat.at(i) -= other.mat.at(i);
+//    }
+    this->moveToGpu();
+    other.syncToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("sub",globalWorkSize,localWorkSize,other._n_cols,this->gpu_buf,other.gpu_buf,this->gpu_buf);
     return (*this);
 }
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator *=(const CL_Matrix<T>& other) {
-    //TODO: implement on GPU
-    this->moveToRam();
-	checkalign(*this,other);
-    for(unsigned i = 0; i < this->mat.size(); ++i) {
-        this->mat.at(i) *= other.mat.at(i);
-    }
+    checkalign(*this,other);
+//    for(unsigned i = 0; i < this->mat.size(); ++i) {
+//        this->mat.at(i) *= other.mat.at(i);
+//    }
+
+    this->moveToGpu();
+    other.syncToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("mul",globalWorkSize,localWorkSize,other._n_cols,this->gpu_buf,other.gpu_buf,this->gpu_buf);
     return (*this);
 }
 
@@ -232,6 +224,7 @@ template<typename T>
 inline void CL_Matrix<T>::shuffle(bool row){
 	// Shuffles the row or column of the matrix depending on the
 	// given boolean value
+    this->moveToRam();
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	std::vector<std::pair<int,int>> indices;
@@ -268,6 +261,7 @@ inline void CL_Matrix<T>::shuffle(bool row){
 
 template<typename T>
 inline void CL_Matrix<T>::fillAt(u_int32_t r, u_int32_t c, T value) {
+    this->moveToRam();
 	assert(r*c < this->mat.size());
 	this->mat.at( r * this->_n_cols + c) = value;
 }
@@ -275,9 +269,13 @@ inline void CL_Matrix<T>::fillAt(u_int32_t r, u_int32_t c, T value) {
 
 template<typename T>
 inline CL_Matrix<T>& CL_Matrix<T>::operator *=(T var) {
-    for(unsigned i = 0; i < this->mat.size(); ++i) {
-        this->mat.at(i) *= var;
-    }
+//    for(unsigned i = 0; i < this->mat.size(); ++i) {
+//        this->mat.at(i) *= var;
+//    }
+    this->moveToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("mul_scalar",globalWorkSize,localWorkSize,this->_n_cols,this->gpu_buf,var,this->gpu_buf);
     return (*this);
 }
 
@@ -338,6 +336,7 @@ void CL_Matrix<T>::sigmoidgrad(CL_Matrix<T> *out) const {
 
 template<typename T>
 inline CL_Matrix<T>::operator T const &() const{
+    this->syncToRam();
 	if(_n_cols!=1 && _n_rows !=1){
 		throw "size not 1x1";
 	}
@@ -346,6 +345,7 @@ inline CL_Matrix<T>::operator T const &() const{
 
 template<typename T>
 inline CL_Matrix<T>::operator T &(){
+    this->syncToRam();
 	if(_n_cols!=1 && _n_rows !=1){
 		throw "size not 1x1";
 	}
@@ -360,13 +360,21 @@ inline void CL_Matrix<T>::printDimension()const {
 
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::operator *(const CL_Matrix<T>& other) {
-//	CHeck if size is the same
-	checkalign(*this,other);
 	CL_Matrix<T> res(other._n_rows,other._n_cols);
-	for(unsigned i = 0; i < res.mat.size(); ++i) {
-		res.mat.at(i) = this->mat.at(i) * other.mat.at(i);
-	}
+    this->mul(other, &res);
 	return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::mul(const CL_Matrix<T>& other, CL_Matrix<T> *out) {
+    checkalign(*this,other);
+    checkalign(other,*out);
+    this->syncToGpu();
+    other.syncToGpu();
+    out->moveToGpu();
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("mul",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,other.gpu_buf,out->gpu_buf);
 }
 
 template<typename T>
@@ -376,6 +384,7 @@ inline std::pair<int, int> CL_Matrix<T>::getDimensions() {
 
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::subMatCol(u_int32_t c) {
+    this->syncToRam();
 	assert(c<this->_n_cols);
 	std::vector<T> col;
 	for(auto i = c; i < this->mat.size(); i+=_n_cols){
@@ -387,6 +396,7 @@ inline CL_Matrix<T> CL_Matrix<T>::subMatCol(u_int32_t c) {
 
 template<typename T>
 inline CL_Matrix<T> CL_Matrix<T>::subMatRow(u_int32_t r) {
+    this->syncToRam();
 	assert(r < this->_n_rows);
 	typename std::vector<T>::const_iterator first = this->mat.begin()+r*this->_n_cols;
 	typename std::vector<T>::const_iterator last = this->mat.begin()+(r+1)*this->_n_cols;
@@ -416,6 +426,9 @@ void CL_Matrix<T>::tanh(CL_Matrix<T> *out) const {
 
 template<typename T>
 inline CL_Matrix<T> operator +(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
+    lhs.syncToRam();
+    rhs.syncToRam();
+    std::cout << "operator + not ported yet\n";
 	checkalign(lhs,rhs);
 	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
 	for(unsigned i = 0; i < res.mat.size(); ++i) {
@@ -425,6 +438,9 @@ inline CL_Matrix<T> operator +(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs
 }
 template<typename T>
 inline CL_Matrix<T> operator -(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
+    lhs.syncToRam();
+    rhs.syncToRam();
+    std::cout << "operator - not ported yet\n";
 	checkalign(lhs,rhs);
 	CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
 	for(unsigned i = 0; i < res.mat.size(); ++i) {
@@ -436,6 +452,8 @@ inline CL_Matrix<T> operator -(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs
 
 template<typename T>
 inline CL_Matrix<T> operator*(T val, CL_Matrix<T> const &rhs) {
+    rhs.syncToRam();
+    std::cout << "operator * not ported yet\n";
 	CL_Matrix<T> res(rhs._n_rows,rhs._n_cols);
 	for(unsigned i = 0; i < res.mat.size(); ++i) {
 		res.mat.at(i) = val*rhs.mat.at(i);
