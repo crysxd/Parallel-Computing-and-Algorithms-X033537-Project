@@ -64,7 +64,7 @@ private:
 	//build runtime executable from a program
 	cl::Context context;
 	cl::Device device;
-//	cl::Program program;
+    cl::Program program;
 
 	void initProgramQuene(cl::Program*,cl::CommandQueue*);
 
