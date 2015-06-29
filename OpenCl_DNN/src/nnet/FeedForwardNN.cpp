@@ -172,6 +172,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
 			//We got the weights, so just update the non accumulated ones
 			for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
+				std::cout << " Weights for Layer" << wi << "\n" << this->_weight_biases.at(wi).first << std::endl;
 				w_b[wi].first += delta_w_b[wi].first;
 				w_b[wi].second += delta_w_b[wi].second;
 			}
