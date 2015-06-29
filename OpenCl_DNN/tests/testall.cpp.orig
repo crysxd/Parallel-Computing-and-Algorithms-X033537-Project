@@ -204,24 +204,50 @@ TEST(OpenCL,Datatypes){
 
 }
 
+<<<<<<< HEAD
 //TEST(Matrix,dotgpu){
-//
-//    int r=20;
-//    int c=20;
-//
+
+//    int r=512;
+//    int c=512;
+
 //    CL_Matrix<float> mat(r,c);
 //    CL_Matrix<float> other(c,r);
 //    mat.fill(5.);
-//
+
 //    other.fill(2.);
-//    CL_Matrix<float> out = mat.dotgpu(other);
+//    CL_Matrix<float> out = mat.dot(other);
+//    CL_Matrix<float> out2 = out.dot(other);
 //    for(auto i=0u;i<100;i++){
-//		out = out.dotgpu(other);
-//	}
-//	out.fetchdata();
-//	std::cout << out(0,0);
-//
+//        out2.dot(other, &out);
+//        out.dot(other, &out2);
+////        out = out2.dot(other);
+////        out2 = out.dot(other);
+//    }
+//    std::cout << "state after dotgpu " << out.state << '\n';
+////	out.fetchdata();
+//    std::cout << "foo" << out2(0,0);
+
 //}
+=======
+TEST(Matrix,dotgpu){
+
+    int r=20;
+    int c=20;
+
+    CL_Matrix<float> mat(r,c);
+    CL_Matrix<float> other(c,r);
+    mat.fill(5.);
+
+    other.fill(2.);
+    CL_Matrix<float> out = mat.dotgpu(other);
+    for(auto i=0u;i<100;i++){
+		out = out.dotgpu(other);
+	}
+	out.fetchdata();
+	std::cout << out(0,0);
+
+}
+>>>>>>> master
 
 TEST(Matrix,dotsq){
 

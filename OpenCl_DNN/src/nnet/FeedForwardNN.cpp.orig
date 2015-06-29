@@ -85,9 +85,6 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 		// refers to the current layer weight!
 		Matrix const &nabla_back = this->_backprop_buf.at(i).dot(delta_l.transpose());
 		//	Update the layer weights
-//		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
-		// Update the bias
-//		this->_weight_biases[i].second -= this->_l_rate * delta_l;
 
 		nablas.push_back(std::make_pair(nabla_back.transpose(),delta_l));
 
@@ -162,8 +159,14 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-			Matrix error = (predict - target.subMatCol(i));
+<<<<<<< HEAD
 
+            //Matrix error = target.subMatCol(i) - predict;
+            Matrix error = (predict - target.subMatCol(i));
+
+=======
+			Matrix error = (predict - target.subMatCol(i));
+>>>>>>> master
 			epoch_error+= error.transpose().dot(error);
 			std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
 			///////////////////////////////
@@ -251,7 +254,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 	}
 	// Init the weights and other variables
 	this->init();
-	// Begin running the neural network for NUM_EPOCHS iterations
+
 	std::vector<std::pair<Matrix,Matrix>> w_b;
 	std::vector<Matrix> momentumbuf;
 	for(int i=this->_weight_biases.size()-1; i>=0;i--){
@@ -290,8 +293,12 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 				// Feed forward step, returns the predictions of the nnet //
 				////////////////////////////////////////////////////////////
 				Matrix const &predict = this->feedforward(inputvector,true);
+<<<<<<< HEAD
+                Matrix error = target.subMatCol(i) - predict;
+=======
 				Matrix error = predict - target.subMatCol(i);
 
+>>>>>>> master
 
 				epoch_error+= error.transpose().dot(error);
 				std::cout << predict << "Error "<< epoch_error <<  std::endl;
