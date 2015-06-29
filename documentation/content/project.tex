@@ -127,10 +127,10 @@ For the outputs, we simply feed forward the network and store the output $\mathb
 \mathbf{o}_j = \varphi \left( \mathbf{Wx+b} \right)
 \end{align}
 
-As soon as the feed forward is done, we produced an output of the network, which we can denote as $\mathbf{o}_L$. Now we need to decide how close our output is to the targetted output $\mathbf{t}$. For this we use a cost function in usual cases it is sufficient to use $MSE$ as such, which is defined as:
+As soon as the feed forward is done, we produced an output of the network, which we can denote as $\mathbf{o}_L$. Now we need to decide how close our output is to the targeted output $\mathbf{t}$. For this we use a cost function in usual cases it is sufficient to use $MSE$ as such, which is defined as:
 \begin{equation}
 \label{eq:mse}
-\mathbf{err} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
+\mathbf{MSE} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
 \end{equation}
 
 Here (\ref{eq:mse}) we need to make sure that the last output layer has the same dimensions as the target output.
@@ -141,6 +141,7 @@ Here (\ref{eq:mse}) we need to make sure that the last output layer has the same
 At first we calculate the differences between the target output and the estimated output.
 
 \begin{align}
+\boldsymbol{err} = \mathbf{o}_L - y\\
 \boldsymbol{\delta}_L &= \mathbf{err} \otimes \mathbf{D}_L\\
 \nabla \mathbf{W}_L &= \mathbf{o}_L \boldsymbol{\delta}_L^T
 \end{align}
