@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 10000
+#define NUM_EPOCHS 50
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -63,8 +63,9 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 	std::vector<std::pair<Matrix,Matrix>> nablas;
 
 	assert(this->_deriv.size() == this->_net_size);
-	Matrix delta_l = error * (this->_deriv.back());
+	assert(error.getRows() == this->_deriv.back().getRows());
 
+	Matrix delta_l = error * (this->_deriv.back());
 #if !DEBUG
 	std::cout << "Updating layer " << this->_weight_biases.size()-1 << " with dimensions : ";
 	this->_weight_biases.back().first.printDimension();
@@ -166,12 +167,18 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
             std::cout << "epoch: " << epoch << ", i: " << i << "\n";
+
 			// Get the column of the input and use it as input
 			Matrix inputvector = in.subMatCol(i);
+			std::cout << "after inputvector" <<std::endl;
+
+
+
 			////////////////////////////////////////////////////////////
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
+			std::cout << "After predict " <<std::endl;
 			Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
@@ -181,26 +188,36 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			///////////////////////////////
 			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
 			//We got the weights, so just update the non accumulated ones
+			assert(this->_weight_biases.size() == w_b.size());
+			assert(this->_weight_biases.size() == delta_w_b.size());
+			std::cout << "a" <<std::endl;
+			assert(w_b.size() == delta_w_b.size());
 //			Weights are in reversed order since there was some trouble using the insert() or any reserve()
 			for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
+				assert(wi >= 0);
 //				std::cout << " Weights for Layer" << wi << "\n" << this->_weight_biases.at(wi).first << std::endl;
-				w_b[wi].first += delta_w_b[wi].first;
-				w_b[wi].second += delta_w_b[wi].second;
+				w_b.at(wi).first += delta_w_b.at(wi).first;
+				w_b.at(wi).second += delta_w_b.at(wi).second;
 			}
+			std::cout << "b" <<std::endl;
+
 		}
+
 		// Print out the result
 // #if !DEBUG
 		std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << std::endl;
 // #endif
 		errors.push_back(epoch_error);
 
+
 		/////////////////////////
 		// Update the weights //
 		/////////////////////////
-		for(unsigned int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
-			this->_weight_biases.at(i).first -= l_rate * w_b[j].first + this->_momentum * momentumbuf.at(j);
+		for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
+			std::cout << " update weight  " << i << " j " <<j << std::endl;
+			this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + this->_momentum * momentumbuf.at(j);
 //			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
-			this->_weight_biases.at(i).second -= l_rate * w_b[j].second;
+			this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 //			momentumbuf.at(j) = this->_weight_biases[i].first;
 		}
@@ -322,20 +339,20 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 			}
 			// Print out the result
 	// #if !DEBUG
-			std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
 	// #endif
 			errors.push_back(epoch_error);
 
 			/////////////////////////
 			// Update the weights //
 			/////////////////////////
-			for(unsigned int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
+			for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
 				this->_weight_biases.at(i).first -= l_rate * w_b[j].first + this->_momentum * momentumbuf.at(j);
 				this->_weight_biases.at(i).second -= l_rate * w_b[j].second;
 	//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 				momentumbuf.at(j) = this->_weight_biases[i].first;
 			}
-	}
+		}
+		std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
 	}
 	return errors;
 }
