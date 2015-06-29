@@ -378,7 +378,7 @@ TEST(Activation,Tanh){
 TEST(Nnet,batchgradient){
 	auto inputdim = 2u;
 	auto inputnum = 4u;
-	CL_Matrix<float> input(2,4);
+	CL_Matrix<float> input(inputdim,inputnum);
 	input(0,0) = 0;
 	input(1,0) = 0;
 
@@ -392,18 +392,18 @@ TEST(Nnet,batchgradient){
 	input(1,3) = 1;
 
 	CL_Matrix<float> target(1,4);
-	target(0,0) = 1;
+	target(0,0) = 0;
 
-	target(0,1) = 0;
+	target(0,1) = 1;
 
-	target(0,2) = 0;
+	target(0,2) = 1;
 
-	target(0,3) = 1;
+	target(0,3) = 0;
 	Sigmoid s;
-	FeedForwardNN dnn(2,1,0.1);
+	FeedForwardNN dnn(2,1,0.3,0.8);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
-	dnn.addHiddenLayer(2);
+	dnn.addHiddenLayer(3);
 	std::vector<float> errors = dnn.trainbatch(input,target);
     for (auto i = 1u; i < errors.size(); ++i)
     {
@@ -411,10 +411,10 @@ TEST(Nnet,batchgradient){
     }
 }
 
-TEST(Nnet,sgd){
-	auto inputdim = 2u;
-	auto inputnum = 4u;
-//	CL_Matrix<float> input(2,4);
+//TEST(Nnet,sgd){
+//	auto inputdim = 2u;
+//	auto inputnum = 4u;
+//	CL_Matrix<float> input(inputdim,inputnum);
 //	input(0,0) = 0;
 //	input(1,0) = 0;
 //
@@ -438,7 +438,7 @@ TEST(Nnet,sgd){
 //
 //
 //	Sigmoid s;
-//	FeedForwardNN dnn(3,1,0.5,0.1);
+//	FeedForwardNN dnn(2,1,0.5,0.1);
 //	dnn.addActivation(&s);
 //	dnn.addActivation(&s);
 //	dnn.addHiddenLayer(2);
@@ -447,7 +447,7 @@ TEST(Nnet,sgd){
 //    {
 //        EXPECT_GE(errors[i-1] - errors[i]  ,0);
 //    }
-}
+//}
 
 
 
