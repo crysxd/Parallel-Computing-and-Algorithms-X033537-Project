@@ -25,19 +25,20 @@ trainImages, trainOutput, trainNumbers = loadData('testing')
 testImages, testOutput, testNumbers = loadData('testing')
 
 nn = NeuralNetwork(layerCount=3,
-                   layerSize=np.array([784, 1000, 10]),
+                   layerSize=np.array([784, 100, 10]),
                    actFunctions=np.array([1, 1]),
                    learningRate=0.1,
-                   momentum=1337.2)
+                   momentum=0.0001)
 
 print 'train, input shape:', trainImages.shape, 'output shape:', trainOutput.shape
 
-errors = nn.trainsgd(trainImages[:, 0:20], trainOutput[:, 0:20])
+errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20])
 print errors
 
 result = nn.test(testImages[:, 0:20])
 print result
+print testNumbers[0:20]
 
-errors = sum([outputToNumber(result[:, i]) == testNumbers[i]
+errors = sum([outputToNumber(result[:, i]) != testNumbers[i]
               for i in range(result.shape[1])])
 print errors, 'errors, total:', result.shape[1]

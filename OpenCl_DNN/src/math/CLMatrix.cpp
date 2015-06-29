@@ -23,7 +23,7 @@ template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, bool random):
 	CL_Matrix<T>(r,c){
 	if (random){
-		this->random(0,1);
+        this->random(-1e-3,1e-3);
 	}
 }
 
@@ -186,7 +186,7 @@ inline void CL_Matrix<T>::fill(T fill) {
 template<typename T>
 inline void CL_Matrix<T>::syncToGpu() const {
     if (this->state == OnlyRam) {
-        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to gpu\n";
+//        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to gpu\n";
         this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
         this->state = Synced;
     }
@@ -196,7 +196,7 @@ inline void CL_Matrix<T>::syncToGpu() const {
 template<typename T>
 inline void CL_Matrix<T>::syncToRam() const {
     if (this->state == OnlyGpu) {
-        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to ram\n";
+//        std::cout << "transfer " << _n_rows << 'x' << _n_cols << " to ram\n";
         this->_cl.readBuffer(this->gpu_buf,this->mat);
         this->state = Synced;
     }

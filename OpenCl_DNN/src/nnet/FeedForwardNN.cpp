@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 10
+#define NUM_EPOCHS 100
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -156,7 +156,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-			Matrix error = this->_costfunc->cost(target.subMatCol(i),predict);
+            Matrix error = target.subMatCol(i) - predict;
 
 			epoch_error+= error.transpose().dot(error);
 			///////////////////////////////
@@ -274,7 +274,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 				// Feed forward step, returns the predictions of the nnet //
 				////////////////////////////////////////////////////////////
 				Matrix const &predict = this->feedforward(inputvector,true);
-				Matrix error = this->_costfunc->cost(target.subMatCol(i),predict);
+                Matrix error = target.subMatCol(i) - predict;
 
 				epoch_error+= error.transpose().dot(error);
 				///////////////////////////////
