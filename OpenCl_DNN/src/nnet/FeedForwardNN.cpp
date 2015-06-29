@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 5
+#define NUM_EPOCHS 100
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -25,7 +25,7 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 	auto i=0u;
 //Append the input layer as the first layer into the buffer;
 	this->_backprop_buf.at(0)=tmpin;
-	Matrix netout= tmpin;
+	Matrix &netout= tmpin;
 	for(; i < this->_activations.size();i++ ){
 		Activation& activ = _activations[i];
 		Matrix const &weights = this->_weight_biases[i].first;
@@ -85,9 +85,6 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 		// refers to the current layer weight!
 		Matrix const &nabla_back = this->_backprop_buf.at(i).dot(delta_l.transpose());
 		//	Update the layer weights
-//		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
-		// Update the bias
-//		this->_weight_biases[i].second -= this->_l_rate * delta_l;
 
 		nablas.push_back(std::make_pair(nabla_back.transpose(),delta_l));
 
@@ -115,6 +112,8 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 	// of data we have.
 	// E.g the matrix (5,1000), has a 5 dimensional input and 1000 samples.
 	std::vector<float> errors;
+
+
 	if(in.getRows() != this->_in_dim){
 		std::cerr<< "Input dimensions and datainput dimensions do not match. Expected : " << this->_in_dim
 				<< " , but got " << in.getRows() << " in the matrix";
@@ -125,6 +124,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 						<< " , but got " << target.getRows() << " in the matrix";
 		return errors;
 	}
+
+	float l_rate = 1./in.getCols() * this->_l_rate;
+
 	// Init the weights and other variables
 	this->init();
 	// Begin running the neural network for NUM_EPOCHS iterations
@@ -158,16 +160,16 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
 			Matrix error = (predict - target.subMatCol(i));
-
 			epoch_error+= error.transpose().dot(error);
+			std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
 			std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
 			//We got the weights, so just update the non accumulated ones
-			for(int i=this->_weight_biases.size()-1; i>=0;i--){
-				w_b[i].first += delta_w_b[i].first;
-				w_b[i].second += delta_w_b[i].second;
+			for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
+				w_b[wi].first += delta_w_b[wi].first;
+				w_b[wi].second += delta_w_b[wi].second;
 			}
 		}
 		// Print out the result
@@ -180,9 +182,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		// Update the weights //
 		/////////////////////////
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first + this->_momentum * momentumbuf.at(w_b.size()-i-1);
+			this->_weight_biases.at(i).first -= l_rate * w_b[w_b.size()-i-1].first + this->_momentum * momentumbuf.at(w_b.size()-i-1);
 //			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
-			this->_weight_biases.at(i).second -= this->_l_rate * w_b[w_b.size()-i-1].second;
+			this->_weight_biases.at(i).second -= l_rate * w_b[w_b.size()-i-1].second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 //			momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
 		}
@@ -245,24 +247,32 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 	}
 	// Init the weights and other variables
 	this->init();
+
+	std::vector<std::pair<Matrix,Matrix>> w_b;
+	std::vector<Matrix> momentumbuf;
+	for(int i=this->_weight_biases.size()-1; i>=0;i--){
+		//Init the weights and biases for this epoch with zero
+		Matrix weight(this->_weight_biases[i].first.getRows(),this->_weight_biases[i].first.getCols(),0.f);
+
+		Matrix bias (this->_weight_biases[i].second.getRows(),this->_weight_biases[i].second.getCols(),0.f);
+
+		Matrix mombuf(this->_weight_biases[i].first.getRows(),this->_weight_biases[i].first.getCols(),0.f);
+		w_b.push_back(
+				std::make_pair(
+						weight,bias
+				));
+
+		momentumbuf.push_back(mombuf);
+	}
+
 	// Begin running the neural network for NUM_EPOCHS iterations
 	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
 		double epoch_error = 0;
-		std::vector<std::pair<Matrix,Matrix>> w_b;
-		std::vector<Matrix> momentumbuf;
-		for(int i=this->_weight_biases.size()-1; i>=0;i--){
-			//Init the weights and biases for this epoch with zero
-			Matrix weight(this->_weight_biases[i].first.getRows(),this->_weight_biases[i].first.getCols(),0.f);
-
-			Matrix bias (this->_weight_biases[i].second.getRows(),this->_weight_biases[i].second.getCols(),0.f);
-
-			Matrix mombuf(this->_weight_biases[i].first.getRows(),this->_weight_biases[i].first.getCols(),0.f);
-			w_b.push_back(
-					std::make_pair(
-							weight,bias
-					));
-
-			momentumbuf.push_back(mombuf);
+//		Reset the buffers
+		for(auto i = 0u ; i < momentumbuf.size();i++){
+			momentumbuf.at(i).zeros();
+			w_b.at(i).first.zeros();
+			w_b.at(i).second.zeros();
 		}
 
 //	Using We assume the the input has N independent column vectors
@@ -276,9 +286,11 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 				// Feed forward step, returns the predictions of the nnet //
 				////////////////////////////////////////////////////////////
 				Matrix const &predict = this->feedforward(inputvector,true);
-				Matrix error = this->_costfunc->cost(target.subMatCol(i),predict);
+				Matrix error = predict - target.subMatCol(i);
+
 
 				epoch_error+= error.transpose().dot(error);
+				std::cout << predict << "Error "<< epoch_error <<  std::endl;
 				///////////////////////////////
 				// Backpropagate the errors  //
 				///////////////////////////////

@@ -206,8 +206,8 @@ TEST(OpenCL,Datatypes){
 
 TEST(Matrix,dotgpu){
 
-    int r=512;
-    int c=512;
+    int r=20;
+    int c=20;
 
     CL_Matrix<float> mat(r,c);
     CL_Matrix<float> other(c,r);
@@ -376,12 +376,31 @@ TEST(Activation,Tanh){
 
 
 TEST(Nnet,batchgradient){
-	CL_Matrix<float> input(3,3);
-	input.fill(0.1);
-	CL_Matrix<float> target(2,3);
-	target.fill(1.);
+	auto inputdim = 2u;
+	auto inputnum = 4u;
+	CL_Matrix<float> input(2,4);
+	input(0,0) = 0;
+	input(1,0) = 0;
+
+	input(0,1) = 0;
+	input(1,1) = 1;
+
+	input(0,2) = 1;
+	input(1,2) = 0;
+
+	input(0,3) = 1;
+	input(1,3) = 1;
+
+	CL_Matrix<float> target(1,4);
+	target(0,0) = 0;
+
+	target(0,1) = 1;
+
+	target(0,2) = 1;
+
+	target(0,3) = 0;
 	Sigmoid s;
-	FeedForwardNN dnn(3,2,0.1);
+	FeedForwardNN dnn(2,1,0.1);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(5);
@@ -393,12 +412,33 @@ TEST(Nnet,batchgradient){
 }
 
 TEST(Nnet,sgd){
-	CL_Matrix<float> input(3,3);
-	input.fill(0.);
-	CL_Matrix<float> target(2,1);
-	target.fill(1.);
+	auto inputdim = 2u;
+	auto inputnum = 4u;
+	CL_Matrix<float> input(2,4);
+	input(0,0) = 0;
+	input(1,0) = 0;
+
+	input(0,1) = 0;
+	input(1,1) = 1;
+
+	input(0,2) = 1;
+	input(1,2) = 0;
+
+	input(0,3) = 1;
+	input(1,3) = 1;
+
+	CL_Matrix<float> target(1,4);
+	target(0,0) = 0;
+
+	target(0,1) = 1;
+
+	target(0,2) = 1;
+
+	target(0,3) = 0;
+
+
 	Sigmoid s;
-	FeedForwardNN dnn(3,2,0.5,0.1);
+	FeedForwardNN dnn(3,1,0.5,0.1);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(5);
@@ -413,7 +453,7 @@ TEST(Nnet,sgd){
 
 int main(int argc,char **argv){
     ::testing::InitGoogleTest(&argc, argv);
-	::testing::GTEST_FLAG(filter) = "Matrix.dotgpu";//":-:*Counter*";
+//	::testing::GTEST_FLAG(filter) = "Matrix.dotgpu";//":-:*Counter*";
     // Otherwise EXPECT_DEATH will warn us that the execution time may be too slow,
     // since EXPECT_DEATH uses forks, which could not be used
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
