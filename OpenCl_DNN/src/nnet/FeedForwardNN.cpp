@@ -25,18 +25,19 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 	auto i=0u;
 //Append the input layer as the first layer into the buffer;
 	this->_backprop_buf.at(0)=tmpin;
-
+	Matrix netout= tmpin;
 	for(; i < this->_activations.size();i++ ){
 		Activation& activ = _activations[i];
 		Matrix const &weights = this->_weight_biases[i].first;
 		Matrix const &bias = this->_weight_biases[i].second;
 //		Calculate output of the current layer
 //		Apply activation
-		tmpin = activ.propagate(weights.dot(tmpin) - bias);
+		netout = weights.dot(tmpin) + bias;
+		tmpin = activ.propagate(netout);
 //		If non learning mode, we dont need to store anything, just propagate through
 		if (learn){
 	//		Store the derivatives of the layers, for backprop
-			this->_deriv.at(i) = activ.grad(tmpin);
+			this->_deriv.at(i) = activ.grad(netout);
 	//		Store the output of every layer for the backpropagation, except the last one
 			if (i+1 < this->_activations.size()){
 				this->_backprop_buf.at(i+1) = tmpin;
@@ -156,7 +157,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-            Matrix error = target.subMatCol(i) - predict;
+
+            //Matrix error = target.subMatCol(i) - predict;
+            Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
 			///////////////////////////////
@@ -180,9 +183,10 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		/////////////////////////
 		for(int i=this->_weight_biases.size()-1; i>=0;i--){
 			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first + this->_momentum * momentumbuf.at(w_b.size()-i-1);
+//			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases.at(i).second -= this->_l_rate * w_b[w_b.size()-i-1].second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
-			momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
+//			momentumbuf.at(w_b.size()-i-1) = this->_weight_biases[i].first;
 		}
 
 
