@@ -247,13 +247,12 @@ Matrix FeedForwardNN::test(Matrix& in) {
     for(auto i=0u; i < in.getCols();i++){
         // Get the column of the input and use it as input
         Matrix inputvector = in.subMatCol(i);
-        std::cout << "test feedforward " << inputvector.getRows() << 'x' << inputvector.getCols() << '\n';
+//        std::cout << "test feedforward " << inputvector.getRows() << 'x' << inputvector.getCols() << '\n';
 //		Do not train the network
         Matrix const &predict = this->feedforward(inputvector, false);
-        std::cout << predict.getRows() << " "  << this->_out_dim <<std::endl;
+//        std::cout << predict.getRows() << " "  << this->_out_dim <<std::endl;
         assert(predict.getRows() == this->_out_dim);
         for (auto j =0u; j < this->_out_dim; j++){
-        	std::cout << " j "<< j << " outdim " <<this->_out_dim<<std::endl;
             predictions.fillAt(j, i, predict(j, 0));
         }
 	}

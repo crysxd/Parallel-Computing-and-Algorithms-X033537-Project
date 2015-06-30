@@ -59,7 +59,7 @@ def test(nn):
     correct = 0
     for i in range(len(testNumbers)):
         num = outputToNumber(result[:, i])
-        print testNumbers[i], num
+        # print testNumbers[i], num
         if testNumbers[i] == num:
             correct += 1
     print correct, 'of', len(testNumbers), 'correct'

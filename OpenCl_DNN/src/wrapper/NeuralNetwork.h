@@ -24,6 +24,8 @@ class NeuralNetwork {
     Sigmoid sigmoid;
     TanH tanH;
     void initNetwork();
+    void initNetwork(std::vector<std::pair<Matrix,Matrix>>);
+
 
 public:
     NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions);

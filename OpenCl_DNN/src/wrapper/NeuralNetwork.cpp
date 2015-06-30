@@ -25,34 +25,60 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 	this->actFunctions = (uint64_t*) std::malloc(sizeof(uint64_t) * this->layerCount);
 	file.read((char*) this->actFunctions, sizeof(int64_t) * this->layerCount);
 
-	/* Init network */
-	this->initNetwork();
+	// /* Init network */
+	// this->initNetwork();
 
 	/* Read the number of pairs */
-	size_t weightsCount = 0;
-	file.read((char*)&weightsCount, sizeof(size_t));
+	size_t layersize = 0;
+	file.read((char*)&layersize, sizeof(size_t));
 
-	std::vector<std::pair<Matrix,Matrix>> weights = this->network->getWeightBiases();
+	std::vector<std::pair<Matrix,Matrix>> weights_biases;
+    // std::vector<std::pair<Matrix,Matrix>> weights
+    // assert(weights.size()>0);
+    /* For all pairs */
+    for(auto i=0u; i<layersize; i++) {
+        /* Read both vectors from pair */
+        Matrix m1(1,1), m2(1, 1);
+        m1 = readMatrix(file);
+        m2 = readMatrix(file);
 
-	/* For all pairs */
-	for(auto i=0u; i<weightsCount; i++) {
-		/* Read both vectors from pair */
-		Matrix m1(1,1), m2(1, 1);
-		m1 = readMatrix(file);
-		m2 = readMatrix(file);
-
-		/* Add to weights */
-		weights.push_back(std::pair<Matrix,Matrix>(m1, m2));
+        /* Add to weights */
+        weights_biases.push_back(std::pair<Matrix,Matrix>(m1, m2));
 
 	}
+    this->initNetwork(weights_biases);
 
 	file.close();
 
 }
 
 void NeuralNetwork::initNetwork() {
-	/* Create nn */
+    /* Create nn */
     this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()));
+
+    /* Add layers */
+    for(int i=1; i<this->layerCount-1; i++) {
+        this->network->addHiddenLayer(this->layerSize[i]);
+    }
+
+    /* Add actionations */
+    for(int i=0; i<this->layerCount-1; i++) {
+        /* Add TanH function */
+        if(this->actFunctions[i] == ACTIVATION_TAN_H)  {
+            this->network->addActivation(&this->tanH);
+        }
+
+        /* SIGMOID is default, if a int is not mapped */
+        else {
+            this->network->addActivation(&this->sigmoid);
+        }
+    }
+}
+
+
+void NeuralNetwork::initNetwork(std::vector<std::pair<Matrix,Matrix>> weights_biases) {
+	/* Create nn */
+    this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()),weights_biases);
 
     /* Add layers */
     for(int i=1; i<this->layerCount-1; i++) {
