@@ -399,11 +399,11 @@ TEST(Nnet,batchgradient){
 
     target(0,3) = 1;
     Sigmoid s;
-    FeedForwardNN dnn(2,1,0.2,0.0);
+    FeedForwardNN dnn(2,1);
     dnn.addActivation(&s);
     dnn.addActivation(&s);
     dnn.addHiddenLayer(2);
-    std::vector<float> errors = dnn.trainbatch(input,target);
+    std::vector<float> errors = dnn.trainbatch(input,target,0.2,0.0);
  //    for (auto i = 1u; i < errors.size(); ++i)
  //    {
  //        EXPECT_GE(errors[i-1] - errors[i]  ,0);

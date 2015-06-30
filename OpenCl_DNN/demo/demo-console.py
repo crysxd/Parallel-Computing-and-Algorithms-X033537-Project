@@ -26,13 +26,11 @@ testImages, testOutput, testNumbers = loadData('testing')
 
 nn = NeuralNetwork(layerCount=3,
                    layerSize=np.array([784, 100, 10]),
-                   actFunctions=np.array([1, 1]),
-                   learningRate=0.1,
-                   momentum=0.0001)
+                   actFunctions=np.array([1, 1]))
 
 print 'train, input shape:', trainImages.shape, 'output shape:', trainOutput.shape
 
-errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20])
+errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20], learningRate=0.2, momentum=0.1)
 print errors
 
 result = nn.test(testImages[:, 0:20])

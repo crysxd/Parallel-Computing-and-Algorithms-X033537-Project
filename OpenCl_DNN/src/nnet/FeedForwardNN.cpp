@@ -11,10 +11,6 @@
     #define DEBUG 1
 #endif
 
-
-#define NUM_EPOCHS 50
-
-#define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 
 //	Init weights and biases
@@ -102,8 +98,8 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 }
 
 
-FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate):
-		_in_dim(indim),_out_dim(outdim),_l_rate(lrate),_costfunc(new MSE()),_momentum(0.) {
+FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim):
+        _in_dim(indim),_out_dim(outdim),_costfunc(new MSE()) {
 
 }
 
@@ -112,7 +108,7 @@ FeedForwardNN::~FeedForwardNN() {
 
 
 
-std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
+std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs) {
     std::cout << "train " << in.getRows() << 'x' << in.getCols() << " -> " << target.getRows() << 'x' << target.getCols() << '\n';
 	// trains in batch gradient descent.
 	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
@@ -132,7 +128,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		return errors;
 	}
 
-	float l_rate =  this->_l_rate/in.getCols() ;
+    l_rate =  l_rate/in.getCols() ;
 
 	// Init the weights and other variables
 	this->init();
@@ -154,7 +150,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 		momentumbuf.push_back(momentum_buf);
 	}
-	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
+    for(auto epoch=0u; epoch < numEpochs ;epoch++){
 		double epoch_error = 0;
 
 //		Reset all the buffers
@@ -210,7 +206,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		/////////////////////////
 		for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
 			std::cout << " update weight  " << i << " j " <<j << std::endl;
-			this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + this->_momentum * momentumbuf.at(j);
+            this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + momentum * momentumbuf.at(j);
 //			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
@@ -253,12 +249,12 @@ Matrix FeedForwardNN::test(Matrix& in) {
 
 }
 
-FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate,
-		std::vector<std::pair<Matrix, Matrix> > weight_biases):FeedForwardNN(indim,outdim,lrate) {
+FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim,
+        std::vector<std::pair<Matrix, Matrix> > weight_biases):FeedForwardNN(indim,outdim) {
 	this->_weight_biases = weight_biases;
 }
 
-std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
+std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_rate, float momentum, int numEpochs, int miniBatchSize) {
 	std::cout << "train " << in.getRows() << 'x' << in.getCols() << " -> " << target.getRows() << 'x' << target.getCols() << '\n';
 	// trains in batch gradient descent.
 	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
@@ -281,7 +277,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 	std::vector<std::pair<Matrix,Matrix>> w_b;
 	std::vector<Matrix> momentumbuf;
 
-	float l_rate = min(this->_l_rate / MINI_BATCH_SIZE,this->_l_rate / in.getCols());
+    l_rate = min(l_rate / miniBatchSize, l_rate / in.getCols());
 	for(int i=this->_weight_biases.size()-1; i>=0;i--){
 		//Init the weights and biases for this epoch with zero
 		Matrix weight(this->_weight_biases[i].first.getRows(),this->_weight_biases[i].first.getCols(),0.f);
@@ -298,7 +294,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 	}
 
 	// Begin running the neural network for NUM_EPOCHS iterations
-	for(auto epoch=0u; epoch < NUM_EPOCHS ;epoch++){
+    for(auto epoch=0u; epoch < numEpochs ;epoch++){
 		double epoch_error = 0;
 //		Reset the buffers
 		for(auto i = 0u ; i < momentumbuf.size();i++){
@@ -308,11 +304,11 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 		}
 
 //	Using We assume the the input has N independent column vectors
-		for(auto i=0u; i < in.getCols();i+= MINI_BATCH_SIZE){
+        for(auto i=0u; i < in.getCols();i+= miniBatchSize){
 			std::cout << "epoch: " << epoch << ", i: " << i << "\n";
 			// Get the column of the input and use it as input
 
-			for (auto j=i; j < min(i+MINI_BATCH_SIZE,in.getCols()); j++){
+            for (auto j=i; j < min(i+miniBatchSize,in.getCols()); j++){
 				Matrix inputvector = in.subMatCol(j);
 				////////////////////////////////////////////////////////////
 				// Feed forward step, returns the predictions of the nnet //
@@ -343,7 +339,7 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 			// Update the weights //
 			/////////////////////////
 			for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
-				this->_weight_biases.at(i).first -= l_rate * w_b[j].first + this->_momentum * momentumbuf.at(j);
+                this->_weight_biases.at(i).first -= l_rate * w_b[j].first + momentum * momentumbuf.at(j);
 				this->_weight_biases.at(i).second -= l_rate * w_b[j].second;
 	//		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
 				momentumbuf.at(j) = this->_weight_biases[i].first;
@@ -352,11 +348,6 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target) {
 		std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << '\n';
 	}
 	return errors;
-}
-
-FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate,
-		float momentum):FeedForwardNN(indim,outdim,lrate) {
-	_momentum = momentum;
 }
 
 void FeedForwardNN::init() {

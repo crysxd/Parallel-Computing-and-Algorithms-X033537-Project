@@ -7,18 +7,16 @@ import os
 lib = cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), '../../bin/libnn.so'))
 
 class NeuralNetwork(object):
-    def __init__(self, saveFile=None, layerCount=0, layerSize=None, actFunctions=None, learningRate=0, momentum=0):
+    def __init__(self, saveFile=None, layerCount=0, layerSize=None, actFunctions=None):
         self.buffer_from_memory = pythonapi.PyBuffer_FromMemory
         self.buffer_from_memory.restype = py_object
 
-        if layerSize != None and actFunctions != None and layerCount != 0 and learningRate != 0:
+        if layerSize != None and actFunctions != None and layerCount != 0:
             layerCount = c_ulonglong(layerCount)
             layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
             actFunctions = actFunctions.ctypes.data_as(POINTER(c_ulonglong))
-            learningRate = c_float(learningRate)
-            momentum = c_float(momentum)
 
-            self.obj = lib.NeuralNetwork_new(layerCount, layerSize, actFunctions, learningRate, momentum)
+            self.obj = lib.NeuralNetwork_new(layerCount, layerSize, actFunctions)
 
         elif saveFile != None:
             lastLayerSize = self.obj = lib.NeuralNetwork_newLoad(saveFile)
@@ -29,25 +27,32 @@ class NeuralNetwork(object):
     def save(self, saveFile):
         lib.NeuralNetwork_save(self.obj, saveFile)
 
-    def train(self, inputValues, outputValues):
+    def train(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
         errorsLen = ctypes.c_int()
         print 'in', inputValues.shape, inputValues.strides
         print 'out', outputValues.shape, outputValues.strides
-        lib.NeuralNetwork_train(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
+        learningRate = c_float(learningRate)
+        momentum = c_float(momentum)
+        numEpochs = c_ulonglong(numEpochs)
+        lib.NeuralNetwork_train(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], learningRate, momentum, numEpochs, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
-    def trainsgd(self, inputValues, outputValues):
+    def trainsgd(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50, miniBatchSize=10):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
         errorsLen = ctypes.c_int()
         print 'in', inputValues.shape, inputValues.strides
         print 'out', outputValues.shape, outputValues.strides
-        lib.NeuralNetwork_trainsgd(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
+        learningRate = c_float(learningRate)
+        momentum = c_float(momentum)
+        numEpochs = c_ulonglong(numEpochs)
+        miniBatchSize = c_ulonglong(miniBatchSize)
+        lib.NeuralNetwork_trainsgd(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], learningRate, momentum, numEpochs, miniBatchSize, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
