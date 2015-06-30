@@ -149,7 +149,8 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
 				));
 
 		momentumbuf.push_back(momentum_buf);
-	}
+    }
+
     for(auto epoch=0u; epoch < numEpochs ;epoch++){
 		double epoch_error = 0;
 

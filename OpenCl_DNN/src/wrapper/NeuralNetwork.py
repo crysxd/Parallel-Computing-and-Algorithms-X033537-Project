@@ -27,7 +27,7 @@ class NeuralNetwork(object):
     def save(self, saveFile):
         lib.NeuralNetwork_save(self.obj, saveFile)
 
-    def train(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50):
+    def trainBatch(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
@@ -41,7 +41,7 @@ class NeuralNetwork(object):
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
-    def trainsgd(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50, miniBatchSize=10):
+    def trainStochastic(self, inputValues, outputValues, learningRate=0.2, momentum=0.0, numEpochs=50, miniBatchSize=10):
         inputvaluespointer = inputValues.ctypes.data_as(POINTER(c_float))
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
