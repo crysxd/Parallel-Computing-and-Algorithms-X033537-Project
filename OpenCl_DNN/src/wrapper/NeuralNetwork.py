@@ -11,7 +11,7 @@ class NeuralNetwork(object):
         self.buffer_from_memory = pythonapi.PyBuffer_FromMemory
         self.buffer_from_memory.restype = py_object
 
-        if layerSize != None and actFunctions != None and layerCount != 0 and learningRate != 0 and momentum != 0:
+        if layerSize != None and actFunctions != None and layerCount != 0 and learningRate != 0:
             layerCount = c_ulonglong(layerCount)
             layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
             actFunctions = actFunctions.ctypes.data_as(POINTER(c_ulonglong))
