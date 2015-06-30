@@ -23,7 +23,7 @@ template<typename T>
 inline CL_Matrix<T>::CL_Matrix(u_int32_t r, u_int32_t c, bool random):
 	CL_Matrix<T>(r,c){
 	if (random){
-        this->random(-0.5,0.5);
+        this->random(-1,1);
 	}
 }
 

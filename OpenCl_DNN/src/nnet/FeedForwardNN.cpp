@@ -12,20 +12,20 @@
 #endif
 
 
-#define NUM_EPOCHS 500
+#define NUM_EPOCHS 5000
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 
 //	Init weights and biases
 
-	Matrix &tmpin = in;
+    Matrix tmpin = in;
 // Plain forward propagate the weights using the given activation function
 // Store the activations and the gradients for the backpropagation later
 	auto i=0u;
 //Append the input layer as the first layer into the buffer;
 	this->_backprop_buf.at(i)=tmpin;
-	Matrix &netout= tmpin;
+    Matrix netout= tmpin;
 	for(; i < this->_activations.size();i++ ){
 		Activation& activ = _activations[i];
 		Matrix const &weights = this->_weight_biases[i].first;
@@ -33,6 +33,7 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 //		Calculate output of the current layer
 //		Apply activation
 		netout = weights.dot(tmpin) + bias;
+//        std::cout << "FEEDFORWARD " << i << "weights:\n" << weights << "\nbias:\n" << bias << "\ninput:\n" << tmpin << "\nout\n" << netout <<"\n\n";
 		tmpin = activ.propagate(netout);
 //		If non learning mode, we dont need to store anything, just propagate through
 		if (learn){
@@ -45,7 +46,8 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 
 		}
 	}
-//	Return the output of the network
+//	Return the output of the network#
+    std::cout << "INPUT: " << in(0,0) << " " << in(1, 0) << ", OUTPUT: " << tmpin(0,0) << "\n";
 	return tmpin;
 }
 
@@ -74,6 +76,7 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 // Get the last hidden layer from the back_propbuf
 	Matrix const &nabla =  this->_backprop_buf.back().dot(delta_l.transpose());
 
+//    std::cout << "BACKPROP, error " << error << "\ndelta_l 0\n" << delta_l << "\nnabla:\n" << nabla << "\n\n";
 	nablas.push_back(std::make_pair(nabla.transpose(),delta_l));
 	for(auto i=2u;i <= this->_net_size;i++){
 
@@ -88,6 +91,9 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 		// Therefore _backprop_buf[i] refers to the last layer not the current one, thought weight_biases[i]
 		// refers to the current layer weight!
 		Matrix const &nabla_back = this->_backprop_buf.at(idx).dot(delta_l.transpose());
+
+//        std::cout << "BACKPROP delta_l " << i << "\n" << delta_l << "\nnabla:\n" << nabla_back << "\n\n";
+
 		//	Update the layer weights
 //		this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
 		// Update the bias
@@ -149,15 +155,15 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 //    this->_weight_biases[1].second.fillAt(0,0,-10);
 
 
-    this->_weight_biases[0].first.fillAt(0,0,2.0);
-    this->_weight_biases[0].first.fillAt(0,1,2.0);
-    this->_weight_biases[0].first.fillAt(1,0,-2.0);
-    this->_weight_biases[0].first.fillAt(1,1,-2.0);
-    this->_weight_biases[0].second.fillAt(0,0,-3.0);
-    this->_weight_biases[0].second.fillAt(1,0,1.0);
-    this->_weight_biases[1].first.fillAt(0,0,2.0);
-    this->_weight_biases[1].first.fillAt(0,1,2.0);
-    this->_weight_biases[1].second.fillAt(0,0,-1.0);
+//    this->_weight_biases[0].first.fillAt(0,0,2.0);
+//    this->_weight_biases[0].first.fillAt(0,1,2.0);
+//    this->_weight_biases[0].first.fillAt(1,0,-2.0);
+//    this->_weight_biases[0].first.fillAt(1,1,-2.0);
+//    this->_weight_biases[0].second.fillAt(0,0,-3.0);
+//    this->_weight_biases[0].second.fillAt(1,0,1.0);
+//    this->_weight_biases[1].first.fillAt(0,0,2.0);
+//    this->_weight_biases[1].first.fillAt(0,1,2.0);
+//    this->_weight_biases[1].second.fillAt(0,0,-1.0);
 
 	// Begin running the neural network for NUM_EPOCHS iterations
 	std::vector<std::pair<Matrix,Matrix>> w_b;
@@ -189,11 +195,11 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
-            std::cout << "epoch: " << epoch << ", i: " << i << "\n";
+//            std::cout << "epoch: " << epoch << ", i: " << i << "\n";
 
 			// Get the column of the input and use it as input
 			Matrix inputvector = in.subMatCol(i);
-			std::cout << "after inputvector" <<std::endl;
+//			std::cout << "after inputvector" <<std::endl;
 
 
 
@@ -201,11 +207,11 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-			std::cout << "After predict " <<std::endl;
+//			std::cout << "After predict " <<std::endl;
 			Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
-            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << "\nError for this sample:" << error.transpose().dot(error) << std::endl;
+//            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << "\nError for this sample:" << error.transpose().dot(error) << std::endl;
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
@@ -213,7 +219,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			//We got the weights, so just update the non accumulated ones
 			assert(this->_weight_biases.size() == w_b.size());
 			assert(this->_weight_biases.size() == delta_w_b.size());
-			std::cout << "a" <<std::endl;
+//			std::cout << "a" <<std::endl;
 			assert(w_b.size() == delta_w_b.size());
 //			Weights are in reversed order since there was some trouble using the insert() or any reserve()
 			for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
@@ -222,7 +228,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 				w_b.at(wi).first += delta_w_b.at(wi).first;
 				w_b.at(wi).second += delta_w_b.at(wi).second;
 			}
-			std::cout << "b" <<std::endl;
+//			std::cout << "b" <<std::endl;
 
 		}
 
@@ -237,7 +243,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 		// Update the weights //
 		/////////////////////////
 		for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
-			std::cout << " update weight  " << i << " j " <<j << std::endl;
+//			std::cout << " update weight  " << i << " j " <<j << std::endl;
 			this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + this->_momentum * momentumbuf.at(j);
 //			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
@@ -387,8 +393,8 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate,
 
 void FeedForwardNN::init() {
 
-	assert(this->_hid_dims.size() > 0);
-	assert(this->_activations.size()>0);
+    assert(this->_hid_dims.size() > 0);
+    assert(this->_activations.size()>0);
 //    std::cout << this->_activations.size() << ' ' << this->_hid_dims.size() << '\n';
 	assert(this->_activations.size() == this->_hid_dims.size()+ 1);
 
