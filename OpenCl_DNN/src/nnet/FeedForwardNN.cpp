@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 50
+#define NUM_EPOCHS 10000
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -166,11 +166,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 //	Using We assume the the input has N independent column vectors
 		for(auto i=0u; i < in.getCols();i++){
-            std::cout << "epoch: " << epoch << ", i: " << i << "\n";
 
 			// Get the column of the input and use it as input
 			Matrix inputvector = in.subMatCol(i);
-			std::cout << "after inputvector" <<std::endl;
 
 
 
@@ -178,11 +176,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			// Feed forward step, returns the predictions of the nnet //
 			////////////////////////////////////////////////////////////
 			Matrix const &predict = this->feedforward(inputvector,true);
-			std::cout << "After predict " <<std::endl;
 			Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
-			std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
@@ -190,7 +186,6 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			//We got the weights, so just update the non accumulated ones
 			assert(this->_weight_biases.size() == w_b.size());
 			assert(this->_weight_biases.size() == delta_w_b.size());
-			std::cout << "a" <<std::endl;
 			assert(w_b.size() == delta_w_b.size());
 //			Weights are in reversed order since there was some trouble using the insert() or any reserve()
 			for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
@@ -199,8 +194,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 				w_b.at(wi).first += delta_w_b.at(wi).first;
 				w_b.at(wi).second += delta_w_b.at(wi).second;
 			}
-			std::cout << "b" <<std::endl;
-
+			std::cout << "Input " << inputvector << " output " << predict <<std::endl;
 		}
 
 		// Print out the result
@@ -219,11 +213,13 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 //			this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
 			this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
 //		Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
-//			momentumbuf.at(j) = this->_weight_biases[i].first;
+			momentumbuf.at(j) = this->_weight_biases.at(i).first;
 		}
 
 
 	}
+
+
 
 	return errors;
 
@@ -375,7 +371,7 @@ void FeedForwardNN::init() {
 	auto i = 0u;
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[0],this->_in_dim,true),
-			Matrix(this->_hid_dims[0],1,true)));
+			Matrix(this->_hid_dims[0],1,1.f)));
 //	Initialize the buffers for the derivaties and the output of each layer
 	this->_deriv.push_back(Matrix(this->_hid_dims[0],1));
 	this->_backprop_buf.push_back(Matrix(this->_hid_dims[0],1));
@@ -384,7 +380,7 @@ void FeedForwardNN::init() {
 		this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[i+1],this->_hid_dims[i],true)
 			,
-			Matrix(this->_hid_dims[i+1],1,true)
+			Matrix(this->_hid_dims[i+1],1,1.f)
 		));
 		this->_deriv.push_back(Matrix(this->_hid_dims[i+1],1));
 		this->_backprop_buf.push_back(Matrix(this->_hid_dims[i+1],1));
@@ -395,7 +391,7 @@ void FeedForwardNN::init() {
 //	Add for the last layer the output layer
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_out_dim,this->_hid_dims[i],true),
-			Matrix(this->_out_dim,1,true)
+			Matrix(this->_out_dim,1,1.f)
 			)
 	);
 

@@ -34,7 +34,7 @@ inline OpenCL::OpenCL(const char * programpath){
             << defaultplatform.getInfo<CL_PLATFORM_NAME>() << std::endl;
     #endif
     std::vector<cl::Device> all_gpu_devices;
-    defaultplatform.getDevices(CL_DEVICE_TYPE_CPU, &all_gpu_devices);
+    defaultplatform.getDevices(CL_DEVICE_TYPE_GPU, &all_gpu_devices);
 
     if (all_gpu_devices.size() == 0) {
         std::cout << " No devices found. Check OpenCL installation!\n";
