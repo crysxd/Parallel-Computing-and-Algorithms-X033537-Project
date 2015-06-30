@@ -39,7 +39,9 @@ public:
 	uint64_t getOutputSize();
 	uint64_t getInputSize();
 	void readMatTest(float *out[], int *rows, int *cols);
-	Matrix* readMatrix(std::ifstream &s);
-	void writeMatrix(Matrix &m, std::ofstream &s);
 
 };
+
+void test();
+Matrix& readMatrix(std::ifstream &s);
+void writeMatrix(Matrix &m, std::ofstream &s);

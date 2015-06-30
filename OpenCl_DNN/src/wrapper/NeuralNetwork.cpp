@@ -41,12 +41,12 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 	/* For all pairs */
 	for(auto i=0u; i<weightsCount; i++) {
 		/* Read both vectors from pair */
-		Matrix *m1, *m2;
-		m1 = this->readMatrix(file);
-		m2 = this->readMatrix(file);
+		Matrix m1(1,1), m2(1, 1);
+		m1 = readMatrix(file);
+		m2 = readMatrix(file);
 
 		/* Add to weights */
-		weights.push_back(std::pair<Matrix,Matrix>(*m1, *m2));
+		weights.push_back(std::pair<Matrix,Matrix>(m1, m2));
 
 	}
 
@@ -112,8 +112,8 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 		Matrix m1 = weights[i].first;
 		Matrix m2 = weights[i].second;
 
-		this->writeMatrix(m1, file);
-		this->writeMatrix(m2, file);
+		writeMatrix(m1, file);
+		writeMatrix(m2, file);
 
 	}
 
@@ -121,7 +121,7 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 
 }
 
-void NeuralNetwork::writeMatrix(Matrix &m, std::ofstream &s) {
+void writeMatrix(Matrix &m, std::ofstream &s) {
 	std::vector<float> data = m.rawData();
 	size_t size = data.size();
 	size_t rows = m.getRows();
@@ -134,11 +134,12 @@ void NeuralNetwork::writeMatrix(Matrix &m, std::ofstream &s) {
 
 	/* Write elements */
 	for(int i=0; i<size; i++) {
+		std::cout<< "Write [" << i << "]: " << data[i] << std::endl;
 		s.write((char*) &data[i], sizeof(float));
 	}
 }
 
-Matrix* NeuralNetwork::readMatrix(std::ifstream &s) {
+Matrix& readMatrix(std::ifstream &s) {
 	/* Read length */
 	size_t size = 0;
 	size_t rows = 0;
@@ -147,17 +148,28 @@ Matrix* NeuralNetwork::readMatrix(std::ifstream &s) {
 	s.read((char*)&rows, sizeof(size_t));
 	s.read((char*)&cols, sizeof(size_t));
 
+        std::cout << "Rows: " << rows << std::endl;
+        std::cout << "Cols: " << cols << std::endl;
+        std::cout << "Size: " << size << std::endl;
+
 	/* Create matrix */
 	Matrix* m = new Matrix(rows, cols);
-	std::vector<float> r =  m->rawData();
+	float* r =  m->data();
 
 	/* Write elements */
-	for(int i=0; i<r.size(); i++) {
+	for(int i=0; i<size; i++) {
 		float f;
 		s.read((char*)&f, sizeof(float));
 		r[i] = f;
-
+		std::cout<< "Read [" << i << "]: " << f << std::endl;
 	}
+
+	return *m;
+}
+
+
+void test() {
+	std::cout << "Hello World!" << std::endl;
 }
 
 void NeuralNetwork::test(float* inputValues, int shape0, int shape1, int strides0, int strides1, float *resultOut[], int *resultRows, int *resultCols) {
