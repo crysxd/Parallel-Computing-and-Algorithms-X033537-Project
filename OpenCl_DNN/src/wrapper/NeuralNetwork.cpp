@@ -34,12 +34,12 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 
 	/* Read the number of pairs */
 	size_t weightsCount = 0;
-	file.write(weightsCount, sizeof(size_t));
+	file.read((char*)&weightsCount, sizeof(size_t));
 
 	std::vector<std::pair<Matrix,Matrix>> weights = this->network->getWeightBiases();
 
 	/* For all pairs */
-	for(int i=0; i<weightsCount; i++) {
+	for(auto i=0u; i<weightsCount; i++) {
 		/* Read both vectors from pair */
 		Matrix *m1, *m2;
 		m1 = this->readMatrix(file);
@@ -121,15 +121,15 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 
 }
 
-void NeuralNetwork::writeMatrix(Matrix &m, std:ofstream &s) {
-	std::vector<float> data = m.raw();
-	size_t size = m.size();
+void NeuralNetwork::writeMatrix(Matrix &m, std::ofstream &s) {
+	std::vector<float> data = m.rawData();
+	size_t size = data.size();
 	size_t rows = m.getRows();
 	size_t cols = m.getCols();
 
 	/* Write length */
 	s.write((char*) &size, sizeof(size_t));
-	s.write((char*) &row, sizeof(size_t));
+	s.write((char*) &rows, sizeof(size_t));
 	s.write((char*) &cols, sizeof(size_t));
 
 	/* Write elements */
@@ -138,23 +138,23 @@ void NeuralNetwork::writeMatrix(Matrix &m, std:ofstream &s) {
 	}
 }
 
-Matrix* NeuralNetwork::readMatrix(std:ifstream &s) {
+Matrix* NeuralNetwork::readMatrix(std::ifstream &s) {
 	/* Read length */
 	size_t size = 0;
 	size_t rows = 0;
 	size_t cols = 0;
-	s.read(&size, sizeof(size_t));
-	s.read(&rows, sizeof(size_t));
-	s.read(&cols, sizeof(size_t));
+	s.read((char*)&size, sizeof(size_t));
+	s.read((char*)&rows, sizeof(size_t));
+	s.read((char*)&cols, sizeof(size_t));
 
 	/* Create matrix */
 	Matrix* m = new Matrix(rows, cols);
-	std::vector<float> r =  m.rawData();
+	std::vector<float> r =  m->rawData();
 
 	/* Write elements */
-	for(int i=0; i<data.size(); i++) {
+	for(int i=0; i<r.size(); i++) {
 		float f;
-		s.read(&f, sizeof(float));
+		s.read((char*)&f, sizeof(float));
 		r[i] = f;
 
 	}
