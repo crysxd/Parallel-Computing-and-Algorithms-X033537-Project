@@ -19,8 +19,6 @@
 #include <cassert>
 #include <memory>
 
-typedef CL_Matrix<float> Matrix;
-
 class FeedForwardNN {
 public:
     FeedForwardNN(u_int32_t indim, u_int32_t outdim);
@@ -38,7 +36,7 @@ public:
 
 	Matrix test(Matrix&in);
 
-    std::vector<float> trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs=50);
+    std::vector<float> trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, unsigned int numEpochs=50u);
 // Helper functions to get the strides
 
     std::vector<float> trainsgd(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs=50, int miniBatchSize=10);

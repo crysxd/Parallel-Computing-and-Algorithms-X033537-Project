@@ -20,9 +20,16 @@ Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
 // Store the activations and the gradients for the backpropagation later
 	auto i=0u;
 //Append the input layer as the first layer into the buffer;
-	this->_backprop_buf.at(i)=tmpin;
+	if (learn){
+// Only in case of learning, we need to consider the buffer sizes
+		assert(this->_backprop_buf.size() > 0);
+		assert(this->_activations.size()>0);
+		assert(this->_weight_biases.size() == this->_activations.size() );
+		this->_backprop_buf.at(i)=tmpin;
+	}
 	Matrix &netout= tmpin;
-	for(; i < this->_activations.size();i++ ){
+	assert(this->_weight_biases.size()>0);
+	for(; i < this->_weight_biases.size();i++ ){
 		Activation& activ = _activations[i];
 		Matrix const &weights = this->_weight_biases[i].first;
 		Matrix const &bias = this->_weight_biases[i].second;
@@ -108,7 +115,7 @@ FeedForwardNN::~FeedForwardNN() {
 
 
 
-std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs) {
+std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, unsigned int numEpochs) {
     std::cout << "train " << in.getRows() << 'x' << in.getCols() << " -> " << target.getRows() << 'x' << target.getCols() << '\n';
 	// trains in batch gradient descent.
 	// Input is a N x M matrix, where the rows represent the size of the input layer and the cols the amount
@@ -243,8 +250,12 @@ Matrix FeedForwardNN::test(Matrix& in) {
         std::cout << "test feedforward " << inputvector.getRows() << 'x' << inputvector.getCols() << '\n';
 //		Do not train the network
         Matrix const &predict = this->feedforward(inputvector, false);
-        for (int j =0; j < this->_out_dim; j++)
+        std::cout << predict.getRows() << " "  << this->_out_dim <<std::endl;
+        assert(predict.getRows() == this->_out_dim);
+        for (auto j =0u; j < this->_out_dim; j++){
+        	std::cout << " j "<< j << " outdim " <<this->_out_dim<<std::endl;
             predictions.fillAt(j, i, predict(j, 0));
+        }
 	}
 	return predictions;
 
