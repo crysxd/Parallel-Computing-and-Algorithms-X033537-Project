@@ -78,7 +78,7 @@ def parse_args():
     trainparser.add_argument(
         '-ep', '--numEpochs', type=int, default=100, help="Number of epochs for the neural network, default: %(default)s")
     trainparser.add_argument(
-        '-lr', '--learningRate', type=float, help='Learning rate of the neural network ,default:%(default)s')
+        '-lr', '--learningRate', type=float, help='Learning rate of the neural network ,default:%(default)s',default=0.2)
     trainparser.add_argument(
         '-m', '--method', default=TRAININGMETHODS[1], help='Trainingsmethod, default : %(default)s')
     trainparser.add_argument(
