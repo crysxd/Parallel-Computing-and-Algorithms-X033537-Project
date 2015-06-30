@@ -36,8 +36,8 @@ def train(method, learningRate, momentum, numEpochs, output, layers=None, miniba
         TRAININGMETHODS[0]: nn.trainBatch,
         TRAININGMETHODS[1]: nn.trainStochastic
     }
-    errors = trainmethod[method](trainImages[:, 0:20], trainOutput[
-                                 :, 0:20], learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
+    errors = trainmethod[method](trainImages[:, :], trainOutput[
+                                 :, :], learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
     # Error did happen, we just return, error message would be printed by the
     # train method
     if len(errors) == 0:

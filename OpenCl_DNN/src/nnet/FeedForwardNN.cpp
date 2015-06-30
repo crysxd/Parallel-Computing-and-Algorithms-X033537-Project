@@ -316,7 +316,6 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_r
 
 //	Using We assume the the input has N independent column vectors
         for(auto i=0u; i < in.getCols();i+= miniBatchSize){
-			std::cout << "epoch: " << epoch << ", i: " << i << "\n";
 			// Get the column of the input and use it as input
 
             for (auto j=i; j < min(i+miniBatchSize,in.getCols()); j++){
@@ -329,7 +328,6 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_r
 
 
 				epoch_error += error.transpose().dot(error);
-				std::cout <<  " Predict : "<< predict << " Target : " <<target.subMatCol(j) << std::endl;
 				///////////////////////////////
 				// Backpropagate the errors  //
 				///////////////////////////////
