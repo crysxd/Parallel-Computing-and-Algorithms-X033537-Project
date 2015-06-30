@@ -53,7 +53,7 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 void NeuralNetwork::initNetwork() {
 	/* Create nn */
     this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()));
-    
+
     /* Add layers */
     for(int i=1; i<this->layerCount-1; i++) {
     	this->network->addHiddenLayer(this->layerSize[i]);
@@ -96,10 +96,8 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
     file.write((char*) &(this->layerCount), sizeof(uint64_t));
 	file.write((char*) this->layerSize, sizeof(uint64_t) * this->layerCount);
 	file.write((char*) this->actFunctions, sizeof(uint64_t) * this->layerCount);
-
 	/* Write the number of pairs */
-	file.write((char*) weightsCount, sizeof(size_t));
-
+	file.write((char*) &weightsCount, sizeof(size_t));
 	/* For all pairs */
 	for(int i=0; i<weightsCount; i++) {
 		/* Write both vectors from pair */
@@ -128,7 +126,6 @@ void writeMatrix(Matrix &m, std::ofstream &s) {
 
 	/* Write elements */
 	for(int i=0; i<size; i++) {
-		std::cout<< "Write [" << i << "]: " << data[i] << std::endl;
 		s.write((char*) &data[i], sizeof(float));
 	}
 }
@@ -142,10 +139,6 @@ Matrix& readMatrix(std::ifstream &s) {
 	s.read((char*)&rows, sizeof(size_t));
 	s.read((char*)&cols, sizeof(size_t));
 
-        std::cout << "Rows: " << rows << std::endl;
-        std::cout << "Cols: " << cols << std::endl;
-        std::cout << "Size: " << size << std::endl;
-
 	/* Create matrix */
 	Matrix* m = new Matrix(rows, cols);
 	float* r =  m->data();
@@ -155,7 +148,6 @@ Matrix& readMatrix(std::ifstream &s) {
 		float f;
 		s.read((char*)&f, sizeof(float));
 		r[i] = f;
-		std::cout<< "Read [" << i << "]: " << f << std::endl;
 	}
 
 	return *m;
