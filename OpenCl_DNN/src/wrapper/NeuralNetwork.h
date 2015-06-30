@@ -41,3 +41,7 @@ public:
 	void readMatTest(float *out[], int *rows, int *cols);
 
 };
+
+void test();
+Matrix& readMatrix(std::ifstream &s);
+void writeMatrix(Matrix &m, std::ofstream &s);
