@@ -19,15 +19,11 @@
 #include <cassert>
 #include <memory>
 
-typedef CL_Matrix<float> Matrix;
-
 class FeedForwardNN {
 public:
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate);
+    FeedForwardNN(u_int32_t indim, u_int32_t outdim);
 
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate,float momentum);
-
-	FeedForwardNN(u_int32_t indim, u_int32_t outdim,float lrate, std::vector<std::pair<Matrix,Matrix>> weight_biases);
+    FeedForwardNN(u_int32_t indim, u_int32_t outdim, std::vector<std::pair<Matrix,Matrix>> weight_biases);
 
 	virtual ~FeedForwardNN();
 
@@ -40,10 +36,10 @@ public:
 
 	Matrix test(Matrix&in);
 
-	std::vector<float> trainbatch(Matrix &in, Matrix &target);
+    std::vector<float> trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, unsigned int numEpochs=50u);
 // Helper functions to get the strides
 
-	std::vector<float> trainsgd(Matrix &in, Matrix &target);
+    std::vector<float> trainsgd(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs=50, int miniBatchSize=10);
 
 	std::vector<std::pair<Matrix,Matrix>> backpropagate(Matrix &error);
 
@@ -60,17 +56,6 @@ private:
 
 	void init();
 
-
-
-// Learning rate of the N
-//	It is used for the update, where it is defined as:
-
-	float _l_rate;
-// Momentum
-//	velocity = momentum * velocity - learning_rate * gradient
-//	params = params + velocity
-//	Initialize velocity as 0 and then store the last gradient in it
-	float _momentum;
 // Number of output dimension
 	u_int32_t _out_dim;
 //Number of input neurons

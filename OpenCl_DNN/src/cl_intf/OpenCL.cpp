@@ -54,6 +54,16 @@ inline OpenCL::OpenCL(const char * programpath){
     this->context = cl::Context(this->device);
     this->loadProgram(programpath);
 
+    cl::Program::Sources sources;
+    //Include the read out contents from the vector file into the sources to parse
+    sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
+    //Initiate a program from the sources
+    program = cl::Program(this->context,sources);
+    if(program.build({this->device})!=CL_SUCCESS){
+        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
+        exit(1);
+    }
+
 }
 
 template<typename T>
@@ -74,8 +84,8 @@ inline void OpenCL::readBuffer(cl::Buffer &buf,std::vector<T>& arg){
 }
 
 
-inline OpenCL::OpenCL(const OpenCL &other):context(other.context),device(other.device),contents(new char[strlen(other.contents)+1]){
-	std::copy(other.contents,other.contents+strlen(other.contents),contents);
+inline OpenCL::OpenCL(const OpenCL &other):context(other.context),device(other.device),contents(new char[strlen(other.contents)+1]),program(other.program){
+    std::copy(other.contents,other.contents+strlen(other.contents),contents);
 	contents[strlen(other.contents)] = {'\0'};
 }
 
@@ -92,7 +102,8 @@ inline void swap(OpenCL &lhs,OpenCL &rhs){
 	using std::swap;
 	swap(lhs.contents,rhs.contents);
 	swap(lhs.context,rhs.context);
-	swap(lhs.device,rhs.device);
+    swap(lhs.device,rhs.device);
+    swap(lhs.program,rhs.program);
 }
 
 inline OpenCL::~OpenCL() {
@@ -102,15 +113,15 @@ inline OpenCL::~OpenCL() {
 
 template<typename T>
 inline cl::Buffer OpenCL::putDataOnGPU(std::vector<T> const &data) {
-	cl::Program::Sources sources;
-	//Include the read out contents from the vector file into the sources to parse
-	sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
-	//Initiate a program from the sources
-	cl::Program program(this->context,sources);
-	if(program.build({this->device})!=CL_SUCCESS){
-		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
-		exit(1);
-	}
+//	cl::Program::Sources sources;
+//	//Include the read out contents from the vector file into the sources to parse
+//	sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
+//	//Initiate a program from the sources
+//	cl::Program program(this->context,sources);
+//	if(program.build({this->device})!=CL_SUCCESS){
+//		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
+//		exit(1);
+//	}
 
 //	//////////////////////////////////////////////////
 //	 Initalize the transfer and executeable objects //
@@ -119,6 +130,7 @@ inline cl::Buffer OpenCL::putDataOnGPU(std::vector<T> const &data) {
 //	 The quene pushes and returns the buffer objects between host and device
 	cl::CommandQueue queue(this->context,this->device);
 	cl::Buffer buf(this->context,CL_MEM_READ_WRITE,data.size()*sizeof(T));
+//    std::cout << "enqeue\n";
 	queue.enqueueWriteBuffer(buf,CL_TRUE,0,data.size()*sizeof(T),&(data[0]));
 	queue.finish();
 	return buf;
@@ -142,6 +154,7 @@ inline void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kern
 {
 
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,sizeof(T));
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T),arg);
 	kernel.setArg(i,buffer);
 
@@ -151,6 +164,7 @@ template <typename T, std::size_t N>
 inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
 	kernel.setArg(i,buffer);
 
@@ -160,6 +174,7 @@ template <typename T>
 inline void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
+//    std::cout << "enqeue\n";
 	quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
 	kernel.setArg(i,buffer);
 
@@ -181,17 +196,17 @@ inline void OpenCL::addkernelarg(std::size_t i, T const & arg, cl::Kernel & kern
 inline void OpenCL::initProgramQuene(cl::Program* prog, cl::CommandQueue* quene) {
 	//    std::cout << "Loading " << path <<std::endl;
 
-	cl::Program::Sources sources;
-	//Include the read out contents from the vector file into the sources to parse
-	sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
-	//Initiate a program from the sources
-	cl::Program program(this->context,sources);
-	if(program.build({this->device})!=CL_SUCCESS){
-		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
-		exit(1);
-	}
+//	cl::Program::Sources sources;
+//	//Include the read out contents from the vector file into the sources to parse
+//	sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
+//	//Initiate a program from the sources
+//	cl::Program program(this->context,sources);
+//	if(program.build({this->device})!=CL_SUCCESS){
+//		std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
+//		exit(1);
+//	}
 
-	prog = new cl::Program(program);
+//	prog = new cl::Program(program);
 
 	////////////////////////////////////////////////////
 	// Initalize the transfer and executeable objects //
@@ -212,6 +227,7 @@ inline void OpenCL::addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel &
 		std::vector<cl::Buffer> &outputbuffer,cl::CommandQueue &quene) const
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
+//    std::cout << "enqeue\n";
 	cl_int err = quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
 	if (err){
 			std::cerr << "Error while pushing Array. Errorcode: " << err << std::endl;
@@ -227,6 +243,7 @@ void OpenCL::addkernelarg(std::size_t i, std::vector<T> const & arg,
 {
 	cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 	outputbuffer.push_back(buffer);
+//    std::cout << "enqeue\n";
 	cl_int err = quene.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
 	if (err){
 		std::cerr << "Error while pushing Vector. Errorcode: " << err << std::endl;
@@ -276,15 +293,15 @@ inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> co
 //	Outputargs needs to be smaller than the amount of parameters we have.
 	assert(outputargs.size() <= sizeof...(Tp));
 
-    cl::Program::Sources sources;
-    //Include the read out contents from the vector file into the sources to parse
-    sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
-    //Initiate a program from the sources
-    cl::Program program(this->context,sources);
-    if(program.build({this->device})!=CL_SUCCESS){
-        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
-        exit(1);
-    }
+//    cl::Program::Sources sources;
+//    //Include the read out contents from the vector file into the sources to parse
+//    sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
+//    //Initiate a program from the sources
+//    cl::Program program(this->context,sources);
+//    if(program.build({this->device})!=CL_SUCCESS){
+//        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
+//        exit(1);
+//    }
 
     ////////////////////////////////////////////////////
     // Initalize the transfer and executeable objects //
@@ -356,17 +373,11 @@ inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> co
 
 }
 
+//#include <chrono>
+
 template<typename ... Tp>
 inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &globalsize,std::vector<size_t> &blocksize,Tp && ... args) const{
-	cl::Program::Sources sources;
-    //Include the read out contents from the vector file into the sources to parse
-    sources.push_back(std::make_pair(this->contents,strlen(this->contents)+1));
-    //Initiate a program from the sources
-    cl::Program program(this->context,sources);
-    if(program.build({this->device})!=CL_SUCCESS){
-        std::cout<<" Error building: "<<program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(this->device)<<"\n";
-        exit(1);
-    }
+//    auto start = std::chrono::system_clock::now();
 
     ////////////////////////////////////////////////////
     // Initalize the transfer and executeable objects //
@@ -383,6 +394,7 @@ inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &
 //    Wait for the transfers to finish
     queue.finish();
 
+//    std::chrono::duration<double> elapsed_seconds1 = std::chrono::system_clock::now() - start;
 	#if !DEBUG
     std::cout << "Running Kernel : " << kernelname << std::endl;
     #endif
@@ -413,6 +425,8 @@ inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &
         cerr<< " Reason : " << geterrorstring(ret) << endl;
     }
     event.wait();
+//    std::chrono::duration<double> elapsed_seconds2 = std::chrono::system_clock::now() - start;
+//    std::cout << "kernel times " << elapsed_seconds1.count() << ", "  << elapsed_seconds2.count() << "\n";
 //    Finished
 }
 //

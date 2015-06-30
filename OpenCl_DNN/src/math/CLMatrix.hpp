@@ -54,9 +54,8 @@ public:
 	CL_Matrix<T> transpose() const;
 
 //	Dot product between a matrix and another matrix
-	CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
-
-	CL_Matrix<T> dotgpu(CL_Matrix<T>& other);
+    CL_Matrix<T> dot(const CL_Matrix<T>& other) const;
+    void dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const;
 /////////////////////////////////////////////
 // Forbid accesses with only one variable. //
 /////////////////////////////////////////////
@@ -67,10 +66,10 @@ public:
 	std::vector<T>& rawData();
 
 	// Access the matrix coefficient at (r, c)
-	T & operator()(u_int32_t r, u_int32_t c);
+    T & operator()(u_int32_t r, u_int32_t c);
 
 	// Access the matrix coefficient at (r, c)
-	T operator()(u_int32_t r, u_int32_t c) const;
+    T operator()(u_int32_t r, u_int32_t c) const;
 
 //	Componenet wise declarations
 	CL_Matrix<T>& operator+=(CL_Matrix<T> const & mat);
@@ -80,12 +79,13 @@ public:
 	CL_Matrix<T>& operator*=(T var);
 
 	CL_Matrix<T> operator*(CL_Matrix<T> const &other);
+    void mul(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
+    void add(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
+    void sub(CL_Matrix<T> const &other, CL_Matrix<T> *out) const;
 
 	operator T const &() const;
 
-	operator T &();
-
-	void fetchdata();
+    operator T &();
 
 	void printDimension()const;
 
@@ -122,6 +122,8 @@ public:
 		swap(lhs._n_rows,rhs._n_rows);
 		swap(lhs._n_cols,rhs._n_cols);
 		swap(lhs._cl,rhs._cl);
+        swap(lhs.gpu_buf, rhs.gpu_buf);
+        swap(lhs.state, rhs.state);
 	}
 
 	std::pair<int,int> getDimensions();
@@ -129,15 +131,19 @@ public:
 	CL_Matrix<T> sigmoidcpu() const;
 //	Computes sigmoid function from this object and returns the result
 	CL_Matrix<T> sigmoid() const;
+    void sigmoid(CL_Matrix<T> *out) const;
  	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgrad() const;
+    void sigmoidgrad(CL_Matrix<T> *out) const;
  	/** Calculates the gradient of the sigmoid function, elementwise */
 	CL_Matrix<T> sigmoidgradcpu() const;
 
 //	Computes tanh function -elementwise- and returns result
 	CL_Matrix<T> tanh() const;
+    void tanh(CL_Matrix<T> *out) const;
 
 	T* data() {
+        this->syncToRam();
 		return this->mat.data();
 	}
 
@@ -156,7 +162,11 @@ public:
 	template< typename V>
 	friend std::ostream &operator<<(std::ostream &output, const CL_Matrix<V> &mat);
 
+    // TODO make private again
+    enum State {Synced, OnlyGpu, OnlyRam};
+    mutable State state;
 private:
+
 
 	CL_Matrix(u_int32_t row,u_int32_t col,std::vector<T>& data);
 
@@ -166,17 +176,18 @@ private:
 	u_int32_t _n_rows;
 
 //	The acutal matrix behind it, we use std vector because the OpenCL
-	std::vector<T> mat;
+    mutable std::vector<T> mat;
 // The interface to openCL. Keep in mind to use the OpenCLPort singleton
 // Since too many instances crash OpenCL;
-	OpenCL _cl;
+    mutable OpenCL _cl;
 
-	cl::Buffer gpu_buf;
+    mutable cl::Buffer gpu_buf;
 
 //	Syncs the buffers of gpu and cpu
-	void syncHostWithDevice();
-
-	void syncDeviceWithHost();
+    void syncToRam() const;
+    void syncToGpu() const;
+    void moveToRam();
+    void moveToGpu();
 
 };
 

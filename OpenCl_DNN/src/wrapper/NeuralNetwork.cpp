@@ -1,6 +1,6 @@
 #include "NeuralNetwork.h"
 
-NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum)
+NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions)
     : result(Matrix(1,1,0.0f)) {
 	this->layerSize = (uint64_t*) std::malloc(sizeof(uint64_t) * layerCount);
 	std::memcpy(this->layerSize, layerSize, sizeof(uint64_t) * layerCount);
@@ -8,9 +8,7 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 	this->actFunctions = (uint64_t*) std::malloc(sizeof(uint64_t) * layerCount);
 	std::memcpy(this->actFunctions, actFunctions, sizeof(uint64_t) * layerCount);
 
-	this->layerCount = layerCount;
-	this->learningRate = learningRate;
-	this->momentum = momentum;
+    this->layerCount = layerCount;
 
 	this->initNetwork();
 
@@ -19,9 +17,7 @@ NeuralNetwork::NeuralNetwork(uint64_t layerCount, uint64_t* layerSize, uint64_t*
 NeuralNetwork::NeuralNetwork(std::string saveFile)
     : result(Matrix(1,1,0.0f)) {
 	std::ifstream file (saveFile, std::ios::in | std::ios::binary);
-	file.read((char*) &(this->layerCount), sizeof(int64_t));
-	file.read((char*) &(this->learningRate), sizeof(float));
-	file.read((char*) &(this->momentum), sizeof(float));
+    file.read((char*) &(this->layerCount), sizeof(int64_t));
 
 	this->layerSize = (uint64_t*) std::malloc(sizeof(uint64_t) * this->layerCount);
 	file.read((char*) this->layerSize, sizeof(uint64_t) * this->layerCount);
@@ -56,7 +52,7 @@ NeuralNetwork::NeuralNetwork(std::string saveFile)
 
 void NeuralNetwork::initNetwork() {
 	/* Create nn */
-	this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()), this->learningRate);
+    this->network = new FeedForwardNN(uint32_t(this->getInputSize()), uint32_t(this->getOutputSize()));
     
     /* Add layers */
     for(int i=1; i<this->layerCount-1; i++) {
@@ -97,9 +93,7 @@ uint64_t NeuralNetwork::save(std::string saveFile) {
 	size_t weightsCount = weights.size();
 
 	std::ofstream file (saveFile, std::ios::out | std::ios::binary);
-	file.write((char*) &(this->layerCount), sizeof(uint64_t));
-	file.write((char*) &(this->learningRate), sizeof(float));
-	file.write((char*) &(this->momentum), sizeof(float));
+    file.write((char*) &(this->layerCount), sizeof(uint64_t));
 	file.write((char*) this->layerSize, sizeof(uint64_t) * this->layerCount);
 	file.write((char*) this->actFunctions, sizeof(uint64_t) * this->layerCount);
 
@@ -202,7 +196,7 @@ void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0
 	}
 }
 
-void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
 //     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
     /* Transform row length from the length in byte to the length in floats */
 // 	inputRowLength = inputRowLength/ sizeof(float);
@@ -216,7 +210,7 @@ void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int in
     std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
 	/* Run */
-	this->lastErrors = this->network->trainbatch(matrixIn, matrixOut);
+    this->lastErrors = this->network->trainbatch(matrixIn, matrixOut, learningRate, momentum, numEpochs);
     std::cout << "trained\n";
 
 	*errorsOut = this->lastErrors.data();
@@ -224,7 +218,7 @@ void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int in
 }
 
 
-void NeuralNetwork::trainsgd(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+void NeuralNetwork::trainsgd(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, int miniBatchSize, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
 //     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
     /* Transform row length from the length in byte to the length in floats */
 //  inputRowLength = inputRowLength/ sizeof(float);
@@ -238,7 +232,7 @@ void NeuralNetwork::trainsgd(float* inputValues, int inShape0, int inShape1, int
     std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
     /* Run */
-    this->lastErrors = this->network->trainsgd(matrixIn, matrixOut);
+    this->lastErrors = this->network->trainsgd(matrixIn, matrixOut, learningRate, momentum, numEpochs, miniBatchSize);
     std::cout << "trained\n";
 
     *errorsOut = this->lastErrors.data();
@@ -264,8 +258,8 @@ void NeuralNetwork::readMatTest(float *out[], int *rows, int *cols) {
 }
 
 extern "C" {
-	NeuralNetwork* NeuralNetwork_new(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions, float learningRate, float momentum) {
-		return new NeuralNetwork(layerCount, layerSize, actFunctions, learningRate, momentum);
+    NeuralNetwork* NeuralNetwork_new(uint64_t layerCount, uint64_t* layerSize, uint64_t* actFunctions) {
+        return new NeuralNetwork(layerCount, layerSize, actFunctions);
 
 	}
 
@@ -279,13 +273,13 @@ extern "C" {
 
     }
 
-    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
-    	foo->train(inputValues, inShape0, inShape1, inStrides0, inStrides1, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
+    void NeuralNetwork_train(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+        foo->train(inputValues, inShape0, inShape1, inStrides0, inStrides1, learningRate, momentum, numEpochs, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
 
     }
 
-    void NeuralNetwork_trainsgd(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
-        foo->trainsgd(inputValues, inShape0, inShape1, inStrides0, inStrides1, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
+    void NeuralNetwork_trainsgd(NeuralNetwork* foo, float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, int miniBatchSize, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
+        foo->trainsgd(inputValues, inShape0, inShape1, inStrides0, inStrides1, learningRate, momentum, numEpochs, miniBatchSize, outputValues, outShape0, outShape1, outStrides0, outStrides1, errorsOut, errorsLen);
 
     }
 

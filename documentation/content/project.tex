@@ -1,0 +1,318 @@
+\chapter{Project Description}
+
+\section{Basics}
+
+
+%Can put  this into the introduction
+We use the following notation:
+\begin{itemize}
+\item Matrices are written in uppercase bold e.g. $\mathbf{X}$.
+\item Vectors are written in lowercase bold e..g $\mathbf{x}$.
+\item scalars are written in lowercase or uppercase. Lowercase indicates that it is a counting variable and uppercase that it is one of the limits in an finite set.
+\item For all functions , e.g. $f(x)$, where $x = \mathbf{X}$ , we apply the function element wise.
+\item Dot product is indicated by simple concatenation of two matrices/vectors e.g. $\mathbf{X} \mathbf{y}$.
+\item Element wise multiplication is indicated as $\mathbf{X} \otimes \mathbf{Z}$.
+\end{itemize}
+
+Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier. 
+
+Overall we have two different modes: Training and evaluation. In the training phase we use the back propagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
+
+Furthermore a neural network contains $L$ hidden layers, which are called hidden since their output is not directly observable.
+
+The weights are in our simple case randomly initialized and then updated using the back propagation rule.
+
+A basic neural network has therefore the following parameters:
+\begin{itemize}
+\item The weights from an neuron $k$ in layer $a$ to a neuron $j$ in layer $b$
+\item The input to the network, usually a vector $\mathbf{x}$ with $k$ values
+\item The target which should be estimated, usually a vector $\mathbf{t}$ with $q$ values.
+\item The learning rate $\eta$, which is the indicator how fast the network learns.
+\end{itemize}
+
+Moreover we can add some advanced techniques as the momentum to speed up the training the momentum 
+
+
+\subsection{Gradient Descent}
+Gradient descent is a first-order optimization algorithm. To find a local minimum of a function using gradient descent, it takes steps proportional to the negative of the gradient (or of the approximate gradient) of the function at the current point. If instead one takes steps proportional to the positive of the gradient, one approaches a local maximum of that function; the procedure is then known as gradient ascent \cite{Kiwiel2001,Qian1999}.
+
+Gradient descent is based on the observation that if the multivariable function $F(\mathbf{x})$ is defined and differentiable in a neighborhood of a point $\mathbf{a}$, then $F(\mathbf{x})$ decreases fastest if one goes from $\mathbf{a}$ in the direction of the negative gradient of F at $\mathbf{a}, -\nabla F(\mathbf{a})$ \cite{Yuan1999}. It follows that, if
+\begin{equation}
+\mathbf{b} = \mathbf{a}-\gamma\nabla F(\mathbf{a})
+\end{equation}
+for $\gamma$ small enough, then $F(\mathbf{a})\geq F(\mathbf{b})$. With this observation in mind, one starts with a guess $\mathbf{x}_0$ for a local minimum of F, and considers the sequence $\mathbf{x}_0, \mathbf{x}_1, \mathbf{x}_2, \dots$ such that
+\begin{equation}
+\mathbf{x}_{n+1}=\mathbf{x}_n-\gamma_n \nabla F(\mathbf{x}_n),\ n \ge 0.
+\end{equation}
+
+Finally we have \cite{Cauchy1847}:
+\begin{equation}
+F(\mathbf{x}_0)\ge F(\mathbf{x}_1)\ge F(\mathbf{x}_2)\ge \cdots,
+\end{equation}
+
+
+\subsection{Minibatch Stochastic Gradient Descent}
+
+Both statistical estimation and machine learning consider the problem of minimizing an objective function that has the form of a sum:
+\begin{equation}
+Q(w) = \sum_{i=1}^n Q_i(w)
+\end{equation}
+
+where the parameter $w^*$ which minimizes Q(w) is to be estimated. Each summand function $Q_i$ is typically associated with the $i$-th observation in the data set (used for training).
+
+When used to minimize the above function, a standard (or "batch") gradient descent method would perform the following iterations :
+\begin{equation}
+w := w - \eta \nabla Q(w) = w - \alpha \sum_{i=1}^n \nabla Q_i(w)
+\end{equation}
+where $\eta$ is the learning rate.
+
+But since in many cases, the update of one gradient would take to estimate the gradient over the whole dataset, the computation would take too much time. Often times we only need a rough estimate of the gradient, not a precise one.
+
+What stochastic gradient descent does is to remove the sum and only uses one sample to estimate the gradient. 
+\begin{equation}
+w := w - \eta \nabla Q(w) = w - \alpha \nabla Q(w)
+\end{equation}
+In practice this turns out to be less effective than batch gradient descent, since we only get a very rough estimate of the gradient.
+Therefore the minibatch gradient descent technique is used. The difference here is that while batch gradient descent uses $n$ samples and stochastic gradient descent uses only $1$, minibatch gradient uses $b$ training samples, where $b << n$. Typical sizes for $b$ are in the range if $b \in {2,\ldots,100}$.
+
+Therefore in minibatch stochastic Gradient descent we randomly subset the training set and only take some samples out of it and estimate the gradient out of the seen sample set.
+
+The important thing to do is to randomize the training set, since otherwise only a small portion of the training set will be seen and leads to wrong gradients.
+
+\subsection{The Forward Backward procedure in detail}
+
+To train the network we use the standard back-propagation algorithm, which essentially does a forward and a backward pass of the network in a row.
+Firstly we initialize the weights in a matrix. 
+\begin{align}
+\mathbf{W}_{j \times k } = \begin{bmatrix}
+w_{11} & w_{12} & \ldots & w_{1k}\\
+w_{21} & \ddots & & \vdots\\
+\vdots & & \ddots  & \vdots\\
+w_{j1} & \ldots & \ldots  & w_{jk}\\
+\end{bmatrix},
+\mathbf{x}_{1 \times k} = \begin{bmatrix}
+a_{1} \\
+\vdots\\
+\vdots \\
+a_{k}
+\end{bmatrix}
+\end{align}
+
+
+\paragraph{Forward propagation} is one of the two passes the network needs to do ( hence it's name ).
+In forward propagation the network calculates the predicted output of the network.
+
+The output of the hidden layer $j$ of the network can be calculated as the weighted sum of the inputs
+\begin{align}
+\mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k = \mathbf{W} \mathbf{x}
+\end{align}
+
+Even though this method should already work, we add a bias to every node to increase the learning speed and void that the network stops learning.
+
+\begin{align}
+\mathbf{nnet}_j = \sum_{k=1}^{n}w_{kj}x_k + b_k = \mathbf{W} \mathbf{x} + \mathbf{b}
+\end{align}r
+
+
+Later we see that back-propagation needs some variables, which can be already precomputed during the forward step. These two variables are the output $\mathbf{o}_j$ of layer $j$ and the derivative of the output w.r.t to the weighted sum $\mathbf{nnet}_j$. We represent the derivatives in a matrix $\mathbf{D}$ and the output of the current layer 
+\begin{align}
+\mathbf{D}_j = \frac{\mathbf{o}_j}{\mathbf{nnet}_j}
+\end{align}
+In case of sigmoid activation function, we obtain:
+\begin{align}
+\mathbf{D}_j = \varphi \left( \mathbf{nnet}_j \right) \left( 1 - \varphi \left(\mathbf{nnet}_j \right) \right)
+\end{align}
+For the outputs, we simply feed forward the network and store the output $\mathbf{o}_j$ in out buffered lists.
+\begin{align}
+\mathbf{o}_j = \varphi \left( \mathbf{Wx+b} \right)
+\end{align}
+
+As soon as the feed forward is done, we produced an output of the network, which we can denote as $\mathbf{o}_L$. Now we need to decide how close our output is to the targeted output $\mathbf{t}$. For this we use a cost function in usual cases it is sufficient to use $MSE$ as such, which is defined as:
+\begin{equation}
+\label{eq:mse}
+\mathbf{MSE} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
+\end{equation}
+
+Here (\ref{eq:mse}) we need to make sure that the last output layer has the same dimensions as the target output.
+
+
+\paragraph{Backpropagation} starts when all layers are trained. The idea behind back propagation is that the hidden layers do not produce any output. So we cannot modify their weights directly, since we don’t know how large the error was. With back propagation we calculate the error at the output layer $L$ and then propagate this error to the hidden layers back. Therefore we update all $L-1$ weight matrices and biases.
+
+At first we calculate the differences between the target output and the estimated output.
+
+\begin{align}
+\boldsymbol{err} = \mathbf{o}_L - y\\
+\boldsymbol{\delta}_L &= \mathbf{err} \otimes \mathbf{D}_L\\
+\nabla \mathbf{W}_L &= \mathbf{o}_L \boldsymbol{\delta}_L^T
+\end{align}
+
+We store both, the deltas and the nablas to later update the weights ( with the $\nabla$s) and the biases (using the $\mathbf{\delta}$).
+From here on we then calculate the other layers backwards, we do:
+\begin{align}
+\boldsymbol{\delta}_i &= \mathbf{D}_i \otimes \left( \mathbf{W}_{i+1}^T \boldsymbol{\delta}_{i+1} \right)\\
+\nabla \mathbf{W}_i &= \mathbf{o}_i \boldsymbol{\delta}_i^T
+\end{align}
+Whereas we again store the deltas and the nablas to later update the weights.
+
+To update the weights, we use the usual gradient descent update rule:
+\begin{align}
+\mathbf{W}^{*} = \mathbf{W} - \alpha \nabla \mathbf{W}_i^T\\
+\end{align}
+
+To update the biases, we use essentially the same update rule, but only consider the given $\boldsymbol{\delta}_{i}$s.
+\begin{equation}
+\mathbf{b}^{*} = \mathbf{b} - \alpha \boldsymbol{\delta}_i^T\\
+\end{equation}
+
+Finally, if we would like to improve the converging speed we can apply momentum. Momentum adds extra "velocity" towards the gradient curve, by using the last estimated value of the gradient $\mathbf{W}^{*}_{i-1}$ ($i$ denotes the current iteration) and applying on that the momentum ($ \alpha$) as:
+
+\begin{equation}
+\mathbf{W}_{i+1} = \mathbf{W}_i - \eta \nabla \mathbf{W}_i + \alpha \mathbf{W}_i
+\end{equation}
+
+The momentum is initialized with 0 and takes effect after one iteration of gradient descent.
+
+\section{Implementation details}
+
+OpenCL offers multiple implementation types. It is natively written in C, but has also a C++ wrapper onboard. We used in our project the C++ wrapper since it is more naturally to use that in a C++ project.
+First one needs to include the necessary header into any class.
+
+\begin{lstlisting}[caption=OpenCL C++ header]
+#include <CL/cl.hpp>
+\end{lstlisting}
+
+
+\paragraph{The interface to OpenCL} was written in C++11 and makes heavily use of the current variadic args feature. For this small scale task, the interface is definitely too complex, but it can be used for any other OpenCL task.
+
+\label{lst:mult}
+\begin{lstlisting}[caption=Example Kernel function]
+__kernel void mult(const int wSrc, __global const float* A,__global const float* B,__global float* output)
+{
+   const int idx = get_global_id(0);
+   const int idy = get_global_id(1);
+
+   output[idy*wSrc+idx] = A[idy*wSrc+idx] * B[idy*wSrc+idx];
+}
+\end{lstlisting}
+OpenCL uses externally defined functions ( coined as kernels ) to compile the code and run it, during the runtime. Therefore one needs to write a kernel for its needs. An example kernel can be seen at \ref{lst:mult}. In our case we defined various kernels, for dot products and other matrix operations.
+
+Since OpenCL is a multi device and platform GPU/CPU interface, one needs to first figure out which kind of platform (e.g. NVIDIA,AMD,Intel) the current machine is using and then decide which accelerator will be used \ref{lst:plat}.
+
+\label{lst:plat}
+\begin{lstlisting}[caption=Get Platforms and devices]
+void exampleplatform(const char * programpath){
+std::vector<cl::Platform> all_platforms;
+cl::Platform::get(&all_platforms);
+//Assume having only one platform
+cl::Platform defaultplatform = all_platforms[0];
+std::vector<cl::Device> all_gpu_devices;
+//CL_DEVICE_TYPE_GPU can also be CL_DEVICE_TYPE_CPU for CPU
+defaultplatform.getDevices(CL_DEVICE_TYPE_GPU, &all_gpu_devices);
+//Assume having only one device / take the first
+cl::Device device = all_gpu_devices.front();
+//Init the current context with the device
+cl::Context(device);
+//We wrote a helper function here to get the string data out of the kernel file
+const char* content = util::file_contents(programpath);
+}
+\end{lstlisting}
+
+
+Moreover since OpenCL is compiled during runtime, one needs to extract the code from the kernel file (e.g. kernel.cl) and give this content to the OpenCL.
+
+As soon as the context is initialized we can run our kernels on the device. The problem here is that the kernel is defined with it's own parameters and types, but we dont know these during the compile time.
+To have a universal interface we used the variadicargs feature to allow the programmer a very straight forward way to use any kernel function.
+\label{lst:kernel}
+\begin{lstlisting}[caption=Kernel usage]
+void runKernel(const char *kernelname){
+cl::Program::Sources sources;
+//contents is the already read out content of the kernels file (e.g. kernels.cl)
+sources.push_back(std::make_pair(contents,strlen(contents)+1));
+//Init the program with the context and the source
+cl::Program program(context,sources);
+//Build the program on the device
+program.build({device});
+cl::CommandQueue queue(context,device);
+//The operator allows us to set args to the kernel 
+cl::Kernel kernel_operator(program,kernelname);
+//kernel_operator allows us to send arguments to the kernel by calling
+//kernel_operator.setArgs(ARGNUMBER,ARGUMENT);
+
+//Init space on the device using cl::Buffers
+//Send Arguments to the device ....
+// quene.enqueueWriteBuffer() .....
+//Wait until the arguments did arrive on the device
+queue.finish();
+
+//Execute!
+cl::Event event;
+queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(10),cl::NullRange,NULL,&event);
+//Wait until the execution has finished
+event.wait();
+// Read out the results by calling 
+// quene.enqueueReadBuffer()
+}
+\end{lstlisting}
+
+The usual Kernel execution can be seen in \ref{lst:kernel}. Even though it is recommended to use OpenCL in this fashion, we cannot cope with different arguments for the kernel. Therefore we would need to init a device and context every time ( or at least as a singleton ) and then rewrite the argument passing for every parameter independently. This would take a lot of time, if the GPU is used extensively.
+
+Our solution to that problem is as follows:
+
+\begin{lstlisting}[caption=Add arguments to kernel dynamic way]
+class OpenCL{
+
+//Constructor ..... etc
+//	Hook for the iteration
+template<std::size_t P=0,typename... Tp>
+	typename std::enable_if<P == sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp ...>&& t,cl::Kernel &k,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const{
+	// Do nothing
+	}
+	
+//  Start of the iteration
+template<std::size_t P = 0, typename... Tp>
+	typename std::enable_if< P < sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const{
+		 // Type
+        typedef typename std::tuple_element<P, std::tuple<Tp...>>::type type;
+
+        // Add the value of the current item from std::get<P> to the args in kernel
+        // This function decides which type the kernel arg is
+        addkernelarg(P, std::get<P>(t), kernel,queue,outputbuffers);
+
+        // Recurse to get the remaining args
+        addkernelargs<P + 1, Tp...>(std::forward<std::tuple<Tp...>>(t), kernel,queue,outputbuffers);
+	}
+	
+//	Adding Std::vector as type to the kernel args list
+	template<typename T>
+	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &) const{
+		cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
+		queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+		kernel.setArg(i,buffer);
+	
+	}
+
+
+//	Adding any array into the kernel args
+	template<typename T,std::size_t N>
+	void addkernelarg(std::size_t i, T const (& arg)[N], cl::Kernel & kernel,cl::CommandQueue &) const{
+		cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,N*sizeof(T));
+		queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
+		kernel.setArg(i,buffer);
+	}
+	
+	// Adding any constant to the kernel
+	template<typename T>
+	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &) const{
+		cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
+		queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
+		kernel.setArg(i,buffer);
+	}
+
+}
+\end{lstlisting}
+
+This recipe can be used to do the same actions for the reading buffers out after the transfer has finished.
+Therefore we can create a highly dynamic wrapper class for OpenCL.
+
+\subsection{Using the Interface}
+
