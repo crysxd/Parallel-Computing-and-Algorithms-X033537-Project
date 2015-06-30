@@ -113,10 +113,10 @@ if __name__ == '__main__':
     testImages, testOutput, testNumbers = loadData('testing')
     NTrain = 10000
 
-    layerSizes = [784, 784, 100, 10]
+    layerSizes = [784, 784, 10]
     nn = NeuralNetwork(layerSizes, 'sigmoid')
     # nn.fit(trainImages[:, 0:NTrain].T, trainOutput[:, 0:NTrain].T, learning_rate=0.2, epochs=10000000)
-    nn.fit(trainImages.T, trainOutput.T, learning_rate=0.2, epochs=100000)
+    nn.fit(trainImages.T, trainOutput.T, learning_rate=0.2, epochs=1000000)
     NTest = testImages.shape[1]
     correct = 0
     for i in range(NTest):
