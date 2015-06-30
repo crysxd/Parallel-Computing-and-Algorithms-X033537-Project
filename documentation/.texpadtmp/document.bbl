@@ -1,0 +1,25 @@
+\begin{thebibliography}{1}
+
+\bibitem{Cauchy1847}
+A.~Cauchy.
+\newblock {\em {M\'{e}thode g\'{e}n\'{e}rale pour la r\'{e}solution des
+  syst\`{e}mes d'\'{e}quations simultan\'{e}es}}.
+\newblock 1847.
+
+\bibitem{Kiwiel2001}
+K.~C. Kiwiel.
+\newblock {Convergence and efficiency of subgradient methods for quasiconvex
+  minimization}.
+\newblock {\em Mathematical Programming}, 90(1):1--25, Mar. 2001.
+
+\bibitem{Qian1999}
+N.~Qian.
+\newblock {On the momentum term in gradient descent learning algorithms}.
+\newblock {\em Neural Networks}, 12(1):145 -- 151, 1999.
+
+\bibitem{Yuan1999}
+Y.-x. Yuan.
+\newblock {Step-sizes for the gradient method}.
+\newblock {\em AMS/IP Studies in Advanced Mathematics}, 42(2), 1999.
+
+\end{thebibliography}
