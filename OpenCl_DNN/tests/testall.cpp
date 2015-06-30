@@ -400,7 +400,7 @@ TEST(Nnet,batchgradient){
 
     target(0,3) = 1;
 	Sigmoid s;
-	FeedForwardNN dnn(2,1,0.3,0.8);
+    FeedForwardNN dnn(2,1,1,0.8);
 	dnn.addActivation(&s);
 	dnn.addActivation(&s);
 	dnn.addHiddenLayer(3);

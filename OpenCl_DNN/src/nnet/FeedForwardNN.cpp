@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 50
+#define NUM_EPOCHS 500
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -65,7 +65,7 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
 	assert(this->_deriv.size() == this->_net_size);
 	assert(error.getRows() == this->_deriv.back().getRows());
 
-	Matrix delta_l = error * (this->_deriv.back());
+    Matrix delta_l = error;
 #if !DEBUG
 	std::cout << "Updating layer " << this->_weight_biases.size()-1 << " with dimensions : ";
 	this->_weight_biases.back().first.printDimension();
@@ -147,6 +147,17 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 //    this->_weight_biases[1].first.fillAt(0,0,20);
 //    this->_weight_biases[1].first.fillAt(0,1,20);
 //    this->_weight_biases[1].second.fillAt(0,0,-10);
+
+
+    this->_weight_biases[0].first.fillAt(0,0,2.0);
+    this->_weight_biases[0].first.fillAt(0,1,2.0);
+    this->_weight_biases[0].first.fillAt(1,0,-2.0);
+    this->_weight_biases[0].first.fillAt(1,1,-2.0);
+    this->_weight_biases[0].second.fillAt(0,0,-3.0);
+    this->_weight_biases[0].second.fillAt(1,0,1.0);
+    this->_weight_biases[1].first.fillAt(0,0,2.0);
+    this->_weight_biases[1].first.fillAt(0,1,2.0);
+    this->_weight_biases[1].second.fillAt(0,0,-1.0);
 
 	// Begin running the neural network for NUM_EPOCHS iterations
 	std::vector<std::pair<Matrix,Matrix>> w_b;
