@@ -12,7 +12,7 @@
 #endif
 
 
-#define NUM_EPOCHS 10000
+#define NUM_EPOCHS 50
 
 #define MINI_BATCH_SIZE 10
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -179,6 +179,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
+			std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
@@ -194,7 +195,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 				w_b.at(wi).first += delta_w_b.at(wi).first;
 				w_b.at(wi).second += delta_w_b.at(wi).second;
 			}
-			std::cout << "Input " << inputvector << " output " << predict <<std::endl;
+
 		}
 
 		// Print out the result
@@ -360,8 +361,8 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim, float lrate,
 
 void FeedForwardNN::init() {
 
-	assert(this->_hid_dims.size() > 0);
-	assert(this->_activations.size()>0);
+    assert(this->_hid_dims.size() > 0);
+    assert(this->_activations.size()>0);
 //    std::cout << this->_activations.size() << ' ' << this->_hid_dims.size() << '\n';
 	assert(this->_activations.size() == this->_hid_dims.size()+ 1);
 
@@ -371,7 +372,7 @@ void FeedForwardNN::init() {
 	auto i = 0u;
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[0],this->_in_dim,true),
-			Matrix(this->_hid_dims[0],1,1.f)));
+			Matrix(this->_hid_dims[0],1,true)));
 //	Initialize the buffers for the derivaties and the output of each layer
 	this->_deriv.push_back(Matrix(this->_hid_dims[0],1));
 	this->_backprop_buf.push_back(Matrix(this->_hid_dims[0],1));
@@ -380,7 +381,7 @@ void FeedForwardNN::init() {
 		this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_hid_dims[i+1],this->_hid_dims[i],true)
 			,
-			Matrix(this->_hid_dims[i+1],1,1.f)
+			Matrix(this->_hid_dims[i+1],1,true)
 		));
 		this->_deriv.push_back(Matrix(this->_hid_dims[i+1],1));
 		this->_backprop_buf.push_back(Matrix(this->_hid_dims[i+1],1));
@@ -391,7 +392,7 @@ void FeedForwardNN::init() {
 //	Add for the last layer the output layer
 	this->_weight_biases.push_back(std::make_pair(
 			Matrix(this->_out_dim,this->_hid_dims[i],true),
-			Matrix(this->_out_dim,1,1.f)
+			Matrix(this->_out_dim,1,true)
 			)
 	);
 
