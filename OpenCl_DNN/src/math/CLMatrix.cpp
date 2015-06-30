@@ -120,6 +120,11 @@ CL_Matrix<T> CL_Matrix<T>::dot(const CL_Matrix<T>& other) const{
 }
 
 template<typename T>
+std::vector<T>& CL_Matrix<T>::rawData() {
+	return this->mat;
+}
+
+template<typename T>
 inline T& CL_Matrix<T>::operator [](u_int32_t n) {
 	throw "Not Implemented, please use operator (r,c)";
 }

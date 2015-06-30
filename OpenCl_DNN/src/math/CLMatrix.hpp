@@ -63,6 +63,9 @@ public:
 	T & operator[](u_int32_t n);
 	T operator[](u_int32_t n) const;
 
+	
+	std::vector<T>& rawData();
+
 	// Access the matrix coefficient at (r, c)
 	T & operator()(u_int32_t r, u_int32_t c);
 
