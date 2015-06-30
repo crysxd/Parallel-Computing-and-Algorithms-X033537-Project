@@ -136,6 +136,18 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 
 	// Init the weights and other variables
 	this->init();
+
+//    // weights for a XNOR network
+//    this->_weight_biases[0].first.fillAt(0,0,20);
+//    this->_weight_biases[0].first.fillAt(0,1,20);
+//    this->_weight_biases[0].first.fillAt(1,0,-20);
+//    this->_weight_biases[0].first.fillAt(1,1,-20);
+//    this->_weight_biases[0].second.fillAt(0,0,-30);
+//    this->_weight_biases[0].second.fillAt(1,0,10);
+//    this->_weight_biases[1].first.fillAt(0,0,20);
+//    this->_weight_biases[1].first.fillAt(0,1,20);
+//    this->_weight_biases[1].second.fillAt(0,0,-10);
+
 	// Begin running the neural network for NUM_EPOCHS iterations
 	std::vector<std::pair<Matrix,Matrix>> w_b;
 	std::vector<Matrix> momentumbuf;
@@ -182,7 +194,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target) {
 			Matrix error = (predict - target.subMatCol(i));
 
 			epoch_error+= error.transpose().dot(error);
-			std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
+            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << "\nError for this sample:" << error.transpose().dot(error) << std::endl;
 			///////////////////////////////
 			// Backpropagate the errors  //
 			///////////////////////////////
