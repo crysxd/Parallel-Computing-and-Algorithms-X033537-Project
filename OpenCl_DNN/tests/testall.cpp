@@ -204,24 +204,24 @@ TEST(OpenCL,Datatypes){
 
 }
 
-TEST(Matrix,dotgpu){
-
-    int r=512;
-    int c=512;
-
-    CL_Matrix<float> mat(r,c);
-    CL_Matrix<float> other(c,r);
-    mat.fill(5.);
-
-    other.fill(2.);
-    CL_Matrix<float> out = mat.dotgpu(other);
-    for(auto i=0u;i<100;i++){
-		out = out.dotgpu(other);
-	}
-	out.fetchdata();
-	std::cout << out(0,0);
-
-}
+//TEST(Matrix,dotgpu){
+//
+//    int r=512;
+//    int c=512;
+//
+//    CL_Matrix<float> mat(r,c);
+//    CL_Matrix<float> other(c,r);
+//    mat.fill(5.);
+//
+//    other.fill(2.);
+//    CL_Matrix<float> out = mat.dotgpu(other);
+//    for(auto i=0u;i<100;i++){
+//		out = out.dotgpu(other);
+//	}
+//	out.fetchdata();
+//	std::cout << out(0,0);
+//
+//}
 
 TEST(Matrix,dotsq){
 
@@ -413,7 +413,7 @@ TEST(Nnet,sgd){
 
 int main(int argc,char **argv){
     ::testing::InitGoogleTest(&argc, argv);
-	::testing::GTEST_FLAG(filter) = "Matrix.dotgpu";//":-:*Counter*";
+//	::testing::GTEST_FLAG(filter) = "";//":-:*Counter*";
     // Otherwise EXPECT_DEATH will warn us that the execution time may be too slow,
     // since EXPECT_DEATH uses forks, which could not be used
     ::testing::FLAGS_gtest_death_test_style = "threadsafe";
