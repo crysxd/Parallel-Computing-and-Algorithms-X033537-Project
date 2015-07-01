@@ -38,8 +38,6 @@ class NeuralNetwork(object):
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
         errorsLen = ctypes.c_int()
-        print 'in', inputValues.shape, inputValues.strides
-        print 'out', outputValues.shape, outputValues.strides
         learningRate = c_float(learningRate)
         momentum = c_float(momentum)
         numEpochs = c_ulonglong(numEpochs)
@@ -52,8 +50,6 @@ class NeuralNetwork(object):
         outputValuespointer = outputValues.ctypes.data_as(POINTER(c_float))
         errors = ctypes.POINTER(ctypes.c_float)()
         errorsLen = ctypes.c_int()
-        print 'in', inputValues.shape, inputValues.strides
-        print 'out', outputValues.shape, outputValues.strides
         learningRate = c_float(learningRate)
         momentum = c_float(momentum)
         numEpochs = c_ulonglong(numEpochs)
