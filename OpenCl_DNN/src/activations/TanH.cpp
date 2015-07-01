@@ -21,5 +21,5 @@ CL_Matrix<float> TanH::propagate(const CL_Matrix<float>& src) {
 }
 
 CL_Matrix<float> TanH::grad(const CL_Matrix<float>& src) {
-//  return src.tanhgrad();
+  return src.tanhgrad();
 }

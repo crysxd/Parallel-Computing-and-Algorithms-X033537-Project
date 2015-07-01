@@ -141,6 +141,8 @@ public:
 //  Computes tanh function -elementwise- and returns result
     CL_Matrix<T> tanh() const;
     void tanh(CL_Matrix<T> *out) const;
+    CL_Matrix<T> tanhgrad() const;
+    void tanhgrad(CL_Matrix<T> *out) const;
 
     T* data() {
         this->syncToRam();

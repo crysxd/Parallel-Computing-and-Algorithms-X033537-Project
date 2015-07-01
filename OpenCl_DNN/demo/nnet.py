@@ -8,7 +8,6 @@ import sys
 sys.path.append('../src/wrapper')
 
 from NeuralNetwork import NeuralNetwork
-# from NeuralNetwork import NeuronalNetwork as NeuralNetwork
 
 TRAININGMETHODS = ['batch', 'sgd']
 
