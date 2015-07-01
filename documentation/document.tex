@@ -30,7 +30,7 @@
 \include{use}
 \begin{document}
 
-\title{Development and Implementation of an OpenCL Driven Neural Network for Use in Python}
+\title{Development and implementation of an OpenCL driven neural network for use in Python}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -87,15 +87,15 @@
 \date{30 July 1999}
 \maketitle
 \begin{abstract}
-This paper describes the development and implementation process of a neural network which is driven by OpenCL using GPU acceleration. The neural network should be usable within Python using a wrapper for the shared object file of the C++ library. 
+This paper describes the development and implementation process of a neural network which is driven by OpenCL using GPU acceleration. The neural network should be usable within Python using a wrapper for the shared object file of the C++ library.
 \end{abstract}
 
 % A category with the (minimum) three required fields
 \category{H.4}{Computer Science}{Neural Networks}
 
-\terms{Theory}
+\terms{Implementation}
 
-\keywords{Neural Network, OpenCL, Python, ctypes, Stochastic Gradient Descent} % NOT required for Proceedings
+\keywords{Neural Network, OpenCL, Python, C++11, Back-propagation, Stochastic Gradient Descent} % NOT required for Proceedings
 
 
 
@@ -105,8 +105,18 @@ This paper describes the development and implementation process of a neural netw
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\section{Introduction}
+Artificial neural networks (ANNs)are processing devices (algorithms or actual hardware) that are loosely modeled after the neuronal structure of the human cerebral cortex but on much smaller scales. A large ANN might have hundreds or thousands of processor units, whereas a mamalian brain has billions of neurons with a corresponding increase in magnitude of their overall interaction and emergent behavior. Although ANN researchers are generally not concerned with whether their networks accurately resemble biological systems, some have. For example, researchers have accurately simulated the function of the retina and modeled the eye rather well.
 
-\section{Basics}
+Neural neworks are typically organized in layers. Layers are made up of a number of interconnected \textbf{nodes} which contain an \textbf{activation function}. Patterns are presented to the network via the input layer, which communicates to one or more \textbf{hidden layers} where the actual processing is done via a system of weighted \textbf{connections}. The hidden layers then link to an \textbf{output layer}.
+
+Most ANNs contain some form of \textbf{learning rule} which modifies the weights of the connections according to the input patterns that it is presented with. In a sense, ANNs learn by example as do their biological counterparts; a child learns to recognize dogs from examples of dogs.
+
+Although there are many different kinds of learning rules used by neural networks, this paper is concerned only with one; the delta rule. The delta rule is often utilized by the most common class of ANNs called \textbf{backpropagational neural networks} (BPNNs). Backpropagation is an abbreviation for the backwards propagation of error.
+
+With the delta rule, as with other types of backpropagation, learning is a supervised process that occurs with each cycle or \textbf{epoch} (i.e. each time the network has processed the full dataset once) through a forward activation flow of outputs, and the backwards error propagation of weight adjustments. More simply, when a neural network is initially presented with a pattern it makes a random guess as to what it might be. It then sees how far its answer was from the actual one and makes an appropriate adjustment to its connection weights.
+
+\section{Prelimitaries}
 
 
 %Can put  this into the introduction
@@ -120,7 +130,7 @@ We use the following notation:
 \item Element wise multiplication is indicated as $\mathbf{X} \otimes \mathbf{Z}$.
 \end{itemize}
 
-Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier. 
+Neural networks are a statistical model for regression or classification. Even though naturally they do not produce any classification output, we can model the regressed output to be used as a classifier.
 
 Overall we have two different modes: Training and evaluation. In the training phase we use the back propagation algorithm to train the network and adjust it so that it produces output, which is close to our target output.
 
@@ -136,7 +146,7 @@ A basic neural network has therefore the following parameters:
 \item The learning rate $\eta$, which is the indicator how fast the network learns.
 \end{itemize}
 
-Moreover we can add some advanced techniques as the momentum to speed up the training the momentum 
+Moreover we can add some advanced techniques as the momentum to speed up the training the momentum
 
 
 \subsection{Gradient Descent}
@@ -174,7 +184,7 @@ where $\eta$ is the learning rate.
 
 But since in many cases, the update of one gradient would take to estimate the gradient over the whole dataset, the computation would take too much time. Often times we only need a rough estimate of the gradient, not a precise one.
 
-What stochastic gradient descent does is to remove the sum and only uses one sample to estimate the gradient. 
+What stochastic gradient descent does is to remove the sum and only uses one sample to estimate the gradient.
 \begin{equation}
 w := w - \eta \nabla Q(w) = w - \alpha \nabla Q(w)
 \end{equation}
@@ -188,7 +198,7 @@ The important thing to do is to randomize the training set, since otherwise only
 \subsection{The Forward Backward procedure in detail}
 
 To train the network we use the standard back-propagation algorithm, which essentially does a forward and a backward pass of the network in a row.
-Firstly we initialize the weights in a matrix. 
+Firstly we initialize the weights in a matrix.
 \begin{align}
 \mathbf{W}_{j \times k } = \begin{bmatrix}
 w_{11} & w_{12} & \ldots & w_{1k}\\
@@ -220,7 +230,7 @@ Even though this method should already work, we add a bias to every node to incr
 \end{align}r
 
 
-Later we see that back-propagation needs some variables, which can be already precomputed during the forward step. These two variables are the output $\mathbf{o}_j$ of layer $j$ and the derivative of the output w.r.t to the weighted sum $\mathbf{nnet}_j$. We represent the derivatives in a matrix $\mathbf{D}$ and the output of the current layer 
+Later we see that back-propagation needs some variables, which can be already precomputed during the forward step. These two variables are the output $\mathbf{o}_j$ of layer $j$ and the derivative of the output w.r.t to the weighted sum $\mathbf{nnet}_j$. We represent the derivatives in a matrix $\mathbf{D}$ and the output of the current layer
 \begin{align}
 \mathbf{D}_j = \frac{\mathbf{o}_j}{\mathbf{nnet}_j}
 \end{align}
@@ -338,7 +348,7 @@ cl::Program program(context,sources);
 //Build the program on the device
 program.build({device});
 cl::CommandQueue queue(context,device);
-//The operator allows us to set args to the kernel 
+//The operator allows us to set args to the kernel
 cl::Kernel kernel_operator(program,kernelname);
 //kernel_operator allows us to send arguments to the kernel by calling
 //kernel_operator.setArgs(ARGNUMBER,ARGUMENT);
@@ -354,7 +364,7 @@ cl::Event event;
 queue.enqueueNDRangeKernel(kernel_operator,cl::NullRange,cl::NDRange(10),cl::NullRange,NULL,&event);
 //Wait until the execution has finished
 event.wait();
-// Read out the results by calling 
+// Read out the results by calling
 // quene.enqueueReadBuffer()
 }
 \end{lstlisting}
@@ -372,7 +382,7 @@ template<std::size_t P=0,typename... Tp>
 	typename std::enable_if<P == sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp ...>&& t,cl::Kernel &k,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const{
 	// Do nothing
 	}
-	
+
 //  Start of the iteration
 template<std::size_t P = 0, typename... Tp>
 	typename std::enable_if< P < sizeof...(Tp), void>::type addkernelargs(std::tuple<Tp...> && t,cl::Kernel &kernel,cl::CommandQueue &,std::vector<cl::Buffer> &outputbuffers) const{
@@ -386,14 +396,14 @@ template<std::size_t P = 0, typename... Tp>
         // Recurse to get the remaining args
         addkernelargs<P + 1, Tp...>(std::forward<std::tuple<Tp...>>(t), kernel,queue,outputbuffers);
 	}
-	
+
 //	Adding Std::vector as type to the kernel args list
 	template<typename T>
 	void addkernelarg(std::size_t i, std::vector<T> const & arg, cl::Kernel & kernel,cl::CommandQueue &) const{
 		cl::Buffer buffer(this->context,CL_MEM_READ_WRITE,arg.size()*sizeof(T));
 		queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*arg.size(),&(arg[0]));
 		kernel.setArg(i,buffer);
-	
+
 	}
 
 
@@ -404,7 +414,7 @@ template<std::size_t P = 0, typename... Tp>
 		queue.enqueueWriteBuffer(buffer,CL_FALSE,0,sizeof(T)*N,&arg);
 		kernel.setArg(i,buffer);
 	}
-	
+
 	// Adding any constant to the kernel
 	template<typename T>
 	void addkernelarg(std::size_t i, T const & arg, cl::Kernel & kernel,cl::CommandQueue &) const{
@@ -419,30 +429,6 @@ template<std::size_t P = 0, typename... Tp>
 This recipe can be used to do the same actions for the reading buffers out after the transfer has finished.
 Therefore we can create a highly dynamic wrapper class for OpenCL.
 
-\subsection{Transparently handling OpenCL within a Matrix class}
-
-To be able to use high level C++ code to implement the feedforward and backpropagation algorithm, we introduced a CL\_Matrix class, which provides common matrix operation like multiplication, addition and so on. Most matrix operations are implemented as OpenCL kernels on the GPU. To avoid unnecessary transfers between the RAM and the GPU memory, the matrix class implements a state handling. Two methods for this are shown below, \texttt{syncToRam()} and \texttt{moveToRam()} work in a similar way.
-
-\begin{lstlisting}[caption=State handling to allow the Matrix data to be both used in RAM and in the GPU memory]
-template<typename T>
-inline void CL_Matrix<T>::syncToGpu() const {
-    if (this->state == OnlyRam) {
-        this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
-        this->state = Synced;
-    }
-
-}
-
-template<typename T>
-inline void CL_Matrix<T>::moveToGpu() {
-    this->syncToGpu();
-    this->state = OnlyGpu;
-
-}
-\end{lstlisting}
-
-This way, we can both perform OpenCL operations and access the data from the normal C++ code, for example to get the result. Data transfers are avoided if possible, so for example multiple consecutive OpenCL operations can be performed without transfering data.
-
 \subsection{Use a C++ Class in Python}
 To use a C++ class in a Python program, Python's ctypes library can be used to invoke functions on a shared object file. The class will be wrapped into a Python class which uses the ctypes library to invoke functions on the C++ object. As the ctypes library is not able to handle C++ objects directly, a wrapper function must be written in C for every function of the C++ class. These plain C functions can then be invoked by ctypes.
 
@@ -451,7 +437,7 @@ A simple example of such a C++ class is seen in the following figure:
 \begin{lstlisting}[caption=Example C++ class for wrapping a C++ object in a Python object (Example.cpp)]
 class WrapperExample {
     std::string* name;
-    
+
 public:
     WrapperExample(std::string name) {
         this->name = new std::string(name);
@@ -498,11 +484,11 @@ lib = cdll.LoadLibrary('example.so')
 class ExampleWrapper:
     def __init__(self, name):
         self.obj = lib.WrapperExample_new(name)
-        
+
     def sayHello(delf):
         lib.WrapperExample_sayHello(self.obj)
-        
-    def __del__(self): 
+
+    def __del__(self):
         lib.WrapperExample_delete(self.obj)
 \end{lstlisting}
 
@@ -515,24 +501,26 @@ The Python class wrapping our \texttt{NeuralNetwork} class can be found in \text
 \begin{lstlisting}[caption=Constructor to create a neural network]
 nn = NeuralNetwork(layerCount=3,
                    layerSize=np.array([784, 1000, 10]),
-                   actFunctions=np.array([1, 1]),)
+                   actFunctions=np.array([1, 1]),
+                   learningRate=0.1,
+                   momentum=1337.2)
 \end{lstlisting}
 
-In this case a neural network with 3 layers is created. The list \texttt{layerSize} contains the size of every layer. The neural network created in this example has an input layer with 784 nodes, one hidden layer with 1000 nodes and a output layer with 10 nodes. The activation functions are defined by the list \texttt{actFunctions}. The value 0 will set the activation function TAN\_H and the value 1 SIGMOID. As the input layer has no activation function, the size of the list \texttt{actFunctions} is only 2. The sizes of the input and output layers can later be queried by the functions \texttt{getInputSize()} and \texttt{getOutputSize()}.
+In this case a neural network with 3 layers is created. The list \texttt{layerSize} contains the size of every layer. The neural network created in this example has an input layer with 784 nodes, one hidden layer with 1000 nodes and a output layer with 10 nodes. The activation functions are defined by the list \texttt{actFunctions}. The value 0 will set the activation function TAN\_H and the value 1 SIGMOID. As the input layer has no activation function, the size of the list \texttt{actFunctions} is only 2. The learning rate and momentum can be defined by the corresponding parameters \texttt{learningRate} and \texttt{momentum}. The sizes of the input and output layers can later be queried by the functions \texttt{getInputSize()} and \texttt{getOutputSize()}.
 
-To train the neural network, the functions \texttt{trainBatch()} and \texttt{trainStochastic()} can be used. Both functions expect two matrices as parameters. The first matrix defines the input values which will be given to the neural network and the second parameter defines the expected output values. One row in one in the matrices is one train case for the neural network. The functions return a matrix with the errors. \texttt{trainStochastic()} uses stochastic gradient descent. The learning rate and momentum can be defined by the corresponding parameters \texttt{learningRate} and \texttt{momentum} and the number of epochs can be defined. An example usage can be seen in the following listing:
+To train the neural network, the functions \texttt{train()} and \texttt{trainsgd()} can be used. Both functions expect two matrices as parameter. The first matrix defines the input values which will be given to the neural network and the second parameter defines the expected output values. One row in one in the matrices is one train case for the neural network. The functions return a matrix with the errors. \texttt{trainsgd()} uses stochastic gradient descent. An example usage can be seen in the following listing:
 
 \lstset{language=Python}
 \begin{lstlisting}[caption=Usage of trainsgd() and train()]
-errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20], learningRate=0.2, momentum=0.1, numEpochs=10000)
+errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20])
 print errors
 
-errors = nn.trainsgd(trainImages[:, 0:20], trainOutput[:, 0:20], learningRate=0.2, momentum=0.1, numEpochs=10000)
+errors = nn.trainsgd(trainImages[:, 0:20], trainOutput[:, 0:20])
 print errors
 \end{lstlisting}
 
 
-The function \texttt{test()} can be used to test a input value with the neural network. In difference to \texttt{train()} only one matrix is expected as parameter. The values from the matrix will be given to the neural network. One column of the matrix is one test case. The function will return a matrix with the value of the output nodes for every test case.
+The function \texttt{test()} can be used to test a input value with the neural network. In difference to \texttt{train()} only one matrix is expected as parameter. The values from the matrix will be given to the neural network. One row of the matrix is one test case. The function will return a matrix with the value of the output nodes for every test case.
 
 \lstset{language=Python}
 \begin{lstlisting}[caption=Usage of test()]
@@ -550,6 +538,77 @@ nn2 = NeuralNetwork(saveFile="path/to/savefile.bin");
 \end{lstlisting}
 
 
+\section{Experiments}
+
+In our experiments we used the MNIST database for digit recognition.
+
+MNIST consists of 60000 data samples of recognized written digits, stored as greyscale images.
+Ever one of these samples has a size of $28 \times 28$ pixels. The digits which can be recognized range from zero to nine.
+
+Therefore we have an input layer size of $28 \times 28= 784$ and $10$ output nodes representing each number respectively.
+
+\begin{table}[h]
+\centering
+\caption{Network configuration}
+\label{tab:config}
+\begin{tabular}{rr|r|r|r}
+\hline
+configname & layers & neurons/layer& l-rate & momentum\\
+\hline
+small & 1 & 1024 & 0.1 to 0.7 & 0.01 \\
+\hline
+middle & 2 & 1024 & 0.1 to 0.7 & 0.01 \\
+\hline
+big & 3 & 1024 & 0.1 to 0.7 & 0.01\\
+\hline
+\end{tabular}
+\end{table}
+We used the networks shown in \ref{tab:config}, where we tried to use different starting learning rates to achieve better results.
+All out networks use 10000 epochs and stochastic gradient descent as its learning algorithm.
+
+
+The results can be seen in the table \ref{tab:correct}. 
+\begin{table}[h]
+\centering
+\caption{Correct results ( in \%) depending on the learning rate}
+\label{tab:correct}
+\begin{tabular}{r|r|r|r|r|r|r|r}
+& 0.1 & 0.2 & 0.3 & 0.4 & 0.5 & 0.6 & 0.7 \\
+\hline
+small & 89 & 92 & \textbf{96} & 94 & 90 & 89 & 89 \\
+\hline
+mid & 91 &85 & 86 & 81 & 86 & 85 & 92 \\
+\hline
+big & 84 & 87 & 77 & 56 & 66 & 11 & 64  \\
+\end{tabular}
+\end{table}
+
+Finally we can see the performance of our neuralnetwork. We want to emphasize that we used Intel HD4000 GPU's, which are not very powerful GPU's. Fortunately one could easily run this code with any other GPU, since OpenCL supports every large GPU manufactor product.
+
+\begin{table}[h]
+\centering
+\caption{Training time ( in sec )}
+\label{tab:traintime}
+\begin{tabular}{r|r}
+& time \\
+\hline
+small & 287 \\
+\hline
+mid & 530 \\
+\hline
+big &  700 \\
+\end{tabular}
+\end{table}
+
+\section{Conclusion}
+
+As we can see in \ref{tab:correct}, the results seem to be somewhat inconsistent. This can be explained by knowing that often times a larger neural network abstracts a (maybe simple) correlation between the inputs so much that it decorrelates the input with the output. In our example we can see that digit recognitions work well if only a few layers are used.
+Moreover, random weights can lead the network to converge to a local minimum which is not necessary the global one.
+
+Many other techniques to increase the performance could be implemented such as Restricted Boltzmann machines (RMBs) to cope with the random initialization of the network.
+
+In our experiments we only used the checkerboard algorithm to calculate the dot products, but there are more efficient ways to do so. Moreover loop unrolling is a powerful method to calculate multiple instructions at once, as long as the dataset has a certain size to enable the unroll.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -557,7 +616,7 @@ nn2 = NeuralNetwork(saveFile="path/to/savefile.bin");
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \bibliographystyle{abbrv}
-\bibliography{sigproc} 
+\bibliography{sigproc}
 
 \balancecolumns
 % That's all folks!
