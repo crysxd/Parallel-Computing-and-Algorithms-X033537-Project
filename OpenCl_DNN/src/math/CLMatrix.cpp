@@ -453,6 +453,24 @@ void CL_Matrix<T>::tanh(CL_Matrix<T> *out) const {
 }
 
 template<typename T>
+inline CL_Matrix<T> CL_Matrix<T>::tanhgrad() const{
+    CL_Matrix res(this->_n_rows, this->_n_cols);
+    this->tanhgrad(&res);
+    return res;
+}
+
+template<typename T>
+void CL_Matrix<T>::tanhgrad(CL_Matrix<T> *out) const {
+    this->syncToGpu();
+    out->moveToGpu();
+    assert(out->_n_rows == this->_n_rows);
+    assert(out->_n_cols == this->_n_cols);
+    std::vector<std::size_t> localWorkSize = {1,1};
+    std::vector<std::size_t> globalWorkSize = {this->_n_rows,this->_n_cols};
+    this->_cl.runKernelnoOut("cl_tanhgrad",globalWorkSize,localWorkSize,out->_n_cols,this->gpu_buf,out->gpu_buf);
+}
+
+template<typename T>
 inline CL_Matrix<T> operator +(CL_Matrix<T> const &lhs,  CL_Matrix<T> const &rhs) {
     checkalign(lhs,rhs);
     CL_Matrix<T> res(lhs._n_rows,rhs._n_cols);
