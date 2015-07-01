@@ -46,6 +46,8 @@ def train(method, learningRate, momentum, numEpochs, output, layers=None, miniba
     print 'Training done, errors:', errors
     print 'Saving output to', output
     nn.save(output)
+    print 'Testing...'
+    test(nn)
 
 
 def loadNetwork(filename):

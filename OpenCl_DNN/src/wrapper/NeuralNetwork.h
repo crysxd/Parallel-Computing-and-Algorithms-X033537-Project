@@ -37,8 +37,7 @@ public:
     void train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen);
     void trainsgd(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, int miniBatchSize, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen);
 	uint64_t getOutputSize();
-	uint64_t getInputSize();
-	void readMatTest(float *out[], int *rows, int *cols);
+    uint64_t getInputSize();
 
 };
 

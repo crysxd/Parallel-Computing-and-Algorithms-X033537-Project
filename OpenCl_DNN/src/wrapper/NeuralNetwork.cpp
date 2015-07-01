@@ -206,8 +206,6 @@ double NeuralNetwork::getResultNode(uint64_t node) {
 void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0, int shape1, int strides0, int strides1) {
 	for(int r=0; r < shape0; r++) {
 		for(int c=0; c < shape1; c++) {
-//             std::cout << r*strides1 + c*strides0 << ' ' << r << ' ' << c << '\n';
-//             std::cout.flush();
 			float* addr = numpy + r*strides0/4 + c*strides1/4;
 			matrix.fillAt(r, c, *addr);
 		}
@@ -215,17 +213,11 @@ void NeuralNetwork::fillMatrixFromNumpy(Matrix &matrix, float* numpy, int shape0
 }
 
 void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
-//     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
-    /* Transform row length from the length in byte to the length in floats */
-// 	inputRowLength = inputRowLength/ sizeof(float);
-// 	outputRowLength = outputRowLength/ sizeof(float);
 	/* Create matrix */
 	Matrix matrixIn(inShape0, inShape1);
 	Matrix matrixOut(outShape0, outShape1);
 	this->fillMatrixFromNumpy(matrixIn, inputValues, inShape0, inShape1, inStrides0, inStrides1);
 	this->fillMatrixFromNumpy(matrixOut, outputValues, outShape0, outShape1, outStrides0, outStrides1);
-    std::cout << "in " << matrixIn.getRows() << 'x' << matrixIn.getCols() << '\n';
-    std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
 	/* Run */
     this->lastErrors = this->network->trainbatch(matrixIn, matrixOut, learningRate, momentum, numEpochs);
@@ -237,17 +229,11 @@ void NeuralNetwork::train(float* inputValues, int inShape0, int inShape1, int in
 
 
 void NeuralNetwork::trainsgd(float* inputValues, int inShape0, int inShape1, int inStrides0, int inStrides1, float learningRate, float momentum, int numEpochs, int miniBatchSize, float* outputValues, int outShape0, int outShape1, int outStrides0, int outStrides1, float *errorsOut[], int *errorsLen) {
-//     std::cout << inputRowLength << ',' << outputRowLength << ',' << rowCount << '\n';
-    /* Transform row length from the length in byte to the length in floats */
-//  inputRowLength = inputRowLength/ sizeof(float);
-//  outputRowLength = outputRowLength/ sizeof(float);
     /* Create matrix */
     Matrix matrixIn(inShape0, inShape1);
     Matrix matrixOut(outShape0, outShape1);
     this->fillMatrixFromNumpy(matrixIn, inputValues, inShape0, inShape1, inStrides0, inStrides1);
     this->fillMatrixFromNumpy(matrixOut, outputValues, outShape0, outShape1, outStrides0, outStrides1);
-    std::cout << "in " << matrixIn.getRows() << 'x' << matrixIn.getCols() << '\n';
-    std::cout << "out " << matrixOut.getRows() << 'x' << matrixOut.getCols() << '\n';
 
     /* Run */
     this->lastErrors = this->network->trainsgd(matrixIn, matrixOut, learningRate, momentum, numEpochs, miniBatchSize);
@@ -265,14 +251,6 @@ uint64_t NeuralNetwork::getOutputSize() {
 uint64_t NeuralNetwork::getInputSize() {
 	return this->layerSize[0];
 
-}
-
-float testData[] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
-
-void NeuralNetwork::readMatTest(float *out[], int *rows, int *cols) {
-    *out = testData;
-    *rows = 2;
-    *cols = 3;
 }
 
 extern "C" {
@@ -324,9 +302,5 @@ extern "C" {
     uint64_t NeuralNetwork_getInputSize(NeuralNetwork* foo) {
     	return foo->getInputSize();
 
-    }
-
-    void NeuralNetwork_readMatTest(NeuralNetwork* foo, float *out[], int *rows, int *cols) {
-        foo->readMatTest(out, rows, cols);
     }
 }

@@ -111,6 +111,7 @@ void CL_Matrix<T>::dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
 
 template<typename T>
 std::vector<T>& CL_Matrix<T>::rawData() {
+    this->syncToRam();
 	return this->mat;
 }
 
