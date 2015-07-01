@@ -91,19 +91,11 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
         // Therefore _backprop_buf[i] refers to the last layer not the current one, thought weight_biases[i]
         // refers to the current layer weight!
         Matrix const &nabla_back = this->_backprop_buf.at(idx).dot(delta_l.transpose());
-        //  Update the layer weights
-//      this->_weight_biases[i].first -= this->_l_rate * nabla_back.transpose();
-        // Update the bias
-//      this->_weight_biases[i].second -= this->_l_rate * delta_l;
 
         nablas.push_back(std::make_pair(nabla_back.transpose(),delta_l));
-
     }
     return nablas;
-
-
 }
-
 
 FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim):
         _in_dim(indim),_out_dim(outdim),_costfunc(new MSE()) {
@@ -112,8 +104,6 @@ FeedForwardNN::FeedForwardNN(u_int32_t indim, u_int32_t outdim):
 
 FeedForwardNN::~FeedForwardNN() {
 }
-
-
 
 std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, unsigned int numEpochs) {
     std::cout << "train " << in.getRows() << 'x' << in.getCols() << " -> " << target.getRows() << 'x' << target.getCols() << '\n';
@@ -135,7 +125,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
         return errors;
     }
 
-    l_rate =  l_rate/in.getCols() ;
+    l_rate =  l_rate/in.getCols();
 
     // Init the weights and other variables
     this->init();
@@ -310,7 +300,6 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_r
                 ////////////////////////////////////////////////////////////
                 Matrix const &predict = this->feedforward(inputvector,true);
                 Matrix error = predict - target.subMatCol(j);
-
 
                 epoch_error += error.transpose().dot(error);
                 ///////////////////////////////
