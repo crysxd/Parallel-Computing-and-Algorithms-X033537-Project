@@ -6,7 +6,9 @@ import os
 import sys
 
 sys.path.append('../src/wrapper')
-from NeuralNetwork import NeuralNetwork
+
+# from NeuralNetwork import NeuralNetwork
+from NeuralNetwork import NeuronalNetwork as NeuralNetwork
 
 TRAININGMETHODS = ['batch', 'sgd']
 
@@ -36,14 +38,13 @@ def train(method, learningRate, momentum, numEpochs, output, layers=None, miniba
         TRAININGMETHODS[0]: nn.trainBatch,
         TRAININGMETHODS[1]: nn.trainStochastic
     }
-    errors = trainmethod[method](trainImages[:, :], trainOutput[
-                                 :, :], learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
+    errors = trainmethod[method](trainImages, trainOutput, learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
     # Error did happen, we just return, error message would be printed by the
     # train method
-    if len(errors) == 0:
+    if not errors or len(errors) == 0:
         return
 
-    print 'Training done, errors:', errors
+    # print 'Training done, errors:', errors
     print 'Saving output to', output
     nn.save(output)
 
