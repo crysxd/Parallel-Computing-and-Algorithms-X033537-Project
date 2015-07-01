@@ -427,6 +427,34 @@ template<std::size_t P = 0, typename... Tp>
 }
 \end{lstlisting}
 
+
+\subsection{Transparently handling OpenCL within a Matrix class}
+
+To be able to use high level C++ code to implement the feedforward and backpropagation algorithm, we introduced a CL\_Matrix class, which provides common matrix operation like multiplication, addition and so on. Most matrix operations are implemented as OpenCL kernels on the GPU. To avoid unnecessary transfers between the RAM and the GPU memory, the matrix class implements a state handling. Two methods for this are shown below, \texttt{syncToRam()} and \texttt{moveToRam()} work in a similar way.
+
+\begin{lstlisting}[caption=State handling to allow the Matrix data to be both used in RAM and in the GPU memory]
+template<typename T>
+inline void CL_Matrix<T>::syncToGpu() const {
+    if (this->state == OnlyRam) {
+        this->gpu_buf = this->_cl.putDataOnGPU(this->mat);
+        this->state = Synced;
+    }
+
+}
+
+template<typename T>
+inline void CL_Matrix<T>::moveToGpu() {
+    this->syncToGpu();
+    this->state = OnlyGpu;
+
+}
+\end{lstlisting}
+
+This way, we can both perform OpenCL operations and access the data from the normal C++ code, for example to get the result. Data transfers are avoided if possible, so for example multiple consecutive OpenCL operations can be performed without transfering data.
+
+
+
+
 This recipe can be used to do the same actions for the reading buffers out after the transfer has finished.
 Therefore we can create a highly dynamic wrapper class for OpenCL.
 
@@ -495,6 +523,71 @@ class ExampleWrapper:
 
 The Python class \texttt{ExampleWrapper} can now be used as any other Python class.
 
+\subsection{Use a C++ Class in Python}
+To use a C++ class in a Python program, Python's ctypes library can be used to invoke functions on a shared object file. The class will be wrapped into a Python class which uses the ctypes library to invoke functions on the C++ object. As the ctypes library is not able to handle C++ objects directly, a wrapper function must be written in C for every function of the C++ class. These plain C functions can then be invoked by ctypes.
+
+A simple example of such a C++ class is seen in the following figure:
+
+\begin{lstlisting}[caption=Example C++ class for wrapping a C++ object in a Python object (Example.cpp)]
+class WrapperExample {
+    std::string* name;
+    
+public:
+    WrapperExample(std::string name) {
+        this->name = new std::string(name);
+    }
+    ~WrapperExample() {
+        delete this->name;
+    }
+    void sayHello() {
+        std::cout << "Hello " << *(this->name) << "!" << std::endl;
+    }
+};
+
+extern "C" {
+    WrapperExample* WrapperExample_new(char* name) {
+        return new WrapperExample(name);
+    }
+    void WrapperExample_sayHello(WrapperExample* e) {
+        e->sayHello();
+    }
+    void WrapperExample_delete(WrapperExample* e) {
+        delete e;
+    }
+}
+\end{lstlisting}
+
+To compile the given C++ code into a shared object file which can be used by Python's ctypes library, following compilation statements can be used:
+
+\lstset{language= bash}
+\begin{lstlisting}[caption=Compilation of the C++ class into a shared object file]
+g++ -std=c++11 -c -fPIC Example.cpp -o example.o
+g++ -std=c++11 -shared -Wl,-soname,example.so -o example.so  example.o
+\end{lstlisting}
+
+The Python wrapper will call the functions defined in the \texttt{extern} section. For every function in the \texttt{extern} section, the Python class will have one function to wrap it. The function \texttt{WrapperExample\_new()} will be called in the constructor of the Python class and \texttt{WrapperExample\_delete()} in its  destructor. All functions besides the \texttt{WrapperExample\_new()} function receive a pointer to an instance of the C++ class \texttt{WrapperExample} on which the function should be invoked. These objects are created in \texttt{WrapperExample\_new()} and the pointers to them are stored by Python.
+
+The corresponding Python class to wrap the C++ class shown above looks like this:
+
+\lstset{language=Python}
+\begin{lstlisting}[caption=Python class wrapping the C++ class shown above (Example.py)]
+from ctypes import cdll
+
+lib = cdll.LoadLibrary('example.so')
+
+class ExampleWrapper:
+    def __init__(self, name):
+        self.obj = lib.WrapperExample_new(name)
+        
+    def sayHello(delf):
+        lib.WrapperExample_sayHello(self.obj)
+        
+    def __del__(self): 
+        lib.WrapperExample_delete(self.obj)
+\end{lstlisting}
+
+The Python class \texttt{ExampleWrapper} can now be used as any other Python class.
+
 \subsection{Using the Interface}
 The Python class wrapping our \texttt{NeuralNetwork} class can be found in \texttt{NeuralNetwork.py}. To create a new \texttt{NeuralNetwork} the following constructor can be used:
 
@@ -502,26 +595,24 @@ The Python class wrapping our \texttt{NeuralNetwork} class can be found in \text
 \begin{lstlisting}[caption=Constructor to create a neural network]
 nn = NeuralNetwork(layerCount=3,
                    layerSize=np.array([784, 1000, 10]),
-                   actFunctions=np.array([1, 1]),
-                   learningRate=0.1,
-                   momentum=1337.2)
+                   actFunctions=np.array([1, 1]),)
 \end{lstlisting}
 
-In this case a neural network with 3 layers is created. The list \texttt{layerSize} contains the size of every layer. The neural network created in this example has an input layer with 784 nodes, one hidden layer with 1000 nodes and a output layer with 10 nodes. The activation functions are defined by the list \texttt{actFunctions}. The value 0 will set the activation function TAN\_H and the value 1 SIGMOID. As the input layer has no activation function, the size of the list \texttt{actFunctions} is only 2. The learning rate and momentum can be defined by the corresponding parameters \texttt{learningRate} and \texttt{momentum}. The sizes of the input and output layers can later be queried by the functions \texttt{getInputSize()} and \texttt{getOutputSize()}.
+In this case a neural network with 3 layers is created. The list \texttt{layerSize} contains the size of every layer. The neural network created in this example has an input layer with 784 nodes, one hidden layer with 1000 nodes and a output layer with 10 nodes. The activation functions are defined by the list \texttt{actFunctions}. The value 0 will set the activation function TAN\_H and the value 1 SIGMOID. As the input layer has no activation function, the size of the list \texttt{actFunctions} is only 2. The sizes of the input and output layers can later be queried by the functions \texttt{getInputSize()} and \texttt{getOutputSize()}.
 
-To train the neural network, the functions \texttt{train()} and \texttt{trainsgd()} can be used. Both functions expect two matrices as parameter. The first matrix defines the input values which will be given to the neural network and the second parameter defines the expected output values. One row in one in the matrices is one train case for the neural network. The functions return a matrix with the errors. \texttt{trainsgd()} uses stochastic gradient descent. An example usage can be seen in the following listing:
+To train the neural network, the functions \texttt{trainBatch()} and \texttt{trainStochastic()} can be used. Both functions expect two matrices as parameters. The first matrix defines the input values which will be given to the neural network and the second parameter defines the expected output values. One row in one in the matrices is one train case for the neural network. The functions return a matrix with the errors. \texttt{trainStochastic()} uses stochastic gradient descent. The learning rate and momentum can be defined by the corresponding parameters \texttt{learningRate} and \texttt{momentum} and the number of epochs can be defined. An example usage can be seen in the following listing:
 
 \lstset{language=Python}
 \begin{lstlisting}[caption=Usage of trainsgd() and train()]
-errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20])
+errors = nn.train(trainImages[:, 0:20], trainOutput[:, 0:20], learningRate=0.2, momentum=0.1, numEpochs=10000)
 print errors
 
-errors = nn.trainsgd(trainImages[:, 0:20], trainOutput[:, 0:20])
+errors = nn.trainsgd(trainImages[:, 0:20], trainOutput[:, 0:20], learningRate=0.2, momentum=0.1, numEpochs=10000)
 print errors
 \end{lstlisting}
 
 
-The function \texttt{test()} can be used to test a input value with the neural network. In difference to \texttt{train()} only one matrix is expected as parameter. The values from the matrix will be given to the neural network. One row of the matrix is one test case. The function will return a matrix with the value of the output nodes for every test case.
+The function \texttt{test()} can be used to test a input value with the neural network. In difference to \texttt{train()} only one matrix is expected as parameter. The values from the matrix will be given to the neural network. One column of the matrix is one test case. The function will return a matrix with the value of the output nodes for every test case.
 
 \lstset{language=Python}
 \begin{lstlisting}[caption=Usage of test()]
@@ -537,7 +628,6 @@ nn.save("path/to/savefile.bin")
 
 nn2 = NeuralNetwork(saveFile="path/to/savefile.bin");
 \end{lstlisting}
-
 
 \section{Experiments}
 
