@@ -61,7 +61,6 @@ def test(nn):
     testImages, testOutput, testNumbers = loadData('testing')
     result = nn.test(testImages)
     correct = 0
-    print len(testNumbers)
     for i in range(len(testNumbers)):
         num = outputToNumber(result[:, i])
         # print testNumbers[i], num
