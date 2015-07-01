@@ -26,8 +26,8 @@ template <typename T>
 void randinit(int min, int max, std::vector<T> arr);
 float randfloat(int min, int max);
 struct GPU_Buffer{
-	cl::Buffer buffer;
-	int datalength;
+    cl::Buffer buffer;
+    int datalength;
 };
 
 }

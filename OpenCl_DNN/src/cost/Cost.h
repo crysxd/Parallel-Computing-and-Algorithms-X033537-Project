@@ -14,9 +14,9 @@ typedef CL_Matrix<float> Matrix;
 
 class Cost {
 public:
-	Cost();
-	virtual ~Cost();
-	virtual Matrix cost(const Matrix& target,const Matrix& predict) const = 0;
+    Cost();
+    virtual ~Cost();
+    virtual Matrix cost(const Matrix& target,const Matrix& predict) const = 0;
 };
 
 #endif /* COST_COST_H_ */
