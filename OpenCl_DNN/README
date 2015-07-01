@@ -1,6 +1,13 @@
+You need to have the openCL libraries installed to build the project.
+
+Moreover you need to have a opencl compatible device on your computer
+
 To build the Project do:
 
-mkdir build
-cd build
-cmake ../
-make && ./opencl
+chmod a+x run.sh
+./run.sh
+
+you chan change the parameters of the python script by changing it in the run.sh, e.g.:
+
+python nnet.py train 784 1024 10 -ep 10000 -N 10000 -momentum 0.01
+
