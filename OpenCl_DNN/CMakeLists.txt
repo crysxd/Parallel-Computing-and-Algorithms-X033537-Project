@@ -176,7 +176,7 @@ set(MATH_DIR src/math)
 set(WRAPPER_DIR src/wrapper)
 
 # Find necessary packages
-#find_package(GTest REQUIRED)
+find_package(GTest REQUIRED)
 
 find_package(OpenCL REQUIRED)
 include_directories(${OpenCL_INCLUDE_DIRS})
@@ -239,8 +239,8 @@ add_executable(${EXECUTEABLE} ${EXECUTEABLE_PATH})
 target_link_libraries(${EXECUTEABLE} ${DNN_STATIC_LIB} ${OPENCL} pthread)
 #Executeable for the tests
 
-#add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
-#target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL} pthread)
+add_executable(${EXECUTEABLE_TEST} ${EXECUTEABLE_TEST_PATH})
+target_link_libraries(${EXECUTEABLE_TEST} ${DNN_STATIC_LIB} ${GTEST_LIBRARIES} ${OPENCL} pthread)
 
 ################################################################################
 #                                 PYTHON WRAPPER                               #
