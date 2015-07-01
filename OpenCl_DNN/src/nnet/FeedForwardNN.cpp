@@ -155,7 +155,6 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
         for(auto i =0u ; i < w_b.size();i++){
             w_b.at(i).first.zeros();
             w_b.at(i).second.zeros();
-            momentumbuf.at(i).zeros();
         }
 
 //  Using We assume the the input has N independent column vectors
@@ -171,6 +170,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
             Matrix error = (predict - target.subMatCol(i));
 
             epoch_error+= error.transpose().dot(error);
+
 //            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
             ///////////////////////////////
             // Backpropagate the errors  //
@@ -201,8 +201,9 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
             this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + momentum * momentumbuf.at(j);
             this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
 //          Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
-            momentumbuf.at(j) = this->_weight_biases.at(i).first;
+//            momentumbuf.at(j) = this->_weight_biases.at(i).first;
         }
+
     }
 
     return errors;
@@ -284,7 +285,6 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_r
         double epoch_error = 0;
 //      Reset the buffers
         for(auto i = 0u ; i < momentumbuf.size();i++){
-            momentumbuf.at(i).zeros();
             w_b.at(i).first.zeros();
             w_b.at(i).second.zeros();
         }
@@ -343,7 +343,7 @@ void FeedForwardNN::init() {
     auto i = 0u;
     this->_weight_biases.push_back(std::make_pair(
             Matrix(this->_hid_dims[0],this->_in_dim,true),
-            Matrix(this->_hid_dims[0],1,true)));
+            Matrix(this->_hid_dims[0],1,1.f)));
 //  Initialize the buffers for the derivaties and the output of each layer
     this->_deriv.push_back(Matrix(this->_hid_dims[0],1));
     this->_backprop_buf.push_back(Matrix(this->_hid_dims[0],1));
@@ -352,7 +352,7 @@ void FeedForwardNN::init() {
         this->_weight_biases.push_back(std::make_pair(
             Matrix(this->_hid_dims[i+1],this->_hid_dims[i],true)
             ,
-            Matrix(this->_hid_dims[i+1],1,true)
+            Matrix(this->_hid_dims[i+1],1,1.f)
         ));
         this->_deriv.push_back(Matrix(this->_hid_dims[i+1],1));
         this->_backprop_buf.push_back(Matrix(this->_hid_dims[i+1],1));
@@ -363,7 +363,7 @@ void FeedForwardNN::init() {
 //  Add for the last layer the output layer
     this->_weight_biases.push_back(std::make_pair(
             Matrix(this->_out_dim,this->_hid_dims[i],true),
-            Matrix(this->_out_dim,1,true)
+            Matrix(this->_out_dim,1,1.f)
             )
     );
 
