@@ -5,15 +5,15 @@
 
 
 TEST(Activation,Sigmoid){
-	// Sigmoid s;
+    // Sigmoid s;
     // s.activate();
-	// HiddenLayer h(Sigmoid);
+    // HiddenLayer h(Sigmoid);
     EXPECT_EQ(1,1);
 }
 
 TEST(Activation,TanH){
 
-	EXPECT_EQ(1,1);
+    EXPECT_EQ(1,1);
 
 }
 

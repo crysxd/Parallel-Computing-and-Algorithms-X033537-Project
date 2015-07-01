@@ -13,9 +13,9 @@ from NeuralNetwork import NeuralNetwork
 TRAININGMETHODS = ['batch', 'sgd']
 
 
-def loadData(dataset):
+def loadData(dataset, N=100):
     img, numbers = load_mnist(
-        dataset=dataset, path='mnist-data/', selection=slice(0, 100))
+        dataset=dataset, path='mnist-data/', selection=slice(0, N))
 
     images = img.astype(np.float32).reshape(
         (img.shape[0], img.shape[1] * img.shape[2])).transpose()
@@ -28,8 +28,8 @@ def outputToNumber(output):
     return np.where(output == np.max(output))[0][0]
 
 
-def train(method, learningRate, momentum, numEpochs, output, layers=None, minibatchsize=None):
-    trainImages, trainOutput, trainNumbers = loadData('training')
+def train(method, learningRate, momentum, numEpochs, output, samples, layers=None, minibatchsize=None):
+    trainImages, trainOutput, trainNumbers = loadData('training', samples)
     nn = NeuralNetwork(layerCount=len(layers),
                        layerSize=np.array(layers),
                        actFunctions=np.array([1, 1]))
@@ -48,6 +48,8 @@ def train(method, learningRate, momentum, numEpochs, output, layers=None, miniba
     # print 'Training done, errors:', errors
     print 'Saving output to', output
     nn.save(output)
+    print 'Testing...'
+    test(nn)
 
 
 def loadNetwork(filename):
@@ -82,6 +84,8 @@ def parse_args():
         '-ep', '--numEpochs', type=int, default=100, help="Number of epochs for the neural network, default: %(default)s")
     trainparser.add_argument(
         '-lr', '--learningRate', type=float, help='Learning rate of the neural network ,default:%(default)s', default=0.2)
+    trainparser.add_argument(
+        '-N', '--samples', type=int, help='Number of training samples to use, default:%(default)s',default=100)
     trainparser.add_argument(
         '-m', '--method', default=TRAININGMETHODS[1], help='Trainingsmethod, default : %(default)s')
     trainparser.add_argument(

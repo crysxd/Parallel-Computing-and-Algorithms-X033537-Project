@@ -8,18 +8,18 @@
 #include "TanH.h"
 
 TanH::TanH() {
-	// TODO Auto-generated constructor stub
+    // TODO Auto-generated constructor stub
 
 }
 
 TanH::~TanH() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 CL_Matrix<float> TanH::propagate(const CL_Matrix<float>& src) {
-	return src.tanh();
+    return src.tanh();
 }
 
 CL_Matrix<float> TanH::grad(const CL_Matrix<float>& src) {
-//	return src.tanhgrad();
+//  return src.tanhgrad();
 }

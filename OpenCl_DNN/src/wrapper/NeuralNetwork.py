@@ -22,8 +22,7 @@ class NeuralNetwork(object):
             layerSize = layerSize.ctypes.data_as(POINTER(c_ulonglong))
             actFunctions = actFunctions.ctypes.data_as(POINTER(c_ulonglong))
 
-            self.obj = lib.NeuralNetwork_new(
-                layerCount, layerSize, actFunctions)
+            self.obj = lib.NeuralNetwork_new(layerCount, layerSize, actFunctions)
 
         elif saveFile != None:
             lastLayerSize = self.obj = lib.NeuralNetwork_newLoad(saveFile)
@@ -44,8 +43,7 @@ class NeuralNetwork(object):
         learningRate = c_float(learningRate)
         momentum = c_float(momentum)
         numEpochs = c_ulonglong(numEpochs)
-        lib.NeuralNetwork_train(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[
-                                1], learningRate, momentum, numEpochs, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
+        lib.NeuralNetwork_train(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], learningRate, momentum, numEpochs, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
@@ -60,8 +58,7 @@ class NeuralNetwork(object):
         momentum = c_float(momentum)
         numEpochs = c_ulonglong(numEpochs)
         miniBatchSize = c_ulonglong(miniBatchSize)
-        lib.NeuralNetwork_trainsgd(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[
-                                   1], learningRate, momentum, numEpochs, miniBatchSize, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
+        lib.NeuralNetwork_trainsgd(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], learningRate, momentum, numEpochs, miniBatchSize, outputValuespointer, outputValues.shape[0],  outputValues.shape[1],  outputValues.strides[0], outputValues.strides[1], ctypes.byref(errors), ctypes.byref(errorsLen))
 
         return self._toNpArray(errors, (errorsLen.value, ))
 
@@ -70,8 +67,7 @@ class NeuralNetwork(object):
         rows = ctypes.c_int()
         cols = ctypes.c_int()
         result = ctypes.POINTER(ctypes.c_float)()
-        lib.NeuralNetwork_test(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[
-                               1], inputValues.strides[0], inputValues.strides[1], ctypes.byref(result), ctypes.byref(rows), ctypes.byref(cols))
+        lib.NeuralNetwork_test(self.obj, inputvaluespointer, inputValues.shape[0], inputValues.shape[1], inputValues.strides[0], inputValues.strides[1], ctypes.byref(result), ctypes.byref(rows), ctypes.byref(cols))
         return self._toNpArray(result, (rows.value, cols.value))
 
     def getResultNode(self, node):
@@ -91,16 +87,15 @@ class NeuralNetwork(object):
         rows = ctypes.c_int()
         cols = ctypes.c_int()
         data = ctypes.POINTER(ctypes.c_float)()
-        lib.NeuralNetwork_readMatTest(
-            self.obj, ctypes.byref(data), ctypes.byref(rows), ctypes.byref(cols))
+        lib.NeuralNetwork_readMatTest(self.obj, ctypes.byref(data), ctypes.byref(rows), ctypes.byref(cols))
 
-        buffer = self.buffer_from_memory(data, 4 * rows.value * cols.value)
+        buffer = self.buffer_from_memory(data, 4*rows.value*cols.value)
 
         a = np.frombuffer(buffer, np.float32).reshape((rows.value, cols.value))
         return a
 
     def _toNpArray(self, data, shape):
-        buffer = self.buffer_from_memory(data, 4 * np.prod(shape))
+        buffer = self.buffer_from_memory(data, 4*np.prod(shape))
         return np.frombuffer(buffer, np.float32).reshape(shape)
 
 

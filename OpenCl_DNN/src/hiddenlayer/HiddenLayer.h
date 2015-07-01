@@ -17,22 +17,22 @@ typedef CL_Matrix<float> Matrix;
 
 class HiddenLayer {
 public:
-	HiddenLayer(Activation &activation,u_int32_t dim);
-	virtual ~HiddenLayer();
+    HiddenLayer(Activation &activation,u_int32_t dim);
+    virtual ~HiddenLayer();
 
-	Matrix propagate(const Matrix &input,const Matrix &weight,const Matrix &bias);
+    Matrix propagate(const Matrix &input,const Matrix &weight,const Matrix &bias);
 
-	Matrix grad(const Matrix &layer);
+    Matrix grad(const Matrix &layer);
 
-//	Getters and setters
-	u_int32_t getDim() const {
-		return dim;
-	}
+//  Getters and setters
+    u_int32_t getDim() const {
+        return dim;
+    }
 
 
 private:
-	Activation *activation;
-	u_int32_t dim;
+    Activation *activation;
+    u_int32_t dim;
 
 };
 

@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 import struct
+import time
 import cPickle as pickle
 sys.path.append('../OpenCl_DNN/demo')
 from mnist import load_mnist
@@ -52,6 +53,7 @@ class NeuralNetwork:
         # This is to add the bias unit to the input layer
         ones = np.atleast_2d(np.ones(X.shape[0]))
         X = np.concatenate((ones.T, X), axis=1)
+        t=time.time()
 
         for k in range(epochs):
             i = np.random.randint(X.shape[0])
@@ -85,7 +87,7 @@ class NeuralNetwork:
                 self.weights[i] += learning_rate * layer.T.dot(delta)
 
             if k % 10000 == 0:
-                print 'epochs:', k
+                print 'epochs:', k, round(time.time()-t, 2), 's'
 
     def predict(self, x):
         a = np.concatenate((np.ones(1).T, np.array(x)), axis=1)
@@ -113,10 +115,10 @@ if __name__ == '__main__':
     testImages, testOutput, testNumbers = loadData('testing')
     NTrain = 10000
 
-    layerSizes = [784, 784, 10]
+    layerSizes = [784, 1024, 1024, 10]
     nn = NeuralNetwork(layerSizes, 'sigmoid')
     # nn.fit(trainImages[:, 0:NTrain].T, trainOutput[:, 0:NTrain].T, learning_rate=0.2, epochs=10000000)
-    nn.fit(trainImages.T, trainOutput.T, learning_rate=0.2, epochs=1000000)
+    nn.fit(trainImages.T, trainOutput.T, learning_rate=0.2, epochs=2192448) # 7h
     NTest = testImages.shape[1]
     correct = 0
     for i in range(NTest):

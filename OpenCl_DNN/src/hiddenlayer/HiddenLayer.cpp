@@ -9,7 +9,7 @@
 
 
 HiddenLayer::~HiddenLayer() {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 HiddenLayer::HiddenLayer(Activation& activation, u_int32_t dim):activation(&activation),dim(dim) {
@@ -17,10 +17,10 @@ HiddenLayer::HiddenLayer(Activation& activation, u_int32_t dim):activation(&acti
 
 
 Matrix HiddenLayer::propagate(const Matrix &input,const Matrix &weight,const Matrix &bias){
-	Matrix dot = weight.dot(input) + bias;
-	return activation->propagate(dot);
+    Matrix dot = weight.dot(input) + bias;
+    return activation->propagate(dot);
 }
 
 Matrix HiddenLayer::grad(const Matrix& layer) {
-	return layer;
+    return layer;
 }
