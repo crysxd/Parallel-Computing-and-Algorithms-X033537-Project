@@ -7,8 +7,8 @@ import sys
 
 sys.path.append('../src/wrapper')
 
-# from NeuralNetwork import NeuralNetwork
-from NeuralNetwork import NeuronalNetwork as NeuralNetwork
+from NeuralNetwork import NeuralNetwork
+# from NeuralNetwork import NeuronalNetwork as NeuralNetwork
 
 TRAININGMETHODS = ['batch', 'sgd']
 
@@ -38,7 +38,8 @@ def train(method, learningRate, momentum, numEpochs, output, layers=None, miniba
         TRAININGMETHODS[0]: nn.trainBatch,
         TRAININGMETHODS[1]: nn.trainStochastic
     }
-    errors = trainmethod[method](trainImages, trainOutput, learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
+    errors = trainmethod[method](
+        trainImages, trainOutput, learningRate=learningRate, momentum=momentum, numEpochs=numEpochs)
     # Error did happen, we just return, error message would be printed by the
     # train method
     if not errors or len(errors) == 0:
@@ -58,6 +59,7 @@ def test(nn):
     testImages, testOutput, testNumbers = loadData('testing')
     result = nn.test(testImages)
     correct = 0
+    print len(testNumbers)
     for i in range(len(testNumbers)):
         num = outputToNumber(result[:, i])
         # print testNumbers[i], num
@@ -79,7 +81,7 @@ def parse_args():
     trainparser.add_argument(
         '-ep', '--numEpochs', type=int, default=100, help="Number of epochs for the neural network, default: %(default)s")
     trainparser.add_argument(
-        '-lr', '--learningRate', type=float, help='Learning rate of the neural network ,default:%(default)s',default=0.2)
+        '-lr', '--learningRate', type=float, help='Learning rate of the neural network ,default:%(default)s', default=0.2)
     trainparser.add_argument(
         '-m', '--method', default=TRAININGMETHODS[1], help='Trainingsmethod, default : %(default)s')
     trainparser.add_argument(
