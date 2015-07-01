@@ -8,7 +8,7 @@
 #include "FeedForwardNN.h"
 
 #ifndef DEBUG
-    #define DEBUG 1
+    #define DEBUG 0
 #endif
 
 Matrix FeedForwardNN::feedforward(Matrix& in,bool learn) {
@@ -69,7 +69,7 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
     assert(error.getRows() == this->_deriv.back().getRows());
 
     Matrix delta_l = error * (this->_deriv.back());
-#if !DEBUG
+#if DEBUG
     std::cout << "Updating layer " << this->_weight_biases.size()-1 << " with dimensions : ";
     this->_weight_biases.back().first.printDimension();
     std::cout << endl;
@@ -81,7 +81,7 @@ std::vector<std::pair<Matrix,Matrix>> FeedForwardNN::backpropagate(Matrix &error
     for(auto i=2u;i <= this->_net_size;i++){
 
         auto idx = this->_net_size-i;
-#if !DEBUG
+#if DEBUG
         std::cout << "Updating layer " << idx << " with dimensions : ";
         this->_weight_biases[idx+1].first.printDimension();
         std::cout << std::endl;
@@ -174,8 +174,6 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
             // Get the column of the input and use it as input
             Matrix inputvector = in.subMatCol(i);
 
-
-
             ////////////////////////////////////////////////////////////
             // Feed forward step, returns the predictions of the nnet //
             ////////////////////////////////////////////////////////////
@@ -183,7 +181,7 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
             Matrix error = (predict - target.subMatCol(i));
 
             epoch_error+= error.transpose().dot(error);
-            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
+//            std::cout << " Predict \n" << predict << "\nTarget: \n"<< target.subMatCol(i) << std::endl;
             ///////////////////////////////
             // Backpropagate the errors  //
             ///////////////////////////////
@@ -195,40 +193,29 @@ std::vector<float> FeedForwardNN::trainbatch(Matrix &in, Matrix &target, float l
 //          Weights are in reversed order since there was some trouble using the insert() or any reserve()
             for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
                 assert(wi >= 0);
-//              std::cout << " Weights for Layer" << wi << "\n" << this->_weight_biases.at(wi).first << std::endl;
                 w_b.at(wi).first += delta_w_b.at(wi).first;
                 w_b.at(wi).second += delta_w_b.at(wi).second;
             }
 
         }
 
-        // Print out the result
 // #if !DEBUG
         std::cout << "Epoch " << epoch +1 << " Error " << epoch_error << std::endl;
 // #endif
         errors.push_back(epoch_error);
 
-
         /////////////////////////
         // Update the weights //
         /////////////////////////
-        for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++){
-            std::cout << " update weight  " << i << " j " <<j << std::endl;
+        for(int i=this->_weight_biases.size()-1,j=0; i>=0, j<w_b.size();i--,j++) {
             this->_weight_biases.at(i).first -= l_rate * w_b.at(j).first + momentum * momentumbuf.at(j);
-//          this->_weight_biases.at(i).first -= this->_l_rate * w_b[w_b.size()-i-1].first;
             this->_weight_biases.at(i).second -= l_rate * w_b.at(j).second;
-//      Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
+//          Momentum is defined as delta w_i+1 = w_i - lrate*nabla_w + momentum * delta w_i(t)
             momentumbuf.at(j) = this->_weight_biases.at(i).first;
         }
-
-
     }
 
-
-
     return errors;
-
-
 }
 
 void FeedForwardNN::addHiddenLayer(const u_int32_t neurons) {
@@ -247,10 +234,8 @@ Matrix FeedForwardNN::test(Matrix& in) {
     for(auto i=0u; i < in.getCols();i++){
         // Get the column of the input and use it as input
         Matrix inputvector = in.subMatCol(i);
-//        std::cout << "test feedforward " << inputvector.getRows() << 'x' << inputvector.getCols() << '\n';
 //      Do not train the network
         Matrix const &predict = this->feedforward(inputvector, false);
-//        std::cout << predict.getRows() << " "  << this->_out_dim <<std::endl;
         assert(predict.getRows() == this->_out_dim);
         for (auto j =0u; j < this->_out_dim; j++){
             predictions.fillAt(j, i, predict(j, 0));
@@ -334,14 +319,11 @@ std::vector<float> FeedForwardNN::trainsgd(Matrix& in, Matrix& target, float l_r
                 std::vector<std::pair<Matrix,Matrix>> const &delta_w_b = this->backpropagate(error);
                 //We got the weights, so just update the non accumulated ones
                 for(int wi=this->_weight_biases.size()-1; wi>=0;wi--){
-    //              std::cout << " Weights for Layer" << wi << "\n" << this->_weight_biases.at(wi).first << std::endl;
                     w_b[wi].first += delta_w_b[wi].first;
                     w_b[wi].second += delta_w_b[wi].second;
                 }
             }
-            // Print out the result
-    // #if !DEBUG
-    // #endif
+
             errors.push_back(epoch_error);
 
             /////////////////////////

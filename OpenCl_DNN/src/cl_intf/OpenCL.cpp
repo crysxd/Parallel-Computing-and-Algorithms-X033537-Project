@@ -14,7 +14,7 @@
 #endif
 
 #ifndef DEBUG
-    #define DEBUG 1
+    #define DEBUG 0
 #endif
 
 inline OpenCL::OpenCL(const char * programpath){
@@ -29,7 +29,7 @@ inline OpenCL::OpenCL(const char * programpath){
     }
     //We assume having only one platform and choose the first one
     cl::Platform defaultplatform = all_platforms[0];
-    #if !DEBUG
+    #if DEBUG
     std::cout << "Using Platform : "
             << defaultplatform.getInfo<CL_PLATFORM_NAME>() << std::endl;
     #endif
@@ -46,7 +46,7 @@ inline OpenCL::OpenCL(const char * programpath){
     // (this->device < CL_DEVICE_NAME) > ()
     // To resolve that we explicitally tell the compilter that it's a tempalte
     std::string devicename = this->device.template getInfo<CL_DEVICE_NAME>();
-    #if !DEBUG
+    #if DEBUG
     std::cout << "Using device: " << devicename << std::endl;
     #endif
 
@@ -318,7 +318,7 @@ inline void OpenCL::runKernel(const char* kernelname,std::vector<std::size_t> co
 //    Wait for the transfers to finish
     quene.finish();
 
-    #if !DEBUG
+    #if DEBUG
     std::cout << "Running Kernel : " << kernelname << std::endl;
     #endif
 
@@ -395,7 +395,7 @@ inline void OpenCL::runKernelnoOut(const char* kernelname, std::vector<size_t> &
     queue.finish();
 
 //    std::chrono::duration<double> elapsed_seconds1 = std::chrono::system_clock::now() - start;
-    #if !DEBUG
+    #if DEBUG
     std::cout << "Running Kernel : " << kernelname << std::endl;
     #endif
 
@@ -484,7 +484,7 @@ inline void OpenCL::loadProgram(const char *path){
     std::string newpath(CL_SOURCE_DIR);
         newpath += "/cl_prog";
         newpath += "/" + std::string(path);
-    #if !DEBUG
+    #if DEBUG
         std::cout << "Reading Kernel from " <<newpath <<std::endl;
     #endif
     this->contents = util::file_contents(newpath.c_str());

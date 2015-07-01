@@ -40,7 +40,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 # Common flags
 
-add_definitions(-DDEBUG=1)
+add_definitions(-DDEBUG=0)
 add_definitions(-DNO_OUTPUT=0)
 add_definitions(-DCL_SOURCE_DIR="${CMAKE_SOURCE_DIR}/src/")
 

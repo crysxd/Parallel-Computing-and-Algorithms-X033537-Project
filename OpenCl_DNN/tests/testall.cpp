@@ -204,25 +204,6 @@ TEST(OpenCL,Datatypes){
 
 }
 
-//TEST(Matrix,dotgpu){
-//
-//    int r=20;
-//    int c=20;
-//
-//    CL_Matrix<float> mat(r,c);
-//    CL_Matrix<float> other(c,r);
-//    mat.fill(5.);
-//
-//    other.fill(2.);
-//    CL_Matrix<float> out = mat.dotgpu(other);
-//    for(auto i=0u;i<100;i++){
-//      out = out.dotgpu(other);
-//  }
-//  out.fetchdata();
-//  std::cout << out(0,0);
-//
-//}
-
 TEST(Matrix,dotsq){
 
     int r=512;
@@ -403,88 +384,51 @@ TEST(Nnet,batchgradient){
     dnn.addActivation(&s);
     dnn.addActivation(&s);
     dnn.addHiddenLayer(2);
-    std::vector<float> errors = dnn.trainbatch(input,target,0.2,0.0);
- //    for (auto i = 1u; i < errors.size(); ++i)
- //    {
- //        EXPECT_GE(errors[i-1] - errors[i]  ,0);
- //    }
+    std::vector<float> errors = dnn.trainbatch(input, target, 0.2, 0.1);
+     for (auto i = 1u; i < errors.size(); ++i)
+     {
+         EXPECT_GE(errors[i-1] - errors[i]  ,0);
+     }
 }
 
 
+TEST(Nnet,sgd){
+  auto inputdim = 2u;
+  auto inputnum = 4u;
+  CL_Matrix<float> input(inputdim,inputnum);
+  input(0,0) = 0;
+  input(1,0) = 0;
 
-//TEST(Nnet,batchgradient){
-//  auto inputdim = 2u;
-//  auto inputnum = 4u;
-//  CL_Matrix<float> input(inputdim,inputnum);
-//  input(0,0) = 0;
-//  input(1,0) = 0;
+  input(0,1) = 0;
+  input(1,1) = 1;
 
-//  input(0,1) = 0;
-//  input(1,1) = 1;
+  input(0,2) = 1;
+  input(1,2) = 0;
 
-//  input(0,2) = 1;
-//  input(1,2) = 0;
+  input(0,3) = 1;
+  input(1,3) = 1;
 
-//  input(0,3) = 1;
-//  input(1,3) = 1;
+  CL_Matrix<float> target(1,4);
+  target(0,0) = 1;
 
-//  CL_Matrix<float> target(1,4);
-//    target(0,0) = 1;
+  target(0,1) = 0;
 
-//    target(0,1) = 0;
+  target(0,2) = 0;
 
-//    target(0,2) = 0;
-
-//    target(0,3) = 1;
-//  Sigmoid s;
-//    FeedForwardNN dnn(2,1,1,0.8);
-//  dnn.addActivation(&s);
-//  dnn.addActivation(&s);
-//  dnn.addHiddenLayer(3);
-//    std::vector<float> errors = dnn.trainbatch(input,target);
-// //    for (auto i = 1u; i < errors.size(); ++i)
-// //    {
-// //        EXPECT_GE(errors[i-1] - errors[i]  ,0);
-// //    }
-//}
-
-//TEST(Nnet,sgd){
-//  auto inputdim = 2u;
-//  auto inputnum = 4u;
-//  CL_Matrix<float> input(inputdim,inputnum);
-//  input(0,0) = 0;
-//  input(1,0) = 0;
-
-//  input(0,1) = 0;
-//  input(1,1) = 1;
-
-//  input(0,2) = 1;
-//  input(1,2) = 0;
-
-//  input(0,3) = 1;
-//  input(1,3) = 1;
-
-//  CL_Matrix<float> target(1,4);
-//  target(0,0) = 0;
-
-//  target(0,1) = 1;
-
-//  target(0,2) = 1;
-
-//  target(0,3) = 0;
+  target(0,3) = 1;
 
 
-//  Sigmoid s;
-//  FeedForwardNN dnn(2,1,0.5,0.1);
-//  dnn.addActivation(&s);
-//  dnn.addActivation(&s);
-//  dnn.addHiddenLayer(2);
-//  std::vector<float> errors = dnn.trainsgd(input,target);
-//   for (auto i = 1u; i < errors.size(); ++i)
-//   {
-//       EXPECT_GE(errors[i-1] - errors[i]  ,0);
-//   }
-//}
+  Sigmoid s;
+  FeedForwardNN dnn(2,1);
+  dnn.addActivation(&s);
+  dnn.addActivation(&s);
+  dnn.addHiddenLayer(2);
+  std::vector<float> errors = dnn.trainsgd(input, target, 0.5, 0.0);
+   for (auto i = 1u; i < errors.size(); ++i)
+   {
+       EXPECT_GE(errors[i-1] - errors[i]  ,0);
+   }
+}
 
 
 

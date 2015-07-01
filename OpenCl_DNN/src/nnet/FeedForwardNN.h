@@ -37,7 +37,6 @@ public:
     Matrix test(Matrix&in);
 
     std::vector<float> trainbatch(Matrix &in, Matrix &target, float l_rate, float momentum, unsigned int numEpochs=50u);
-// Helper functions to get the strides
 
     std::vector<float> trainsgd(Matrix &in, Matrix &target, float l_rate, float momentum, int numEpochs=50, int miniBatchSize=10);
 
@@ -78,16 +77,6 @@ private:
 
 //  The costfunction used to calculate the target loss and backpropagation
     Cost* _costfunc;
-
-
-
-//  unsigned int _seed;
-
-//  Range of the weights for random init
-//  int min_weight = -1;
-////    Max weight when init randomly
-//  int max_weight = 1;
-
 };
 
 #endif /* NNET_FEEDFORWARDNN_H_ */

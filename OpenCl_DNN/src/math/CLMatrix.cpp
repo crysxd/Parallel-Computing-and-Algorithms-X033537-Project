@@ -102,7 +102,6 @@ void CL_Matrix<T>::dot(const CL_Matrix<T>& other, CL_Matrix<T> *out) const {
 
     std::size_t localrows = ceil(float(this->_n_rows)/100);
     std::size_t localcols = ceil(float(this->_n_cols)/100);
-//  Currently unused, crashes unfortunately even if hardcoded args are given at a certain size
     std::vector<std::size_t> localWorkSize = {localrows,localcols};
     std::vector<std::size_t> globalWorkSize = {this->_n_rows,other._n_cols};
 
@@ -220,7 +219,6 @@ inline void CL_Matrix<T>::moveToRam() {
     this->syncToRam();
     this->state = OnlyRam;
 }
-
 
 
 /**
