@@ -1,4 +1,4 @@
-You need to have the openCL libraries installed to build the project.
+You need to have the openCL libraries and gtest installed to build the project.
 
 Moreover you need to have a opencl compatible device on your computer
 
