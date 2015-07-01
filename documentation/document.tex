@@ -246,7 +246,7 @@ For the outputs, we simply feed forward the network and store the output $\mathb
 As soon as the feed forward is done, we produced an output of the network, which we can denote as $\mathbf{o}_L$. Now we need to decide how close our output is to the targetted output $\mathbf{t}$. For this we use a cost function in usual cases it is sufficient to use $MSE$ as such, which is defined as:
 \begin{equation}
 \label{eq:mse}
-\mathbf{err} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
+\mathbf{MSE} = \frac{1}{2} \left( \mathbf{o}_L - \mathbf{t} \right) ^2
 \end{equation}
 
 Here (\ref{eq:mse}) we need to make sure that the last output layer has the same dimensions as the target output.
@@ -257,6 +257,7 @@ Here (\ref{eq:mse}) we need to make sure that the last output layer has the same
 At first we calculate the differences between the target output and the estimated output.
 
 \begin{align}
+\mathbf{err} &= (\mathbf{o}_L - \mathbf{t})\\
 \boldsymbol{\delta}_L &= \mathbf{err} \otimes \mathbf{D}_L\\
 \nabla \mathbf{W}_L &= \mathbf{o}_L \boldsymbol{\delta}_L^T
 \end{align}
@@ -564,7 +565,7 @@ big & 3 & 1024 & 0.1 to 0.7 & 0.01\\
 \end{tabular}
 \end{table}
 We used the networks shown in \ref{tab:config}, where we tried to use different starting learning rates to achieve better results.
-All out networks use 10000 epochs and stochastic gradient descent as its learning algorithm.
+All out networks use \textbf{10000 epochs} and \textbf{stochastic gradient descent} as its learning algorithm.
 
 
 The results can be seen in the table \ref{tab:correct}. 
@@ -583,7 +584,7 @@ big & 84 & 87 & 77 & 56 & 66 & 11 & 64  \\
 \end{tabular}
 \end{table}
 
-Finally we can see the performance of our neuralnetwork. We want to emphasize that we used Intel HD4000 GPU's, which are not very powerful GPU's. Fortunately one could easily run this code with any other GPU, since OpenCL supports every large GPU manufactor product.
+Finally we can see the performance of our neural network. We want to emphasize that we used Intel HD4000 GPU's, which are not very powerful GPU's. Fortunately one could easily run this code with any other GPU, since OpenCL supports every large GPU manufacture product.
 
 \begin{table}[h]
 \centering
@@ -607,7 +608,7 @@ Moreover, random weights can lead the network to converge to a local minimum whi
 
 Many other techniques to increase the performance could be implemented such as Restricted Boltzmann machines (RMBs) to cope with the random initialization of the network.
 
-In our experiments we only used the checkerboard algorithm to calculate the dot products, but there are more efficient ways to do so. Moreover loop unrolling is a powerful method to calculate multiple instructions at once, as long as the dataset has a certain size to enable the unroll.
+In our experiments we only used the checker-board algorithm to calculate the dot products, but there are more efficient ways to do so. Moreover loop unrolling is a powerful method to calculate multiple instructions at once, as long as the dataset has a certain size to enable the unroll.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
